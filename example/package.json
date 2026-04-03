@@ -1,0 +1,13 @@
+{
+  "name": "playwright-timeline-demo",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:f": "npx playwright test --fully-parallel",
+    "shard1": "npm t -- --shard=1/2",
+    "shard2": "PWTEST_BLOB_DO_NOT_REMOVE=1 npm t -- --shard=2/2",
+    "shards": "npm run shard1 && npm run shard2",
+    "merge": "npx playwright merge-reports --reporter ../src ./blob-report"
+  }
+}

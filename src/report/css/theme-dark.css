@@ -1,0 +1,58 @@
+/** Defines the dark theme color tokens used across the report UI. */
+:root[data-theme='dark'] {
+  color: #f8fafc;
+
+  /* Page */
+  --page-bg: #0f172a;
+  --page-text: #cbcbce;
+  --text-muted: #94a3b8;
+
+  /* Header */
+  --title-chip-gradient: linear-gradient(
+    90deg,
+    #f2b705 0%,
+    #4da3f7 48%,
+    var(--card-value-good) 100%
+  );
+
+  /* Cards */
+  --card-bg: #1e293b;
+  --card-border: #273449;
+  --card-value-good: #4ade80;
+  --card-value-bad: #f87171;
+  --card-value-normal: #9098b0;
+
+  /* Buttons */
+  --button-bg: #1e293b;
+  --button-text: #e2e8f0;
+  --button-border: #334155;
+  --button-bg-hover: #273449;
+
+  /* Search */
+  --search-overlay: rgba(2, 6, 23, 0.68);
+  --search-highlight-bg: rgba(96, 165, 250, 0.18);
+  --search-highlight-text: #93c5fd;
+  --search-pulse-stroke: #dbeafe;
+
+  /* Tooltip */
+  --tooltip-bg: #1e293b;
+  --tooltip-text: #f1f5f9;
+  --tooltip-text-muted: #94a3b8;
+  --tooltip-border: #334155;
+  --tooltip-tag-label-bg: #334155;
+  --tooltip-tag-value-bg: #475569;
+  --tooltip-error-bg: rgba(220, 38, 38, 0.15);
+  --tooltip-error-text: #f87171;
+  --tooltip-error-border: #7f1d1d;
+  --tooltip-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+
+  /* Chart */
+  --chart-bg: #0b1120;
+  --chart-border-color: rgba(255, 255, 255, 0.5);
+  --bar-pattern-color: rgba(255, 255, 255, 0.65);
+  --bar-stroke: rgba(255, 255, 255, 0.3);
+  --reset-zoom-button: #3b82f6;
+  --reset-zoom-button-bg: rgba(59, 130, 246, 0.1);
+  --reset-zoom-button-bg-hover: rgba(59, 130, 246, 0.18);
+  --reset-zoom-button-border: #365b95;
+}

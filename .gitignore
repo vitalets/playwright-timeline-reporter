@@ -1,0 +1,15 @@
+.DS_Store
+.vscode
+.idea
+
+node_modules/
+/.parcel-cache
+
+playwright-report
+timeline-report
+blob-report
+test-results
+dist
+src/report/with-*.tpl.html
+/todo.txt
+

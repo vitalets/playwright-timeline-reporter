@@ -1,0 +1,42 @@
+/** Styles for the summary cards grid layout. */
+
+.cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card {
+  width: fit-content;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.card-label {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-value {
+  margin: 4px 0 0;
+  font-size: 1.4rem;
+}
+
+@media (max-width: 600px) {
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .card {
+    width: auto;
+  }
+}

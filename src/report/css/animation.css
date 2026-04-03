@@ -1,0 +1,14 @@
+@keyframes clip-reveal {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate {
+  animation: clip-reveal 0.25s linear;
+  transform-box: fill-box;
+  transform-origin: left center;
+}

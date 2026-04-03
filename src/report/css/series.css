@@ -1,0 +1,38 @@
+/**
+ * Defines shared chart-series colors and search-match pulse animation.
+ */
+:root {
+  /* Series colors */
+  --color-worker-fixture: #e6b450;
+  --color-worker-hook: #e6b450;
+  --color-test-fixture: #5fa8d3;
+  --color-test-hook: #5fa8d3;
+  --color-test-body: #7bc67b;
+  --color-failure: #e05d5d;
+  --color-worker-restart: #ff6b6b;
+}
+
+@keyframes search-match-pulse {
+  0% {
+    fill-opacity: 1;
+    stroke: var(--bar-stroke);
+    stroke-width: 1;
+    filter: brightness(1) saturate(1);
+  }
+  45% {
+    fill-opacity: 0.82;
+    stroke: var(--search-pulse-stroke);
+    stroke-width: 3;
+    filter: brightness(1.45) saturate(1.4);
+  }
+  100% {
+    fill-opacity: 1;
+    stroke: var(--bar-stroke);
+    stroke-width: 1;
+    filter: brightness(1) saturate(1);
+  }
+}
+
+.search-match-pulse {
+  animation: search-match-pulse 0.375s ease-in-out 4;
+}

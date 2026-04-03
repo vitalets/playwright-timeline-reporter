@@ -1,0 +1,76 @@
+.tooltip-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tooltip-button__trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.tooltip-button__trigger:hover {
+  opacity: 1;
+}
+
+.tooltip-button__content {
+  position: fixed;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  border: 1px solid var(--tooltip-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  box-shadow: var(--tooltip-shadow);
+  width: 240px;
+  z-index: 1000;
+  white-space: normal;
+  text-transform: none;
+  font-weight: normal;
+  letter-spacing: normal;
+}
+
+.tooltip-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--tooltip-text);
+  font-size: 0.8rem;
+}
+
+.tooltip-body {
+  color: var(--tooltip-text-muted);
+}
+
+.tooltip-body p {
+  margin: 0;
+}
+
+.tooltip-body p + p {
+  margin-top: 6px;
+}
+
+.tooltip-body strong {
+  color: var(--tooltip-text);
+  font-weight: inherit;
+}
+
+.tooltip-formula {
+  margin: 6px 0;
+  padding: 4px 8px;
+  background: var(--card-bg);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: var(--tooltip-text);
+  text-align: center;
+}

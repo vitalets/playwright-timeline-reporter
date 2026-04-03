@@ -1,0 +1,87 @@
+{
+  "name": "playwright-timeline-reporter",
+  "description": "Timeline visualization for Playwright test execution",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./reporter": "./dist/reporter.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "prepare": "git config core.hooksPath scripts/git-hooks",
+    "tsc": "tsc",
+    "lint": "eslint .",
+    "prettier": "prettier --check .",
+    "prettier:w": "prettier --write .",
+    "dev-data": "npx tsx scripts/dev-data.ts",
+    "dev": "parcel serve src/report/with-basic-data.tpl.html",
+    "dev:projects": "parcel serve src/report/with-projects.tpl.html",
+    "dev:deps": "parcel serve src/report/with-projects-deps.tpl.html",
+    "dev:shards": "parcel serve src/report/with-shards.tpl.html",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build src/report/index.tpl.html --dist-dir dist/report",
+    "test": "npx playwright test -c test/timings",
+    "test:d": "DEBUG=1 npx playwright test -c test/timings",
+    "test:r": "npm run build && npx playwright test -c test/report",
+    "test:merge": "npx playwright test -c test/merge-reports",
+    "example": "npm run build && npx playwright test -c example",
+    "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install",
+    "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 7"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix"
+  },
+  "targets": {
+    "main": false,
+    "types": false
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "os-name": "^7.0.0"
+  },
+  "devDependencies": {
+    "@eslint/compat": "2.0.3",
+    "@eslint/js": "9.39.4",
+    "@parcel/optimizer-data-url": "^2.16.4",
+    "@parcel/transformer-inline-string": "^2.16.4",
+    "@playwright/test": "^1.58.2",
+    "@types/d3-scale": "^4.0.9",
+    "@types/node": "^20.10.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "buffer": "^6.0.3",
+    "cmdk": "^1.1.1",
+    "d3-scale": "^4.0.2",
+    "eslint": "9.39.4",
+    "eslint-plugin-react-hooks": "7.0.1",
+    "eslint-plugin-visual-complexity": "0.1.4",
+    "globals": "17.4.0",
+    "lint-staged": "16.4.0",
+    "parcel": "^2.16.3",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "8.57.2",
+    "yaml": "^2.8.2"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true
+  },
+  "keywords": [
+    "playwright",
+    "timeline",
+    "reporter"
+  ],
+  "license": "MIT"
+}

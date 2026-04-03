@@ -1,0 +1,99 @@
+/** Styles for the report header layout, action buttons, and info chips. */
+
+.report-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--button-text);
+  padding: 0;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.header-button {
+  color: var(--page-text);
+}
+
+.header-button:hover,
+.header-button:focus-visible {
+  color: var(--button-text);
+}
+
+/* Header chips */
+
+.header-chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  height: 100%;
+}
+
+.header-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.header-chip-label {
+  color: var(--tooltip-text-muted);
+  padding: 3px 7px;
+  background: var(--tooltip-tag-label-bg);
+}
+
+.header-chip-value {
+  font-weight: 600;
+  padding: 3px 7px;
+  background: var(--tooltip-tag-value-bg);
+}
+
+.title-chip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  background: var(--tooltip-tag-label-bg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.title-chip-text {
+  background: var(--title-chip-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 600px) {
+  .report-header {
+    flex-direction: column-reverse;
+    align-items: center;
+  }
+
+  .report-header-actions {
+    justify-content: center;
+  }
+}

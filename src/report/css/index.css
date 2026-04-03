@@ -1,0 +1,42 @@
+/* Important to manually include all used css files */
+@import './theme-light.css';
+@import './theme-dark.css';
+@import './card-tooltip.css';
+@import './header.css';
+@import './cards.css';
+@import './series.css';
+@import './animation.css';
+@import './search-dialog.css';
+@import './toolbox.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100vh; /* fallback */
+  height: 100dvh;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-variant-numeric: tabular-nums; /* all digits have the same width */
+  overflow-y: auto;
+}
+
+body {
+  padding: 16px 20px;
+  background: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+#root {
+  flex: 1;
+  min-height: 0; /* Allow shrinking inside flex layout */
+  display: flex;
+  flex-direction: column;
+}
