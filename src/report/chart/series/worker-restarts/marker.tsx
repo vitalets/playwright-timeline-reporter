@@ -36,10 +36,8 @@ export function RestartMarker({
 
   return (
     <g opacity={opacity}>
-      {/* Commented for now, cleaner UI */}
-      {/* <RestartLine left={rect.left} top={rect.top} height={rect.height} /> */}
       <RestartTriangle
-        centerX={rect.left - 1} // small offset to cover the line
+        centerX={rect.left}
         centerY={rect.top + rect.height / 2}
         size={triangleSize}
         onMouseMove={(e) => onMouseMove?.(e, restart)}
@@ -60,23 +58,11 @@ export function RestartTriangle({
   centerY: number;
   size: number;
 } & SVGProps<SVGPolygonElement>) {
-  const points = `${centerX},${centerY - size} ${centerX + size},${centerY} ${centerX},${centerY + size}`;
+  const left = centerX - size / 3;
+  const right = centerX + (2 * size) / 3;
+  const points = `${left},${centerY - size} ${right},${centerY} ${left},${centerY + size}`;
   return <polygon points={points} fill={COLOR} {...props} />;
 }
-
-// function RestartLine({ left, top, height }: { left: number; top: number; height: number }) {
-//   return (
-//     <line
-//       x1={left}
-//       y1={top}
-//       x2={left}
-//       y2={top + height}
-//       stroke={COLOR}
-//       strokeWidth={1.5}
-//       strokeDasharray="2,2"
-//     />
-//   );
-// }
 
 function isWorkerRestartFocused(focusFilter: FocusFilter | undefined) {
   return (

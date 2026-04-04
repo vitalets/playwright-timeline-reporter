@@ -17,7 +17,7 @@ export function WorkerRestartTooltip({ data }: { data: WorkerRestart }) {
         }}
       >
         <svg width={7} height={14}>
-          <RestartTriangle centerX={0} centerY={7} size={7} />
+          <RestartTriangle centerX={7 / 3} centerY={7} size={7} />
         </svg>
         WORKER RESTART
       </div>
