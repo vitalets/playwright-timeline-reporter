@@ -13,7 +13,7 @@ export type WorkerData = {
 
 export class WorkerLanes {
   private lanes: WorkerLane[] = [];
-  private lastInWorker = new Set<TestTimings>();
+  private lastTestInWorker = new Set<TestTimings>();
 
   constructor(
     private tests: TestTimings[],
@@ -33,16 +33,16 @@ export class WorkerLanes {
   }
 
   private findLaneForTest(test: TestTimings) {
-    return this.findLaneByWorkerIndex(test) || this.findLaneByWorkerRestart(test);
+    return this.findLaneByWorkerIndex(test) || this.findLaneForNewWorker(test);
   }
 
   private findLaneByWorkerIndex(test: TestTimings) {
     return this.lanes.find((lane) => lane.lastWorkerIndex === test.workerIndex);
   }
 
-  private findLaneByWorkerRestart(test: TestTimings) {
+  private findLaneForNewWorker(test: TestTimings) {
     const candidates = this.lanes
-      .filter((lane) => !lane.lastTest || this.lastInWorker.has(lane.lastTest))
+      .filter((lane) => !lane.lastTest || this.lastTestInWorker.has(lane.lastTest))
       .filter((lane) => lane.lastTestEndTime <= test.startTime);
 
     if (candidates.length === 0) {
@@ -76,7 +76,7 @@ export class WorkerLanes {
   private initLastInWorker() {
     const lastInWorker = new Map<number, TestTimings>();
     this.tests.forEach((test) => lastInWorker.set(test.workerIndex, test));
-    this.lastInWorker = new Set(lastInWorker.values());
+    this.lastTestInWorker = new Set(lastInWorker.values());
   }
 }
 
