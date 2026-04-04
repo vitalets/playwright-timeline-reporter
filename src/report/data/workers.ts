@@ -49,7 +49,10 @@ export class WorkerLanes {
       throw new Error(`Could not find worker for test "${test.testBody.title}"`);
     }
 
-    // if not fully parallel, keep tests from the same file in the same lane
+    // In non-fully-parallel mode, try keep tests from the same file in the same lane.
+    // Case: worker 1 finished all the work, worker 2 get one of the tests in a file failed.
+    // Without this code, the next test in a file will be assigned to worker 1, which is not correct,
+    // because actually worker 2 executes this test.
     if (!this.fullyParallel) {
       const { file } = test.testBody.location;
       const lane = candidates.find((lane) => lane.lastTestFile === file);
