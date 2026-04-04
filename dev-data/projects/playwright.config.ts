@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: `${projectRoot}/example/tests`,
   workers: 3,
   reporter: [
+    ['dot'],
     [
       `${projectRoot}/src/reporter.ts`,
       {

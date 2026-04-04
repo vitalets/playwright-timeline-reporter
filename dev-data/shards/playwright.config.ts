@@ -13,6 +13,7 @@ export default defineConfig({
   testDir: `${projectRoot}/example/tests`,
   workers: 3,
   reporter: [
+    ['dot'],
     process.argv.includes('merge-reports')
       ? [
           `${projectRoot}/src/reporter.ts`,

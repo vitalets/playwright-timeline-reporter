@@ -8,6 +8,7 @@ export default defineConfig({
   workers: 3,
   fullyParallel: true,
   reporter: [
+    ['dot'],
     [
       `${projectRoot}/src/reporter.ts`,
       {
