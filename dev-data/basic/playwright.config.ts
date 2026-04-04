@@ -1,10 +1,7 @@
-import path from 'node:path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from '@playwright/test';
 
-// Uncomment after moving to ESM
-// import { fileURLToPath } from 'url';
-// const projectRoot = fileURLToPath(new URL('../../', import.meta.url));
-const projectRoot = path.resolve(__dirname, '../../');
+const projectRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 export default defineConfig({
   testDir: `${projectRoot}/example/tests`,

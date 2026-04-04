@@ -5,6 +5,7 @@ export default defineConfig({
   reporter: [
     // In a real project use: 'playwright-timeline-reporter' instead of '../dist/reporter'
     ['../dist/reporter'],
+    ['dot'],
     ['blob'],
   ],
   use: {

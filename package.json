@@ -26,7 +26,7 @@
     "dev:projects": "parcel serve src/report/with-projects.tpl.html",
     "dev:deps": "parcel serve src/report/with-projects-deps.tpl.html",
     "dev:shards": "parcel serve src/report/with-shards.tpl.html",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build src/report/index.tpl.html --dist-dir dist/report",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build --no-cache src/report/index.tpl.html --dist-dir dist/report",
     "test": "npx playwright test -c test/timings",
     "test:d": "DEBUG=1 npx playwright test -c test/timings",
     "test:r": "npm run build && npx playwright test -c test/report",
