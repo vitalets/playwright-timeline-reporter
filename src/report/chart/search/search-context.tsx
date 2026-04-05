@@ -87,9 +87,7 @@ export function useSearchContext() {
   return ctx;
 }
 
-function useSearchDialogState(
-  setFocusFilter: ReturnType<typeof useFocusFilter>['setFocusFilter'],
-) {
+function useSearchDialogState(setFocusFilter: ReturnType<typeof useFocusFilter>['setFocusFilter']) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const closeTimerRef = useRef<number | undefined>(undefined);

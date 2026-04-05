@@ -14,7 +14,8 @@ export function SelectedProjectProvider({ children }: { children?: ReactNode }) 
   const [selectedProjectName, setSelectedProject] = useState<string | null>(null);
 
   const selectedProject = useMemo(
-    () => (selectedProjectName ? (projects.find((p) => p.name === selectedProjectName) ?? null) : null),
+    () =>
+      selectedProjectName ? (projects.find((p) => p.name === selectedProjectName) ?? null) : null,
     [projects, selectedProjectName],
   );
 

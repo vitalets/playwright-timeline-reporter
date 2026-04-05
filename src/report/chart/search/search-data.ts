@@ -32,7 +32,9 @@ type WorkerTestRun = ChartData['workers'][number]['tests'][number];
 
 export function buildSearchResults(chartData: ChartData): SearchResult[] {
   const buckets = createSearchResultBuckets();
-  chartData.workers.forEach((worker) => worker.tests.forEach((testRun) => addTestRunResults(buckets, testRun)));
+  chartData.workers.forEach((worker) =>
+    worker.tests.forEach((testRun) => addTestRunResults(buckets, testRun)),
+  );
   return flattenSearchResults(buckets);
 }
 
@@ -117,7 +119,12 @@ function addErrorResult(errors: SearchResultBuckets['errors'], span: ChartSpan) 
   errors.set(span.spanId, createErrorResult(span));
 }
 
-function flattenSearchResults({ tests, files, hookFixtures, errors }: SearchResultBuckets): SearchResult[] {
+function flattenSearchResults({
+  tests,
+  files,
+  hookFixtures,
+  errors,
+}: SearchResultBuckets): SearchResult[] {
   return [...tests.values(), ...files.values(), ...hookFixtures.values(), ...errors.values()];
 }
 

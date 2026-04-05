@@ -55,15 +55,11 @@ export function FocusFilterProvider({ children }: { children?: ReactNode }) {
   );
 
   const setFocusFilter = useCallback(
-    (
-    field: FocusFilter['field'],
-    value: string,
-    options?: { pulsing?: boolean },
-  ) => {
-    stopPulsing();
-    const pulsing = options?.pulsing ?? false;
-    setFocusFilterInternal({ field, value, pulsing });
-    if (pulsing) startPulsing();
+    (field: FocusFilter['field'], value: string, options?: { pulsing?: boolean }) => {
+      stopPulsing();
+      const pulsing = options?.pulsing ?? false;
+      setFocusFilterInternal({ field, value, pulsing });
+      if (pulsing) startPulsing();
     },
     [startPulsing, stopPulsing],
   );
