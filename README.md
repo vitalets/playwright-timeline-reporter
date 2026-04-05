@@ -4,10 +4,14 @@
 
 <h1 align="center">Playwright Timeline Reporter</h1>
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/playwright-timeline-reporter"><img src="https://img.shields.io/npm/v/playwright-timeline-reporter" alt="npm version"></a>
-  <a href="https://www.npmjs.com/package/playwright-timeline-reporter"><img src="https://img.shields.io/npm/l/playwright-timeline-reporter" alt="license"></a>
-</p>
+<div align="center">
+
+[![lint status](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/lint.yml/badge.svg)](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/lint.yml)
+[![test status](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/test.yml/badge.svg)](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/playwright-timeline-reporter)](https://www.npmjs.com/package/playwright-timeline-reporter)
+[![license](https://img.shields.io/npm/l/playwright-timeline-reporter)](https://www.npmjs.com/package/playwright-timeline-reporter)
+
+</div>
 
 **Playwright Timeline Reporter** visualizes your test suite execution as an interactive timeline. Identify slow tests, detect costly repeated hooks, and understand worker utilization. Plug it into any Playwright project and get a self-contained HTML report with zero extra infrastructure.
 
