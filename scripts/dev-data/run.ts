@@ -39,24 +39,46 @@ function getConfigPaths(scenarioName?: string) {
     .sort();
 }
 
-async function runTests(configPath: string, extraArgs: string[] = []) {
-  await spawnAsync('npx', ['playwright', 'test', '-c', configPath, ...extraArgs]);
+async function runTests(configPath: string, extraArgs: string[] = [], env = process.env) {
+  await spawnAsync(
+    'npx',
+    [
+      'playwright',
+      'test',
+      '-c',
+      configPath,
+      '--output',
+      `${DEV_DATA_DIR}/test-results`,
+      ...extraArgs,
+    ],
+    env,
+  );
 }
 
 async function runShards(configPath: string) {
-  const firstShard = runTests(configPath, ['--shard=1/2']);
+  const env = {
+    ...process.env,
+    PLAYWRIGHT_BLOB_OUTPUT_DIR: `${DEV_DATA_DIR}/blob-report`,
+    PWTEST_BLOB_DO_NOT_REMOVE: '1',
+  };
+  const firstShard = runTests(configPath, ['--shard=1/2'], env);
   // shift shard runs on 1s
   await delay(1000);
-  const secondShard = runTests(configPath, ['--shard=2/2']);
+  const secondShard = runTests(configPath, ['--shard=2/2'], env);
   await Promise.all([firstShard, secondShard]);
 
-  const shardsPath = configPath.replace('.config.ts', '-blob-report');
-  await spawnAsync('npx', ['playwright', 'merge-reports', '-c', configPath, shardsPath]);
+  await spawnAsync('npx', [
+    'playwright',
+    'merge-reports',
+    env.PLAYWRIGHT_BLOB_OUTPUT_DIR,
+    '-c',
+    configPath,
+  ]);
 }
 
-function spawnAsync(command: string, args: string[]) {
+function spawnAsync(command: string, args: string[], env = process.env) {
   return new Promise<void>((resolve, reject) => {
-    const child = spawn(command, args, { stdio: 'inherit' });
+    const child = spawn(command, args, { stdio: 'inherit', env });
     child.on('error', reject);
     child.on('close', () => resolve());
   });

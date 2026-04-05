@@ -6,9 +6,6 @@ import { defineConfig } from '@playwright/test';
 
 const projectRoot = fileURLToPath(new URL('../../', import.meta.url));
 
-// disable the removal of the blob report directory for shard runs
-process.env.PWTEST_BLOB_DO_NOT_REMOVE = '1';
-
 export default defineConfig({
   testDir: `${projectRoot}/example/tests`,
   workers: 3,
@@ -21,12 +18,7 @@ export default defineConfig({
             outputFile: `${projectRoot}/src/report/with-shards.tpl.html`,
           },
         ]
-      : [
-          'blob',
-          {
-            outputDir: `${projectRoot}/scripts/dev-data/shards-blob-report`,
-          },
-        ],
+      : ['blob'],
   ],
   use: {
     baseURL: 'https://playwright.dev/',
