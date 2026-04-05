@@ -5,5 +5,5 @@ set -euo pipefail
 
 npm run lint
 npm run prettier
+npm run build # required for tsc to work
 npm run tsc
-npm run build
