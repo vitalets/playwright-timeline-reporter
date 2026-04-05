@@ -18,4 +18,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run prettier
+      - run: npm run build # required for tsc to work
       - run: npm run tsc

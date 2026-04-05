@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 // In a real project use: 'playwright-timeline-reporter' instead of '../dist'
-import { timelineReporter } from '../dist';
+import { timelineReporter } from '..';
 
 export default defineConfig({
   workers: 3,
