@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 24
       - id: get-versions
-        run: echo "versions=$(node scripts/get-pw-versions.js $MIN_PW_VERSION)" >> $GITHUB_OUTPUT
+        run: echo "versions=$(npx tsx scripts/get-pw-versions.ts $MIN_PW_VERSION)" >> $GITHUB_OUTPUT
 
   test:
     needs: get-pw-versions
@@ -28,6 +28,8 @@ jobs:
     strategy:
       matrix:
         playwright-version: ${{ fromJson(needs.get-pw-versions.outputs.versions) }}
+        include:
+          - playwright-version: beta
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -36,5 +38,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm install --no-save @playwright/test@${{ matrix.playwright-version }}
+        env:
+          npm_config_min_release_age: 0
       - run: npx playwright install --with-deps chromium
       - run: npm run test:all
