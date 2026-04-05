@@ -1,6 +1,6 @@
 {
   "name": "playwright-timeline-reporter",
-  "description": "Timeline visualization for Playwright test execution",
+  "description": "Interactive timeline report for Playwright test runs",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
@@ -80,7 +80,13 @@
   "keywords": [
     "playwright",
     "timeline",
-    "reporter"
+    "reporter",
+    "playwright-reporter",
+    "html-report",
+    "test-reporting",
+    "test-visualization",
+    "e2e",
+    "sharding"
   ],
   "license": "MIT"
 }
