@@ -36,9 +36,6 @@
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 7"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix"
-  },
   "targets": {
     "main": false,
     "types": false

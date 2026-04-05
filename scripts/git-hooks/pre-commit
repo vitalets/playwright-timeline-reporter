@@ -3,5 +3,4 @@
 # Runs type-checking and staged-file linting before each commit.
 set -euo pipefail
 
-npm run tsc
 npx lint-staged

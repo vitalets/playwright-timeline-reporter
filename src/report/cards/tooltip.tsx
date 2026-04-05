@@ -78,7 +78,7 @@ function useEffectMouseDown(
     };
     document.addEventListener('mousedown', handleDocumentMouseDown);
     return () => document.removeEventListener('mousedown', handleDocumentMouseDown);
-  }, [open]);
+  }, [open, containerRef, setOpen]);
 }
 
 /**
@@ -97,5 +97,5 @@ function useEffectScroll(open: boolean, setOpen: (v: boolean) => void) {
       clearTimeout(scrollTimer);
       window.removeEventListener('scroll', handleScroll, { capture: true });
     };
-  }, [open]);
+  }, [open, setOpen]);
 }

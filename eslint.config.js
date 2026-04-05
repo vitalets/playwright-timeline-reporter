@@ -2,6 +2,7 @@
 import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
@@ -15,7 +16,7 @@ const reactHooksRecommendedRules = {
     reactHooks.configs.recommended.rules['react-hooks/exhaustive-deps'],
 };
 
-export default tseslint.config(
+export default defineConfig(
   includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns'),
   {
     files: ['**/*.{ts,tsx}'],
