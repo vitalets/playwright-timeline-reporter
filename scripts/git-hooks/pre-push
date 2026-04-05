@@ -1,8 +1,9 @@
 #!/bin/sh
 
-# Runs repo-wide checks before each push.
+# Runs repo-wide formatting, validation, and build checks before each push.
 set -euo pipefail
 
-npm run tsc
 npm run lint
+npm run prettier
+npm run tsc
 npm run build
