@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { TooltipButton } from './tooltip.js';
 
-type ValueType = 'normal' | 'good' | 'bad';
+export type ValueType = 'normal' | 'good' | 'bad';
 
 export function Card({
   label,
