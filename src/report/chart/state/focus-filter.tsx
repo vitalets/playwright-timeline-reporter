@@ -5,7 +5,7 @@ import { createContext, ReactNode, useCallback, useContext, useMemo, useState } 
 import { useTimer } from '../../use-timer.js';
 import { useSelectedProject } from './selected-project.js';
 
-const SEARCH_PULSE_DURATION_MS = 1500;
+const SEARCH_PULSE_DURATION_MS = 1000;
 
 export type FocusFilter = {
   field?: 'spanGroupId' | 'seriesId' | 'filePath' | 'testId' | 'spanId';
