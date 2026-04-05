@@ -31,7 +31,8 @@
     "test:d": "DEBUG=1 npx playwright test -c test/timings",
     "test:r": "npm run build && npx playwright test -c test/report",
     "test:merge": "npx playwright test -c test/merge-reports",
-    "example": "npm run build && (cd example && npx playwright test)",
+    "example": "npm run build && npx tsx scripts/example.ts",
+    "example:shards": "npm run example -- --shards",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 7"
   },
