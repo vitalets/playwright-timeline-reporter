@@ -1,4 +1,5 @@
 import type { RunInfo } from '../../run-info.js';
+import { parsePlaywrightUserAgent } from '../data/user-agent.js';
 import { formatDate } from '../utils.js';
 import { TitleChip } from './title-chip.js';
 
@@ -6,7 +7,7 @@ export function Chips({ runInfo }: { runInfo: RunInfo }) {
   const runAt = formatDate(new Date(runInfo.startTime));
   const chips = [
     { label: 'Test run', value: runAt },
-    { label: 'OS', value: runInfo.osName },
+    { label: 'OS', value: getOsName(runInfo) },
     { label: 'Node.js', value: runInfo.nodeVersion },
     { label: 'Playwright', value: `v${runInfo.playwrightVersion}` },
   ];
@@ -19,6 +20,15 @@ export function Chips({ runInfo }: { runInfo: RunInfo }) {
       ))}
     </div>
   );
+}
+
+function getOsName(runInfo: RunInfo): string {
+  const mergeReports = Object.values(runInfo.mergeReports);
+  if (!mergeReports.length) return runInfo.osName;
+
+  const osValues = mergeReports.map((r) => parsePlaywrightUserAgent(r.userAgent).os);
+  const unique = new Set(osValues);
+  return unique.size === 1 ? [...unique][0] : 'multiple';
 }
 
 function Chip({ label, value }: { label: string; value: string }) {
