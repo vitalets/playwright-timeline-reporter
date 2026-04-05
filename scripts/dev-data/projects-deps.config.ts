@@ -1,3 +1,6 @@
+/**
+ * Playwright config for generating dev data with project dependencies.
+ */
 import { fileURLToPath } from 'url';
 import { defineConfig } from '@playwright/test';
 

@@ -1,5 +1,5 @@
 /**
- * Regenerate local dev report fixtures from scenario configs under `dev-data`.
+ * Regenerate local dev report fixtures from scenario configs under `scripts/dev-data`.
  *
  * Usage:
  *   npm run dev-data
@@ -9,12 +9,14 @@
  *   npm run dev-data -- shards
  */
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const DEV_DATA_DIR = 'dev-data';
-const requestedDirectory = process.argv[2];
-const configPaths = getConfigPaths(requestedDirectory);
+const DEV_DATA_DIR = path.dirname(fileURLToPath(import.meta.url));
+const requestedScenario = process.argv[2];
+const configPaths = getConfigPaths(requestedScenario);
 
 void main();
 
@@ -28,13 +30,12 @@ async function main() {
   }
 }
 
-function getConfigPaths(directoryName?: string) {
+function getConfigPaths(scenarioName?: string) {
   return fs
-    .readdirSync(DEV_DATA_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .filter((entry) => !directoryName || entry.name === directoryName)
-    .map((entry) => `${DEV_DATA_DIR}/${entry.name}/playwright.config.ts`)
-    .filter((config) => fs.existsSync(config))
+    .readdirSync(DEV_DATA_DIR)
+    .filter((name) => name.endsWith('.config.ts'))
+    .filter((name) => !scenarioName || name === `${scenarioName}.config.ts`)
+    .map((name) => `${DEV_DATA_DIR}/${name}`)
     .sort();
 }
 
@@ -49,7 +50,7 @@ async function runShards(configPath: string) {
   const secondShard = runTests(configPath, ['--shard=2/2']);
   await Promise.all([firstShard, secondShard]);
 
-  const shardsPath = configPath.replace('playwright.config.ts', 'blob-report');
+  const shardsPath = configPath.replace('.config.ts', '-blob-report');
   await spawnAsync('npx', ['playwright', 'merge-reports', '-c', configPath, shardsPath]);
 }
 

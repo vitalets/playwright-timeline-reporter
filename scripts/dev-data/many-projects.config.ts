@@ -1,3 +1,6 @@
+/**
+ * Playwright config for generating dev data with many browser projects.
+ */
 import { fileURLToPath } from 'url';
 import { defineConfig, devices } from '@playwright/test';
 
@@ -11,7 +14,7 @@ export default defineConfig({
     [
       `${projectRoot}/src/reporter.ts`,
       {
-        outputFile: `${projectRoot}/src/report/with-projects.tpl.html`,
+        outputFile: `${projectRoot}/src/report/with-many-projects.tpl.html`,
       },
     ],
   ],

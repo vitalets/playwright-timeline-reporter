@@ -24,7 +24,7 @@ export default defineConfig({
       : [
           'blob',
           {
-            outputDir: `${projectRoot}/dev-data/shards/blob-report`,
+            outputDir: `${projectRoot}/scripts/dev-data/shards-blob-report`,
           },
         ],
   ],
