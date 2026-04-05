@@ -25,10 +25,19 @@ export class WorkerLanes {
   }
 
   build() {
-    this.tests.forEach((test) => {
+    let tests = [...this.tests];
+    let test: TestTimings | undefined;
+    while ((test = tests.shift())) {
       const lane = this.findLaneForTest(test);
       lane.tests.push(test);
-    });
+      if (!this.fullyParallel) {
+        // In non-fully-parallel mode, Playwright assigns the entire file to a worker,
+        // so all tests from the same project+file belong to the same lane.
+        const sameFileTests = this.getSameFileTests(tests, test);
+        lane.tests.push(...sameFileTests);
+        tests = tests.filter((t) => !sameFileTests.includes(t));
+      }
+    }
     return this.lanes.map((lane) => ({ tests: lane.tests }));
   }
 
@@ -49,19 +58,15 @@ export class WorkerLanes {
       throw new Error(`Could not find worker for test "${test.testBody.title}"`);
     }
 
-    // In non-fully-parallel mode, try keep tests from the same file in the same lane.
-    // Case: worker 1 finished all the work, worker 2 get one of the tests in a file failed.
-    // Without this code, the next test in a file will be assigned to worker 1, which is not correct,
-    // because actually worker 2 executes this test.
-    if (!this.fullyParallel) {
-      const { file } = test.testBody.location;
-      const lane = candidates.find((lane) => lane.lastTestFile === file);
-      if (lane) return lane;
-    }
-
     candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
 
     return candidates[0];
+  }
+
+  private getSameFileTests(tests: TestTimings[], test: TestTimings) {
+    const { projectName } = test;
+    const { file } = test.testBody.location;
+    return tests.filter((t) => t.projectName === projectName && t.testBody.location.file === file);
   }
 
   private sortTests() {
