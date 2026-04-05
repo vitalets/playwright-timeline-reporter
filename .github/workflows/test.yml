@@ -6,9 +6,29 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  MIN_PW_VERSION: '1.45'
+
 jobs:
-  test:
+  get-pw-versions:
     runs-on: ubuntu-24.04
+    outputs:
+      versions: ${{ steps.get-versions.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - id: get-versions
+        run: echo "versions=$(node scripts/get-pw-versions.js $MIN_PW_VERSION)" >> $GITHUB_OUTPUT
+
+  test:
+    needs: get-pw-versions
+    runs-on: ubuntu-24.04
+    fail-fast: false
+    strategy:
+      matrix:
+        playwright-version: ${{ fromJson(needs.get-pw-versions.outputs.versions) }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -16,5 +36,6 @@ jobs:
           node-version: 24
           cache: 'npm'
       - run: npm ci
+      - run: npm install --no-save @playwright/test@${{ matrix.playwright-version }}
       - run: npx playwright install --with-deps chromium
       - run: npm run test:all
