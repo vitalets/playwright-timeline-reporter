@@ -25,7 +25,6 @@ jobs:
   test:
     needs: get-pw-versions
     runs-on: ubuntu-24.04
-    fail-fast: false
     strategy:
       matrix:
         playwright-version: ${{ fromJson(needs.get-pw-versions.outputs.versions) }}
