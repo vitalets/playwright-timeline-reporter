@@ -11,3 +11,5 @@
 - When suppressing ESLint for a single line, use the `// eslint-disable-next-line ...` form, not `// eslint-disable-line ...`.
 
 - After any change to TypeScript files, run `npm run tsc`.
+
+- In every file, place exported functions and components before non-exported helper functions. Try to order helper functions as they are used in the main exported component/function.
