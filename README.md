@@ -82,7 +82,7 @@ export default defineConfig({
 
 After your test run, open `./timeline-report/index.html` in any browser.
 
-### With Sharding
+### Usage With Sharding
 
 For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
 
@@ -114,10 +114,10 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 
 ## Options
 
-| Option               | Type     | Default                        | Description                                                              |
-| -------------------- | -------- | ------------------------------ | ------------------------------------------------------------------------ |
-| `outputFile`         | `string` | `./timeline-report/index.html` | Path for the generated report file                                       |
-| `promptTemplateFile` | `string` | —                              | Path to a custom LLM prompt template; must contain `{data}` exactly once |
+| Option               | Type     | Default                        | Description                                                                                                                                                                                                       |
+| -------------------- | -------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `outputFile`         | `string` | `./timeline-report/index.html` | Path for the generated report file                                                                                                                                                                                |
+| `promptTemplateFile` | `string` | —                              | Path to a custom LLM prompt template; must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts). |
 
 Example with options:
 
