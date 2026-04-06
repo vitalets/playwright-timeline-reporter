@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: './specs',
   reporter: [
     [
-      '../../src/reporter.ts',
+      '../../dist/reporter.js',
       {
         outputFile: './test/report/timeline-report/index.html',
       },
