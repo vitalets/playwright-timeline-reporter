@@ -37,16 +37,17 @@
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
-## Features
+## How can it help?
 
-- Per-test fixture and hook breakdown
-- Worker and shard segmentation
-- Worker restart points
-- Per-project filtering
-- Zoom controls (worker, shard, arbitrary range)
-- Full-text test search
-- Worker utilization score
-- AI-ready optimization prompt
+The report helps answer the following questions:
+
+- What is the slowest test in the run?
+- What is the slowest hook or fixture?
+- Which hook or fixture is repeated the most?
+- How effectively are my tests and projects distributed across workers?
+- Why do my workers restart?
+- Where is a specific test, file, hook, or fixture in the timeline?
+- What hooks and fixtures run within a particular test?
 
 ## Installation
 
