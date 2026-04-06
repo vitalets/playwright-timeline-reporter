@@ -2,6 +2,10 @@
   "name": "playwright-timeline-reporter",
   "description": "Interactive timeline report for Playwright test runs",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalets/playwright-timeline-reporter.git"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,6 +13,9 @@
     ".": "./dist/index.js",
     "./reporter": "./dist/reporter.js",
     "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "files": [
     "dist",
