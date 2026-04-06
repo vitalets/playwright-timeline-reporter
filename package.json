@@ -46,7 +46,10 @@
   },
   "targets": {
     "main": false,
-    "types": false
+    "types": false,
+    "default": {
+      "context": "browser"
+    }
   },
   "dependencies": {
     "commander": "^14.0.3",
