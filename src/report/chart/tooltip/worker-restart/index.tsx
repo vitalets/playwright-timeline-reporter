@@ -1,4 +1,4 @@
-import { WorkerRestart } from '../../../data/worker-restarts.js';
+import { WorkerRestart, WorkerRestartReason } from '../../../data/worker-restarts.js';
 import { RestartTriangle } from '../../series/worker-restarts/marker.js';
 import { Badge } from '../badge.js';
 
@@ -39,15 +39,19 @@ export function WorkerRestartTooltip({ data }: { data: WorkerRestart }) {
           marginTop: 10,
         }}
       >
-        <Badge
-          label="Worker Index"
-          value={
-            <>
-              {data.prevWorkerIndex} &rarr; {data.nextWorkerIndex}
-            </>
-          }
-        />
+        <Badge label="Reason" value={getReasonText(data.reason)} />
       </div>
     </>
   );
+}
+
+function getReasonText(reason: WorkerRestartReason) {
+  switch (reason) {
+    case 'testFailure':
+      return 'test failure';
+    case 'projectSwitch':
+      return 'project switch';
+    default:
+      return 'Unknown';
+  }
 }
