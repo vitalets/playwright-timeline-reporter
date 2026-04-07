@@ -41,6 +41,7 @@
     "test:all": "npm run test && npm run test:timings && npm run test:merge",
     "example": "npm run build && npx tsx scripts/example.ts",
     "example:shards": "npm run example -- --shards",
+    "pw": "npm i --no-save @playwright/test@$PW",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 7"
   },
@@ -62,7 +63,7 @@
     "@parcel/transformer-inline-string": "^2.16.4",
     "@playwright/test": "^1.58.2",
     "@types/d3-scale": "^4.0.9",
-    "@types/node": "^20.10.0",
+    "@types/node": "24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "buffer": "^6.0.3",
