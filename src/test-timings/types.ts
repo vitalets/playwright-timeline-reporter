@@ -59,6 +59,7 @@ export type FixtureSpan = BaseSpan & {
   // 2. When afterEach hook references worker fixture in multi-test file:
   // { stage: 'teardwon', executedPart: 'setup' }
   executedPart: 'setup' | 'teardown' | 'full-run';
+  fromHook?: boolean;
 };
 
 export type SpanError = {

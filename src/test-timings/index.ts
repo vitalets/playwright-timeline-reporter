@@ -178,7 +178,7 @@ export class TestTimingsBuilder {
       if (stage === 'teardown' && existingTeardown && !setup.error) {
         this.upgradeToFullRun(existingTeardown, setup);
       } else {
-        this.addFixtureSpan(stepId, 'worker', stage, setup);
+        this.addFixtureSpan(stepId, 'worker', stage, setup, true);
       }
     });
 
@@ -309,7 +309,7 @@ export class TestTimingsBuilder {
     // In older PW versions, worker fixture setups are included in test result duration
     if (this.pwFeatures.workerFixturesInTestDuration) {
       const workerFixtureSetups = Array.from(this.beforeFixtures.values()).filter(
-        (f) => f.scope === 'worker',
+        (f) => f.scope === 'worker' && !f.fromHook,
       );
       testBodyDuration -= totalDuration(workerFixtureSetups);
     }
@@ -363,7 +363,14 @@ export class TestTimingsBuilder {
     });
   }
 
-  private addFixtureSpan(stepId: string, scope: SpanScope, stage: SpanStage, step: TestStep) {
+  // eslint-disable-next-line max-params
+  private addFixtureSpan(
+    stepId: string,
+    scope: SpanScope,
+    stage: SpanStage,
+    step: TestStep,
+    fromHook?: boolean,
+  ) {
     const target = stage === 'setup' ? this.beforeFixtures : this.afterFixtures;
     target.set(stepId, {
       type: 'fixture',
@@ -375,6 +382,7 @@ export class TestTimingsBuilder {
       duration: step.duration,
       location: this.toLocationObject(step),
       error: this.toSpanError(step.error),
+      fromHook,
     });
   }
 
@@ -426,7 +434,8 @@ function buildStepId(step: TestStep) {
 
 function buildPwFeatures(pwVersion: string) {
   return {
-    // In PW <= 1.57, worker fixture setup durations are included in result.duration.
+    // In PW <= 1.57, worker fixture setups directly referenced by the test
+    // (not via a hook) are included in result.duration.
     workerFixturesInTestDuration: checkVersion(pwVersion, '<= 1.57.x'),
   };
 }
