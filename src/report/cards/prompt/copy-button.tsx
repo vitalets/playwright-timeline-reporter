@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { CopyIcon } from '../../icons/copy-icon.js';
 
-const MAX_PROMPT_COPY_CHARS = 48_000;
+const MAX_PROMPT_COPY_CHARS = 30_000;
 const PROMPT_DOWNLOAD_FILENAME = 'prompt-timeline-reporter.md';
 type PromptAction = 'copy' | 'download';
 
@@ -14,7 +14,7 @@ const ACTION_LABELS: Record<PromptAction, string> = {
   download: 'Loaded',
 };
 
-export function PromptButton({ text }: { text: string }) {
+export function CopyButton({ text }: { text: string }) {
   const [action, setAction] = useState<PromptAction | null>(null);
 
   useEffect(() => {

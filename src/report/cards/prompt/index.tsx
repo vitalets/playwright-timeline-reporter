@@ -4,7 +4,7 @@
 import type { ChartData } from '../../data/index.js';
 import { Card } from '../card.js';
 import { buildPrompt } from './builder.js';
-import { PromptButton } from './button.js';
+import { CopyButton } from './copy-button.js';
 import { PromptTooltip } from './tooltip.js';
 
 export function PromptCard({
@@ -16,5 +16,5 @@ export function PromptCard({
 }) {
   const prompt = buildPrompt(chartData, promptTemplate);
 
-  return <Card label="Prompt" tooltip={<PromptTooltip />} value={<PromptButton text={prompt} />} />;
+  return <Card label="Prompt" tooltip={<PromptTooltip />} value={<CopyButton text={prompt} />} />;
 }
