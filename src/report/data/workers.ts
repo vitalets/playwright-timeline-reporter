@@ -14,21 +14,22 @@ export type WorkerData = {
 export class WorkerLanes {
   private lanes: WorkerLane[] = [];
   private lastTestInWorker = new Set<TestTimings>();
+  private projectLaneLimits = new Map<string, number>();
 
   constructor(
     private tests: TestTimings[],
     private fullyParallel?: boolean,
   ) {
     this.sortTests();
-    this.initLanes();
     this.initLastInWorker();
+    this.initProjectLaneLimits();
   }
 
   build() {
     let tests = [...this.tests];
     let test: TestTimings | undefined;
     while ((test = tests.shift())) {
-      const lane = this.findLaneForTest(test);
+      const lane = this.getLaneForTest(test);
       lane.tests.push(test);
       if (!this.fullyParallel) {
         // In non-fully-parallel mode, Playwright assigns the entire file to a worker,
@@ -41,26 +42,42 @@ export class WorkerLanes {
     return this.lanes.map((lane) => ({ tests: lane.tests }));
   }
 
-  private findLaneForTest(test: TestTimings) {
-    return this.findLaneByWorkerIndex(test) || this.findLaneForNewWorker(test);
+  private getLaneForTest(test: TestTimings) {
+    return this.getLaneByWorkerIndex(test) || this.getLaneFromPending(test);
   }
 
-  private findLaneByWorkerIndex(test: TestTimings) {
+  private getLaneByWorkerIndex(test: TestTimings) {
     return this.lanes.find((lane) => lane.lastWorkerIndex === test.workerIndex);
   }
 
-  private findLaneForNewWorker(test: TestTimings) {
-    const candidates = this.lanes
-      .filter((lane) => !lane.lastTest || this.lastTestInWorker.has(lane.lastTest))
-      .filter((lane) => lane.lastTestEndTime <= test.startTime);
+  private getLaneFromPending(test: TestTimings) {
+    const pendingLanes = this.getPendingLanes(test);
+    const projectLanes = pendingLanes.filter(
+      (lane) => lane.lastTest?.projectName === test.projectName,
+    );
+    const projectLaneLimit = this.projectLaneLimits.get(test.projectName) ?? 1;
+    const candidates = projectLanes.length >= projectLaneLimit ? projectLanes : pendingLanes;
 
-    if (candidates.length === 0) {
-      throw new Error(`Could not find worker for test "${test.testBody.title}"`);
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
+      return candidates[0];
     }
 
-    candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
+    if (projectLanes.length >= projectLaneLimit) {
+      throw new Error(
+        `Could not find lane for test "${test.testBody.title}" in project "${test.projectName}"`,
+      );
+    }
 
-    return candidates[0];
+    const lane = new WorkerLane();
+    this.lanes.push(lane);
+    return lane;
+  }
+
+  private getPendingLanes(test: TestTimings) {
+    return this.lanes
+      .filter((lane) => !lane.lastTest || this.lastTestInWorker.has(lane.lastTest))
+      .filter((lane) => lane.lastTestEndTime <= test.startTime);
   }
 
   private getSameFileTests(tests: TestTimings[], test: TestTimings) {
@@ -73,18 +90,30 @@ export class WorkerLanes {
     return this.tests.sort((a, b) => a.startTime - b.startTime);
   }
 
-  private initLanes() {
-    const lanesCount = new Set(this.tests.map((t) => t.parallelIndex)).size;
-    this.lanes = Array.from({ length: lanesCount }, () => new WorkerLane());
-  }
-
   private initLastInWorker() {
     const lastInWorker = new Map<number, TestTimings>();
     this.tests.forEach((test) => lastInWorker.set(test.workerIndex, test));
     this.lastTestInWorker = new Set(lastInWorker.values());
   }
+
+  private initProjectLaneLimits() {
+    const projectParallelIndexes = new Map<string, Set<number>>();
+
+    this.tests.forEach((test) => {
+      const indexes = projectParallelIndexes.get(test.projectName) ?? new Set<number>();
+      if (test.parallelIndex >= 0) indexes.add(test.parallelIndex);
+      projectParallelIndexes.set(test.projectName, indexes);
+    });
+
+    projectParallelIndexes.forEach((indexes, projectName) => {
+      this.projectLaneLimits.set(projectName, Math.max(indexes.size, 1));
+    });
+  }
 }
 
+/**
+ * Helper class to store lane tests and provide easy access to the lane's last test.
+ */
 class WorkerLane {
   tests: TestTimings[] = [];
 

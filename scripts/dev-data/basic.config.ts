@@ -27,6 +27,7 @@ export default defineConfig({
     },
     {
       name: 'project 2',
+      // workers: 1,
     },
   ],
 });
