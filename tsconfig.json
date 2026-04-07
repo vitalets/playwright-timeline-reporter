@@ -3,6 +3,7 @@
     "target": "ES6",
     "module": "nodenext",
     "lib": ["esnext", "dom", "DOM.Iterable"],
+    "types": ["node"],
     "strict": true,
     "useUnknownInCatchVariables": false,
     "forceConsistentCasingInFileNames": true,

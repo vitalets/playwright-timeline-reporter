@@ -1,3 +1,7 @@
+/**
+ * Custom Playwright reporter that actually performs the timing assertions —
+ * each test's computed timings are compared against the expected annotation.
+ */
 import type {
   Reporter,
   TestCase,
