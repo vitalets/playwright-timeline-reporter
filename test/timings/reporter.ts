@@ -11,7 +11,7 @@ import type {
 } from '@playwright/test/reporter';
 import { expect } from '@playwright/test';
 import { TestTimingsBuilder } from '../../src/test-timings/index.js';
-import { renderTimings } from '../helpers.js';
+import { renderTimings, round } from '../helpers.js';
 
 const logger = console;
 
@@ -73,9 +73,4 @@ function printSteps(steps: TestStep[], indent = 0) {
 function roundDurations(item: { duration: number; steps?: TestStep[] }) {
   item.duration = round(item.duration);
   item.steps?.forEach(roundDurations);
-}
-
-function round(duration: number) {
-  const res = Math.round(duration / 100) * 100;
-  return Object.is(res, -0) ? 0 : res;
 }

@@ -5,10 +5,18 @@ import { FixtureSpan, TestTimings } from '../src/test-timings/types.js';
 
 export { base };
 
+// Real execution on CI can drift enough to make 100ms timing buckets flaky, so timing specs
+// run delays 10x slower and the reporter scales measured durations back down to the same
+// 100ms-based expectations.
+export const TIMING_SCALE = 10;
+const ERROR_THROW_SHIFT_MS = 30;
+
 export async function delay(arg: number | [number, string]) {
   const [ms, error] = Array.isArray(arg) ? arg : [arg, undefined];
-  const finalMs = error ? Math.max(0, ms - 30) : ms; // leave some time to throw error
-  await new Promise((resolve) => setTimeout(resolve, finalMs));
+  const baseDelay = ms * TIMING_SCALE;
+  // leave some time to throw error
+  const finalDelay = error ? Math.max(0, baseDelay - ERROR_THROW_SHIFT_MS) : baseDelay;
+  await new Promise((resolve) => setTimeout(resolve, finalDelay));
   if (error) throw new Error(error);
 }
 
@@ -17,15 +25,18 @@ export async function fixture(
   use: () => Promise<void>,
   teardown: number | [number, string],
 ) {
-  // console.log(123);
   await delay(setup);
   await use();
-  // console.log(456);
   await delay(teardown);
 }
 
 export function annotation(v: string) {
   return { annotation: { type: 'expected', description: v.trim() } };
+}
+
+export function round(duration: number) {
+  const res = Math.round(duration / TIMING_SCALE / 100) * 100;
+  return Object.is(res, -0) ? 0 : res;
 }
 
 export function renderTimings(t: TestTimings) {
