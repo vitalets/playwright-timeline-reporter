@@ -426,7 +426,7 @@ function buildStepId(step: TestStep) {
 
 function buildPwFeatures(pwVersion: string) {
   return {
-    // In PW <= 1.54, worker fixture setup durations are included in result.duration.
-    workerFixturesInTestDuration: checkVersion(pwVersion, '<= 1.54.x'),
+    // In PW <= 1.57, worker fixture setup durations are included in result.duration.
+    workerFixturesInTestDuration: checkVersion(pwVersion, '<= 1.57.x'),
   };
 }
