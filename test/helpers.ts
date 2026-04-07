@@ -31,20 +31,20 @@ export function annotation(v: string) {
 export function renderTimings(t: TestTimings) {
   return yaml
     .stringify({
-      totalDuration: round(t.totalDuration),
+      totalDuration: t.totalDuration,
       status: t.status,
       beforeAll: t.beforeHooks
         .filter((h) => h.scope === 'worker')
         .map((s) => ({
           title: s.title,
-          duration: round(s.duration),
+          duration: s.duration,
           error: s.error?.message,
         })),
       beforeEach: t.beforeHooks
         .filter((h) => h.scope === 'test')
         .map((s) => ({
           title: s.title,
-          duration: round(s.duration),
+          duration: s.duration,
           error: s.error?.message,
         })),
       beforeFixtures: t.beforeFixtures.map((s: FixtureSpan) => ({
@@ -52,25 +52,25 @@ export function renderTimings(t: TestTimings) {
         scope: s.scope,
         stage: s.stage,
         executedPart: s.executedPart,
-        duration: round(s.duration),
+        duration: s.duration,
         error: s.error?.message,
       })),
       testBody: {
-        duration: round(t.testBody.duration),
+        duration: t.testBody.duration,
         error: t.testBody.error?.message,
       },
       afterEach: t.afterHooks
         .filter((h) => h.scope === 'test')
         .map((s) => ({
           title: s.title,
-          duration: round(s.duration),
+          duration: s.duration,
           error: s.error?.message,
         })),
       afterAll: t.afterHooks
         .filter((h) => h.scope === 'worker')
         .map((s) => ({
           title: s.title,
-          duration: round(s.duration),
+          duration: s.duration,
           error: s.error?.message,
         })),
       afterFixtures: t.afterFixtures.map((s: FixtureSpan) => ({
@@ -78,14 +78,9 @@ export function renderTimings(t: TestTimings) {
         scope: s.scope,
         stage: s.stage,
         executedPart: s.executedPart,
-        duration: round(s.duration),
+        duration: s.duration,
         error: s.error?.message,
       })),
     })
     .trim();
-}
-
-export function round(duration: number) {
-  const res = Math.round(duration / 100) * 100;
-  return Object.is(res, -0) ? 0 : res;
 }

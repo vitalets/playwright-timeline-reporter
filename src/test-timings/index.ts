@@ -26,9 +26,9 @@ import { groupBy } from '../utils/group-by.js';
 const logger = console;
 
 export type TestTimingsOptions = {
-  configDir: string;
   test: TestCase;
   result: TestResult;
+  configDir: string;
 };
 
 export class TestTimingsBuilder {

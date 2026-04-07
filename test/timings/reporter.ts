@@ -32,6 +32,7 @@ export default class TimelineReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status === 'skipped') return;
     this.tests++;
+    roundDurations(result);
     const data = new TestTimingsBuilder(test, result, process.cwd()).build();
     const expected = result.annotations[0].description!.trim();
     const testPath = test.titlePath().filter(Boolean).join(' > ');
@@ -67,4 +68,14 @@ function printSteps(steps: TestStep[], indent = 0) {
     logger.log(`${' '.repeat(indent)} ${step.category} ${step.title}`, `(${step.duration}ms)`);
     if (step.steps?.length) printSteps(step.steps, indent + 2);
   }
+}
+
+function roundDurations(item: { duration: number; steps?: TestStep[] }) {
+  item.duration = round(item.duration);
+  item.steps?.forEach(roundDurations);
+}
+
+function round(duration: number) {
+  const res = Math.round(duration / 100) * 100;
+  return Object.is(res, -0) ? 0 : res;
 }
