@@ -59,7 +59,7 @@ export function renderTimings(t: TestTimings) {
           error: s.error?.message,
         })),
       beforeFixtures: t.beforeFixtures.map((s: FixtureSpan) => ({
-        title: s.title,
+        title: unifyFixtureTitles(s.title),
         scope: s.scope,
         stage: s.stage,
         executedPart: s.executedPart,
@@ -85,7 +85,7 @@ export function renderTimings(t: TestTimings) {
           error: s.error?.message,
         })),
       afterFixtures: t.afterFixtures.map((s: FixtureSpan) => ({
-        title: s.title,
+        title: unifyFixtureTitles(s.title),
         scope: s.scope,
         stage: s.stage,
         executedPart: s.executedPart,
@@ -94,4 +94,12 @@ export function renderTimings(t: TestTimings) {
       })),
     })
     .trim();
+}
+
+/**
+ * Normalizes a Playwright fixture step title to always have form `Fixture "name"`.
+ * Wraps bare fixture names that lack the prefix (across different Playwright versions).
+ */
+function unifyFixtureTitles(title: string) {
+  return title.startsWith('Fixture "') ? title : `Fixture "${title}"`;
 }

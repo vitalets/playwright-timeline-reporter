@@ -22,13 +22,15 @@ import {
   minStartTime,
 } from './helpers.js';
 import { groupBy } from '../utils/group-by.js';
+import { checkVersion } from '../utils/check-version.js';
+
+/* eslint-disable max-lines */
 
 const logger = console;
 
-export type TestTimingsOptions = {
-  test: TestCase;
-  result: TestResult;
+type TestTimingsOptions = {
   configDir: string;
+  pwVersion: string;
 };
 
 export class TestTimingsBuilder {
@@ -51,12 +53,14 @@ export class TestTimingsBuilder {
   private testStartTime: number;
   private testBody: TestBodySpan;
   private errors = new Set<string /* error stack */>();
+  private pwFeatures: { workerFixturesInTestDuration: boolean };
 
   constructor(
     private test: TestCase,
     private result: TestResult,
-    private configDir: string,
+    private options: TestTimingsOptions,
   ) {
+    this.pwFeatures = buildPwFeatures(options.pwVersion);
     // Call order here is important (to distinguish worker-scoped / test-scoped fixtures).
     this.handleWorkerCleanup();
     this.handleAfterStage();
@@ -278,7 +282,7 @@ export class TestTimingsBuilder {
       title: this.test.titlePath().slice(3),
       startTime: this.calcTestBodyStartTime(),
       duration: this.calcTestBodyDuration(),
-      location: toLocationObject(this.configDir, this.test.location),
+      location: toLocationObject(this.options.configDir, this.test.location),
       error: this.buildTestBodyError(),
     };
   }
@@ -300,13 +304,23 @@ export class TestTimingsBuilder {
       ...Array.from(this.beforeFixtures.values()).filter((f) => f.scope === 'test'),
       ...Array.from(this.afterFixtures.values()).filter((f) => f.scope === 'test'),
     ]);
-    const testBodyDuration = this.result.duration - testScopedDuration;
+    let testBodyDuration = this.result.duration - testScopedDuration;
+
+    // In older PW versions, worker fixture setups are included in test result duration
+    if (this.pwFeatures.workerFixturesInTestDuration) {
+      const workerFixtureSetups = Array.from(this.beforeFixtures.values()).filter(
+        (f) => f.scope === 'worker',
+      );
+      testBodyDuration -= totalDuration(workerFixtureSetups);
+    }
+
     if (testBodyDuration < 0) {
       const testTitle = this.test.titlePath().filter(Boolean).join(' › ');
       logger.warn(
         `Calculated negative test body duration (${testBodyDuration}) for test: ${testTitle}`,
       );
     }
+
     return testBodyDuration;
   }
 
@@ -390,7 +404,7 @@ export class TestTimingsBuilder {
   }
 
   private toLocationObject(step: TestStep | TestCase | TestError) {
-    return toLocationObject(this.configDir, step.location);
+    return toLocationObject(this.options.configDir, step.location);
   }
 
   private toSpanError(error?: TestError): SpanError | undefined {
@@ -408,4 +422,11 @@ export class TestTimingsBuilder {
 function buildStepId(step: TestStep) {
   const { file, line, column } = step.location || {};
   return [step.category, step.title, file, line, column].join(':');
+}
+
+function buildPwFeatures(pwVersion: string) {
+  return {
+    // In PW <= 1.54, worker fixture setup durations are included in result.duration.
+    workerFixturesInTestDuration: checkVersion(pwVersion, '<= 1.54.x'),
+  };
 }

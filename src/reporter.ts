@@ -26,7 +26,7 @@ const logger = console;
 export default class TimelineReporter implements Reporter {
   protected options: TimelineReporterOptionsResolved;
   protected configDir = '';
-  protected config?: FullConfig;
+  protected config!: FullConfig;
   protected stream?: JsonStream;
   protected mergeReports = new MergeReports();
   protected currentMergeReportId?: string;
@@ -50,7 +50,10 @@ export default class TimelineReporter implements Reporter {
     if (this.mergeReports.error) return;
     if (result.status === 'skipped') return;
 
-    const data = new TestTimingsBuilder(test, result, this.configDir).build();
+    const data = new TestTimingsBuilder(test, result, {
+      configDir: this.configDir,
+      pwVersion: this.config.version,
+    }).build();
 
     const mergeReportId = this.mergeReports.resolveMergeReportId(result);
     if (mergeReportId !== undefined) this.currentMergeReportId = mergeReportId;

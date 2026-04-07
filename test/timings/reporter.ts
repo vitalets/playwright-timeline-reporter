@@ -3,6 +3,7 @@
  * each test's computed timings are compared against the expected annotation.
  */
 import type {
+  FullConfig,
   Reporter,
   TestCase,
   TestError,
@@ -17,7 +18,12 @@ const logger = console;
 
 export default class TimelineReporter implements Reporter {
   private tests = 0;
-  private errors: { test: TestCase; result: TestResult; error: Error }[] = [];
+  private pwVersion = '';
+  private errors: { test: TestCase; result: TestResult; error: Error; stepsOutput: string }[] = [];
+
+  onBegin(config: FullConfig) {
+    this.pwVersion = config.version;
+  }
 
   onError(error: TestError) {
     // filter out synthetic errors from fixture teardown
@@ -32,30 +38,34 @@ export default class TimelineReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status === 'skipped') return;
     this.tests++;
+    const stepsOutput = buildStepsOutput(test, result);
     roundDurations(result);
-    const data = new TestTimingsBuilder(test, result, process.cwd()).build();
+    const data = new TestTimingsBuilder(test, result, {
+      configDir: process.cwd(),
+      pwVersion: this.pwVersion,
+    }).build();
     const expected = result.annotations[0].description!.trim();
     const testPath = test.titlePath().filter(Boolean).join(' > ');
     try {
       expect(renderTimings(data)).toEqual(expected);
       logger.log(`✅ ${testPath}`);
     } catch (e) {
-      this.errors.push({ test, result, error: e as Error });
+      const error = e as Error;
+      this.errors.push({ test, result, stepsOutput, error });
       logger.log(`❌ ${testPath}`);
     }
   }
 
   onEnd() {
-    this.errors.forEach(({ test, result, error }) => {
+    this.errors.forEach(({ test, result, error, stepsOutput }) => {
       logger.log(`TEST: ${test.titlePath().filter(Boolean).join(' > ')}`);
       logger.log(error.message);
       logger.log('\nACTUAL OUTPUT:\n');
       // @ts-expect-error actual property exists
       logger.log(error.matcherResult?.actual);
       logger.log(`\nSTEPS:\n`);
-      logger.log(`${test.title} (${result.duration}ms)`);
-      printSteps(result.steps, 2);
-      if (process.env.DEBUG) logger.dir(result, { depth: null });
+      logger.log(stepsOutput);
+      // if (process.env.DEBUG) logger.dir(result, { depth: null });
       logger.log('');
     });
     logger.log(`Tests: ${this.tests}, failed: ${this.errors.length}.`);
@@ -63,11 +73,15 @@ export default class TimelineReporter implements Reporter {
   }
 }
 
-function printSteps(steps: TestStep[], indent = 0) {
-  for (const step of steps) {
-    logger.log(`${' '.repeat(indent)} ${step.category} ${step.title}`, `(${step.duration}ms)`);
-    if (step.steps?.length) printSteps(step.steps, indent + 2);
-  }
+function buildStepsOutput(test: TestCase, result: TestResult) {
+  return [`${test.title} (${result.duration}ms)`, ...formatSteps(result.steps, 2)].join('\n');
+}
+
+function formatSteps(steps: TestStep[] = [], indent = 0): string[] {
+  return steps.flatMap((step) => [
+    `${' '.repeat(indent)} ${step.category} ${step.title} (${step.duration}ms)`,
+    ...formatSteps(step.steps, indent + 2),
+  ]);
 }
 
 function roundDurations(item: { duration: number; steps?: TestStep[] }) {
