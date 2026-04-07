@@ -176,7 +176,7 @@ export class TestTimingsBuilder {
 
       // Upgrade to full run, if worker fixture is first time refereced in teardown.
       if (stage === 'teardown' && existingTeardown && !setup.error) {
-        this.upgradeToFullRun(existingTeardown, setup);
+        this.upgradeToFullRun(existingTeardown, setup, true);
       } else {
         this.addFixtureSpan(stepId, 'worker', stage, setup, true);
       }
@@ -312,6 +312,13 @@ export class TestTimingsBuilder {
         (f) => f.scope === 'worker' && !f.fromHook,
       );
       testBodyDuration -= totalDuration(workerFixtureSetups);
+
+      // Also subtract setup portion of worker fixtures first referenced in afterEach hooks,
+      // which are stored in afterFixtures as full-run entries with setupDuration set.
+      const afterWorkerSetups = Array.from(this.afterFixtures.values())
+        .filter((f) => f.scope === 'worker' && !f.fromHook)
+        .map((f) => ({ duration: f.setupDuration }));
+      testBodyDuration -= totalDuration(afterWorkerSetups);
     }
 
     if (testBodyDuration < 0) {
@@ -383,15 +390,20 @@ export class TestTimingsBuilder {
       location: this.toLocationObject(step),
       error: this.toSpanError(step.error),
       fromHook,
+      setupDuration: stage === 'setup' ? step.duration : 0,
+      teardownDuration: stage === 'teardown' ? step.duration : 0,
     });
   }
 
-  private upgradeToFullRun(existingSpan: FixtureSpan, fixtureSetup: TestStep) {
+  private upgradeToFullRun(existingSpan: FixtureSpan, fixtureSetup: TestStep, fromHook?: boolean) {
     // warn for incorrect scope
     // warn for incorrect stage
+    existingSpan.teardownDuration = existingSpan.duration;
     existingSpan.duration += fixtureSetup.duration;
     existingSpan.startTime = Math.min(existingSpan.startTime, fixtureSetup.startTime.getTime());
     existingSpan.executedPart = 'full-run';
+    existingSpan.setupDuration = fixtureSetup.duration;
+    existingSpan.fromHook = fromHook;
     // don't assign error, because in case of error in setup, teardown is not executed.
   }
 
@@ -406,6 +418,8 @@ export class TestTimingsBuilder {
       title: setup.title,
       startTime: minStartTime([setup, teardown]),
       duration: totalDuration([setup, teardown]),
+      setupDuration: setup.duration,
+      teardownDuration: teardown.duration,
       location: this.toLocationObject(setup),
       error: this.toSpanError(setup.error || teardown.error),
     });

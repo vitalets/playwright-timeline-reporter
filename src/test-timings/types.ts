@@ -60,6 +60,10 @@ export type FixtureSpan = BaseSpan & {
   // { stage: 'teardwon', executedPart: 'setup' }
   executedPart: 'setup' | 'teardown' | 'full-run';
   fromHook?: boolean;
+  // Setup duration. For full-run fixtures this is the setup phase only; for setup-only it equals duration.
+  setupDuration: number;
+  // Teardown duration. For full-run fixtures this is the teardown phase only; for teardown-only it equals duration.
+  teardownDuration: number;
 };
 
 export type SpanError = {
