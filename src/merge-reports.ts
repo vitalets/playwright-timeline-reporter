@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command } from 'commander';
 import type { FullConfig, FullResult, TestResult } from '@playwright/test/reporter';
-import { MergeReportInfo } from './run-info.js';
+import type { MergeReportInfo } from './run-info.js';
 
 type JsonLineEvent = { method: string; params?: Record<string, unknown> };
 type BlobMetadata = Record<string, unknown> & {
