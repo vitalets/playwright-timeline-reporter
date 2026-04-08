@@ -8,7 +8,7 @@ export { base };
 // Real execution on CI can drift enough to make 100ms timing buckets flaky, so timing specs
 // run delays 10x slower and the reporter scales measured durations back down to the same
 // 100ms-based expectations.
-export const TIMING_SCALE = 10;
+export const TIMING_SCALE = 5;
 const ERROR_THROW_SHIFT_MS = 30;
 
 export async function delay(arg: number | [number, string]) {
