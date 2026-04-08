@@ -3,40 +3,37 @@
  */
 import { useEffect, useState } from 'react';
 import { CopyIcon } from '../../icons/copy-icon.js';
+import { DownloadIcon } from '../../icons/download-icon.js';
 
 const MAX_PROMPT_COPY_CHARS = 30_000;
 const PROMPT_DOWNLOAD_FILENAME = 'prompt-timeline-reporter.md';
 type PromptAction = 'copy' | 'download';
 
 const COPIED_TEXT_DURATION_MS = 1000;
-const ACTION_LABELS: Record<PromptAction, string> = {
-  copy: 'Copied',
-  download: 'Loaded',
-};
 
 export function CopyButton({ text }: { text: string }) {
-  const [action, setAction] = useState<PromptAction | null>(null);
+  const [copied, setCopied] = useState(false);
+  const action = getPromptAction(text);
 
   useEffect(() => {
-    if (!action) return;
-    const timeoutId = window.setTimeout(() => setAction(null), COPIED_TEXT_DURATION_MS);
+    if (!copied) return;
+    const timeoutId = window.setTimeout(() => setCopied(false), COPIED_TEXT_DURATION_MS);
     return () => window.clearTimeout(timeoutId);
-  }, [action]);
+  }, [copied]);
 
   async function handleCopy() {
-    const nextAction = getPromptAction(text);
-    if (nextAction === 'copy') {
+    if (action === 'copy') {
       await writeToClipboard(text);
+      setCopied(true);
     } else {
       downloadPrompt(text);
     }
-    setAction(nextAction);
   }
 
   return (
     <span style={{ fontSize: '1.1rem' }}>
-      {action ? (
-        <span>{ACTION_LABELS[action]}</span>
+      {copied ? (
+        <span>Copied</span>
       ) : (
         <button
           type="button"
@@ -53,8 +50,12 @@ export function CopyButton({ text }: { text: string }) {
             fontSize: 'inherit',
           }}
         >
-          <CopyIcon width={14} height={14} />
-          Copy
+          {action === 'copy' ? (
+            <CopyIcon width={14} height={14} />
+          ) : (
+            <DownloadIcon width={14} height={14} />
+          )}
+          Prompt
         </button>
       )}
     </span>

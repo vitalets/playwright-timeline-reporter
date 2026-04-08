@@ -16,5 +16,7 @@ export function PromptCard({
 }) {
   const prompt = buildPrompt(chartData, promptTemplate);
 
-  return <Card label="Prompt" tooltip={<PromptTooltip />} value={<CopyButton text={prompt} />} />;
+  return (
+    <Card label="AI Insights" tooltip={<PromptTooltip />} value={<CopyButton text={prompt} />} />
+  );
 }
