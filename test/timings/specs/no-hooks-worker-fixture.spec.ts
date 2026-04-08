@@ -1,19 +1,18 @@
-import { base, delay, annotation, fixture } from '../../helpers.js';
+import { base, delay, fixture } from '../../helpers.js';
 
 const test = base.extend<{}, { workerFixture: void; workerFixture2: void }>({
   workerFixture: [async ({ workerFixture2 }, use) => fixture(100, use, 200), { scope: 'worker' }],
   workerFixture2: [async ({}, use) => fixture(100, use, 0), { scope: 'worker' }],
 });
 
-test('test 1', expected(), async ({ workerFixture }) => {
+test('test 1', async ({ workerFixture }) => {
   await delay(100);
   // Must fail this test to see worker teardown timings
   // See: https://github.com/microsoft/playwright/issues/38350
   throw new Error('foo');
 });
 
-function expected() {
-  return annotation(`
+/* EXPECTED: test 1
 totalDuration: 500
 status: failed
 beforeAll: []
@@ -44,6 +43,5 @@ afterFixtures:
     scope: worker
     stage: teardown
     executedPart: teardown
-    duration: 0    
-`);
-}
+    duration: 0
+EXPECTED-END */

@@ -30,10 +30,6 @@ export async function fixture(
   await delay(teardown);
 }
 
-export function annotation(v: string) {
-  return { annotation: { type: 'expected', description: v.trim() } };
-}
-
 export function round(duration: number) {
   const res = Math.round(duration / TIMING_SCALE / 100) * 100;
   return Object.is(res, -0) ? 0 : res;
@@ -99,7 +95,13 @@ export function renderTimings(t: TestTimings) {
 /**
  * Normalizes a Playwright fixture step title to always have form `Fixture "name"`.
  * Wraps bare fixture names that lack the prefix (across different Playwright versions).
+ *
+ * Fixture "foo" -> Fixture "foo"
+ * fixture: foo  -> Fixture "foo"
+ * foo           -> Fixture "foo"
  */
 function unifyFixtureTitles(title: string) {
-  return title.startsWith('Fixture "') ? title : `Fixture "${title}"`;
+  if (title.startsWith('Fixture "')) return title;
+  if (title.startsWith('fixture: ')) return `Fixture "${title.slice('fixture: '.length)}"`;
+  return `Fixture "${title}"`;
 }

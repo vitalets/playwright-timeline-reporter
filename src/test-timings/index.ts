@@ -2,8 +2,8 @@
  * Parse Playwright test result and build timings.
  */
 import { stripVTControlCharacters } from 'node:util';
-import { TestCase, TestError, TestResult, TestStep } from '@playwright/test/reporter';
-import {
+import type { TestCase, TestError, TestResult, TestStep } from '@playwright/test/reporter';
+import type {
   FixtureSpan,
   HookSpan,
   SpanError,
@@ -55,11 +55,16 @@ export class TestTimingsBuilder {
   private errors = new Set<string /* error stack */>();
   private pwFeatures: { workerFixturesInTestDuration: boolean };
 
-  constructor(
-    private test: TestCase,
-    private result: TestResult,
-    private options: TestTimingsOptions,
-  ) {
+  private test: TestCase;
+  private result: TestResult;
+  private options: TestTimingsOptions;
+
+  // don't use "private" with constructor arguments here, because old Playwright versions don't support it
+  // (it's relevant for internal timings tests, where we import from source)
+  constructor(test: TestCase, result: TestResult, options: TestTimingsOptions) {
+    this.test = test;
+    this.result = result;
+    this.options = options;
     this.pwFeatures = buildPwFeatures(options.pwVersion);
     // Call order here is important (to distinguish worker-scoped / test-scoped fixtures).
     this.handleWorkerCleanup();

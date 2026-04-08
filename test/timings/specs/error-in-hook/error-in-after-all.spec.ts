@@ -1,13 +1,12 @@
-import { base, delay, annotation } from '../../../helpers.js';
+import { base, delay } from '../../../helpers.js';
 
 const test = base.extend({});
 
 test.afterAll(() => delay([100, 'my error']));
 test.afterAll(() => delay(100)); // runs
-test('test 1', expected(), ({}) => delay(100));
+test('test 1', ({}) => delay(100));
 
-function expected() {
-  return annotation(`
+/* EXPECTED: test 1
 totalDuration: 300
 status: failed
 beforeAll: []
@@ -23,5 +22,4 @@ afterAll:
   - title: afterAll hook
     duration: 100
 afterFixtures: []
-`);
-}
+EXPECTED-END */

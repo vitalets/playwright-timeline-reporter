@@ -1,7 +1,8 @@
 /**
  * Custom Playwright reporter that actually performs the timing assertions —
- * each test's computed timings are compared against the expected annotation.
+ * each test's computed timings are compared against the expected comment block.
  */
+import { readFileSync } from 'node:fs';
 import type {
   FullConfig,
   Reporter,
@@ -44,7 +45,7 @@ export default class TimelineReporter implements Reporter {
       configDir: process.cwd(),
       pwVersion: this.pwVersion,
     }).build();
-    const expected = result.annotations[0].description!.trim();
+    const expected = extractExpected(test.location.file, test.title);
     const testPath = test.titlePath().filter(Boolean).join(' > ');
     try {
       expect(renderTimings(data)).toEqual(expected);
@@ -87,4 +88,20 @@ function formatSteps(steps: TestStep[] = [], indent = 0): string[] {
 function roundDurations(item: { duration: number; steps?: TestStep[] }) {
   item.duration = round(item.duration);
   item.steps?.forEach(roundDurations);
+}
+
+/**
+ * Reads the spec file and extracts the expected YAML string.
+ * /* EXPECTED: {title}
+ * ...
+ * EXPECTED-END *\/
+ */
+function extractExpected(filePath: string, testTitle: string): string {
+  const fileContent = readFileSync(filePath, 'utf-8');
+  const escapedTitle = testTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = fileContent.match(
+    new RegExp(`\\/\\* EXPECTED: ${escapedTitle}\\n([\\s\\S]*?)EXPECTED-END \\*\\/`),
+  );
+  if (!match) throw new Error(`Expected output not found for test: "${testTitle}" in ${filePath}`);
+  return match[1].trim();
 }

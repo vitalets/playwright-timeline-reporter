@@ -1,4 +1,4 @@
-import { base as test, delay, annotation } from '../../helpers.js';
+import { base as test, delay } from '../../helpers.js';
 
 test.beforeAll(() => delay(100));
 test.afterAll(() => delay(100));
@@ -6,12 +6,11 @@ test.afterAll(() => delay(100));
 // always run as suite
 
 test.describe('suite 1', () => {
-  test('test 1', expected1(), () => delay(100));
-  test('test 2', expected2(), () => delay(100));
+  test('test 1', () => delay(100));
+  test('test 2', () => delay(100));
 });
 
-function expected1() {
-  return annotation(`
+/* EXPECTED: test 1
 totalDuration: 200
 status: passed
 beforeAll:
@@ -24,11 +23,9 @@ testBody:
 afterEach: []
 afterAll: []
 afterFixtures: []
-`);
-}
+EXPECTED-END */
 
-function expected2() {
-  return annotation(`
+/* EXPECTED: test 2
 totalDuration: 200
 status: passed
 beforeAll: []
@@ -41,5 +38,4 @@ afterAll:
   - title: afterAll hook
     duration: 100
 afterFixtures: []
-`);
-}
+EXPECTED-END */

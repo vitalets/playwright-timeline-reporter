@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { TestResult, TestStep, Location } from '@playwright/test/reporter';
+import type { TestResult, TestStep, Location } from '@playwright/test/reporter';
 
 export function findBeforeHooksStep(result: TestResult) {
   // "Before Hooks" title is hardcoded.

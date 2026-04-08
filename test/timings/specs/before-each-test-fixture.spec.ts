@@ -1,14 +1,13 @@
-import { base, delay, annotation, fixture } from '../../helpers.js';
+import { base, delay, fixture } from '../../helpers.js';
 
 const test = base.extend<{ testFixture: void }>({
   testFixture: async ({}, use) => fixture(100, use, 200),
 });
 
 test.beforeEach(({ testFixture }) => delay(100));
-test('test 1', expected(), ({}) => delay(100));
+test('test 1', ({}) => delay(100));
 
-function expected() {
-  return annotation(`
+/* EXPECTED: test 1
 totalDuration: 500
 status: passed
 beforeAll: []
@@ -31,5 +30,4 @@ afterFixtures:
     stage: teardown
     executedPart: teardown
     duration: 200
-`);
-}
+EXPECTED-END */

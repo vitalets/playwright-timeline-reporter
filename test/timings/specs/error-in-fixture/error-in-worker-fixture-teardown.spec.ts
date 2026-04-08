@@ -1,10 +1,10 @@
-import { base, delay, annotation, fixture } from '../../../helpers.js';
+import { base, delay, fixture } from '../../../helpers.js';
 
 const test = base.extend<{}, { workerFixture: void }>({
   workerFixture: [async ({}, use) => fixture(100, use, [100, 'my error']), { scope: 'worker' }],
 });
 
-test('test 1', expected(), async ({ workerFixture }) => {
+test('test 1', async ({ workerFixture }) => {
   await delay(100);
 });
 
@@ -13,8 +13,8 @@ test('test 1', expected(), async ({ workerFixture }) => {
 // Current result is not ideal, because no error is in the test result.
 // Hopefully Playwright will improve it in the future.
 // See: https://github.com/microsoft/playwright/issues/39063
-function expected() {
-  return annotation(`
+
+/* EXPECTED: test 1
 totalDuration: 200
 status: passed
 beforeAll: []
@@ -30,5 +30,4 @@ testBody:
 afterEach: []
 afterAll: []
 afterFixtures: []
-`);
-}
+EXPECTED-END */

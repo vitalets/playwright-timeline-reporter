@@ -1,9 +1,8 @@
-import { base as test, delay, annotation } from '../../helpers.js';
+import { base as test, delay } from '../../helpers.js';
 
-test('test 1', expected(), ({}) => delay(100));
+test('test 1', ({}) => delay(100));
 
-function expected() {
-  return annotation(`
+/* EXPECTED: test 1
 totalDuration: 100
 status: passed
 beforeAll: []
@@ -14,5 +13,4 @@ testBody:
 afterEach: []
 afterAll: []
 afterFixtures: []
-`);
-}
+EXPECTED-END */
