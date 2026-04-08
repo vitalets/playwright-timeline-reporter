@@ -32,7 +32,8 @@ jobs:
           - playwright-version: beta
     steps:
       - uses: actions/checkout@v6
-      - id: node-version
+      - name: Set Node version
+        id: node-version
         # Playwright <= 1.52 hangs on Node 24 due to require(esm).
         # Use Node 22 for those versions.
         run: |
