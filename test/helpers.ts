@@ -9,10 +9,18 @@ export { base };
 // run delays 10x slower and the reporter scales measured durations back down to the same
 // 100ms-based expectations.
 export const TIMING_SCALE = 5;
+// Granularity for rounding measured durations back to nominal values.
+// Must be a divisor of all delay() inputs used in specs.
+const TIMING_GRANULARITY_MS = 50;
+// Time subtracted from the delay before throwing,
+// so the error lands within the expected bucket.
 const ERROR_THROW_SHIFT_MS = 30;
 
 export async function delay(arg: number | [number, string]) {
   const [ms, error] = Array.isArray(arg) ? arg : [arg, undefined];
+  if (ms % TIMING_GRANULARITY_MS !== 0) {
+    throw new Error(`delay() value must be a multiple of ${TIMING_GRANULARITY_MS}, got ${ms}`);
+  }
   const baseDelay = ms * TIMING_SCALE;
   // leave some time to throw error
   const finalDelay = error ? Math.max(0, baseDelay - ERROR_THROW_SHIFT_MS) : baseDelay;
@@ -31,7 +39,7 @@ export async function fixture(
 }
 
 export function round(duration: number) {
-  const res = Math.round(duration / TIMING_SCALE / 100) * 100;
+  const res = Math.round(duration / TIMING_SCALE / TIMING_GRANULARITY_MS) * TIMING_GRANULARITY_MS;
   return Object.is(res, -0) ? 0 : res;
 }
 
