@@ -1,7 +1,7 @@
 /** Provides shared Playwright test helpers and YAML rendering utilities for timing fixtures. */
 import { test as base } from '@playwright/test';
 import yaml from 'yaml';
-import { FixtureSpan, TestTimings } from '../src/test-timings/types.js';
+import type { FixtureSpan, TestTimings } from '../src/test-timings/types.js';
 
 export { base };
 

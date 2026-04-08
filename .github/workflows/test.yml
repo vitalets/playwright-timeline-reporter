@@ -32,9 +32,18 @@ jobs:
           - playwright-version: beta
     steps:
       - uses: actions/checkout@v6
+      - id: node-version
+        # Playwright <= 1.52 hangs on Node 24 due to require(esm).
+        # Use Node 22 for those versions.
+        run: |
+          if [[ "${{ matrix.playwright-version }}" =~ ^1\.(4|5[012]) ]]; then
+            echo "version=22" >> $GITHUB_OUTPUT
+          else
+            echo "version=24" >> $GITHUB_OUTPUT
+          fi
       - uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: ${{ steps.node-version.outputs.version }}
           cache: 'npm'
       - run: npm ci
       - run: npm install --no-save @playwright/test@${{ matrix.playwright-version }}
