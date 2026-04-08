@@ -22,7 +22,7 @@ Helps you optimize test performance:
 - evaluate worker utilization
 - generate ready-to-use prompt for AI analysis
 
-Plug it into any Playwright project and get a self-contained HTML report with zero extra infrastructure.
+Plug it into any Playwright project and get a self-contained HTML report.
 
 ## Live Demos
 
@@ -48,6 +48,8 @@ Plug it into any Playwright project and get a self-contained HTML report with ze
 
 ## Installation
 
+Install with any package manager:
+
 ### npm
 
 ```sh
@@ -66,7 +68,7 @@ pnpm add --save-dev playwright-timeline-reporter
 yarn add --dev playwright-timeline-reporter
 ```
 
-## Usage
+## Configuration
 
 Add the reporter to your `playwright.config.ts`:
 
@@ -75,16 +77,27 @@ import { defineConfig } from '@playwright/test';
 import { timelineReporter } from 'playwright-timeline-reporter';
 
 export default defineConfig({
-  reporter: [
-    timelineReporter(),
-    // ...other reporters
-  ],
+  reporter: [timelineReporter()],
 });
 ```
 
 After your test run, open `./timeline-report/index.html` in any browser.
 
-### Usage with sharding
+## Usage
+
+In the report you can do the following:
+
+- Review the overall timeline to spot the slowest spans.
+- Hover any span to inspect its type, details and source location.
+- Click spans to isolate a specific test, hook, or fixture.
+- Click worker restart markers to inspect restart reasons.
+- Switch between all projects and a single project to isolate project-specific bottlenecks.
+- Click a worker or shard label to focus on it.
+- Select a region to zoom in for deeper investigation.
+- Use the search box to find a file, test, hook, fixture, or error.
+- Copy the built-in AI prompt and paste it into any AI chat for analysis.
+
+## Sharding
 
 For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
 
