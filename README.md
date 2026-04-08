@@ -83,6 +83,25 @@ export default defineConfig({
 
 After your test run, open `./timeline-report/index.html` in any browser.
 
+## Options
+
+| Option               | Type     | Default                        | Description                                                                                                                                                                                                       |
+| -------------------- | -------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `outputFile`         | `string` | `./timeline-report/index.html` | Path for the generated report file                                                                                                                                                                                |
+| `promptTemplateFile` | `string` | —                              | Path to a custom LLM prompt template; must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts). |
+
+Example with options:
+
+```ts
+export default defineConfig({
+  reporter: [
+    timelineReporter({
+      outputFile: './my-reports/timeline.html',
+    }),
+  ],
+});
+```
+
 ## Usage
 
 In the report you can do the following:
@@ -126,25 +145,6 @@ npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./
 Open `./timeline-report/index.html` to see the unified timeline across all shards.
 
 > For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
-
-## Options
-
-| Option               | Type     | Default                        | Description                                                                                                                                                                                                       |
-| -------------------- | -------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `outputFile`         | `string` | `./timeline-report/index.html` | Path for the generated report file                                                                                                                                                                                |
-| `promptTemplateFile` | `string` | —                              | Path to a custom LLM prompt template; must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts). |
-
-Example with options:
-
-```ts
-export default defineConfig({
-  reporter: [
-    timelineReporter({
-      outputFile: './my-reports/timeline.html',
-    }),
-  ],
-});
-```
 
 ## License
 
