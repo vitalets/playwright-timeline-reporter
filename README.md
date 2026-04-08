@@ -13,7 +13,16 @@
 
 </div>
 
-**Playwright Timeline Reporter** visualizes your test suite execution as an interactive timeline. Identify slow tests, detect costly repeated hooks, and understand worker utilization. Plug it into any Playwright project and get a self-contained HTML report with zero extra infrastructure.
+**Playwright Timeline Reporter** visualizes your [Playwright](https://playwright.dev/) tests as an interactive timeline.
+
+Helps you optimize test performance:
+
+- identify slow tests
+- detect costly or repeated hooks and fixtures
+- evaluate worker utilization
+- generate ready-to-use prompt for AI analysis
+
+Plug it into any Playwright project and get a self-contained HTML report with zero extra infrastructure.
 
 ## Live Demos
 
@@ -36,18 +45,6 @@
   <br>
   <em>Click the screenshot to open the live report ↗</em>
 </p>
-
-## How can it help?
-
-The report helps answer the following questions:
-
-- What is the slowest test in the run?
-- What is the slowest hook or fixture?
-- Which hook or fixture is repeated the most?
-- How effectively are my tests and projects distributed across workers?
-- Why do my workers restart?
-- Where is a specific test, file, hook, or fixture in the timeline?
-- What hooks and fixtures run within a particular test?
 
 ## Installation
 
@@ -87,7 +84,7 @@ export default defineConfig({
 
 After your test run, open `./timeline-report/index.html` in any browser.
 
-### Usage With Sharding
+### Usage with sharding
 
 For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
 
