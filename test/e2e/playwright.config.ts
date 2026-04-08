@@ -6,7 +6,7 @@ export default defineConfig({
     [
       '../../dist/reporter.js',
       {
-        outputFile: './test/report/timeline-report/index.html',
+        outputFile: './timeline-report/index.html',
       },
     ],
   ],

@@ -1,9 +1,14 @@
-import { base, delay, fixture } from '../../helpers.js';
+import { test as base } from '@playwright/test';
+import { setTimeout } from 'node:timers/promises';
 
-const test = base.extend<{ testFixture1: void; testFixture2: void; testFixture3: void }>({
-  testFixture1: async ({}, use) => fixture(100, use, 200),
-  testFixture2: async ({}, use) => fixture(200, use, 0),
-  testFixture3: async ({}, use) => fixture(150, use, 100),
+const test = base.extend<{ testFixture1: void }>({
+  testFixture1: async ({}, use) => {
+    await setTimeout(100);
+    await use();
+    await setTimeout(200);
+  },
 });
 
-test('test 1', ({ testFixture1, testFixture2, testFixture3 }) => delay(100));
+test('test 1', async ({ testFixture1 }) => {
+  await setTimeout(100);
+});
