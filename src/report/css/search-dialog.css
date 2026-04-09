@@ -6,8 +6,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 5px 9px;
-  border-radius: 8px;
+  padding: 0 9px;
 }
 
 .search-trigger:active {

@@ -10,7 +10,7 @@ export function SearchTrigger() {
   return (
     <button
       type="button"
-      className="search-trigger toolbox-button"
+      className="search-trigger toolbox-button toolbox-control"
       onClick={openDialog}
       aria-label="Open search"
       title="Search timeline (Cmd+K / Ctrl+K)"

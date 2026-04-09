@@ -6,33 +6,34 @@ export function ProjectFilter() {
   const { projects } = useReportData();
   const { selectedProject, setSelectedProject } = useSelectedProject();
   const { resetSelectedArea } = useSelectedArea();
+  const firstProjectName = projects[0]?.name;
 
   const onProjectChange = (projectName: string | null) => {
     setSelectedProject(projectName);
     resetSelectedArea();
   };
 
-  if (projects.length < 2) return null;
+  if (projects.length === 0) return null;
+
+  if (projects.length === 1 && firstProjectName) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <ProjectLabel />
+        <span className="toolbox-control toolbox-static-control">{firstProjectName}</span>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <label
-        htmlFor="project-filter"
-        style={{
-          fontSize: 13,
-          color: 'var(--page-text)',
-          userSelect: 'none',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Project
+      <label htmlFor="project-filter">
+        <ProjectLabel />
       </label>
       <select
         id="project-filter"
         value={selectedProject?.name ?? ''}
         onChange={(e) => onProjectChange(e.target.value || null)}
-        className="toolbox-button"
-        style={{ borderRadius: 6, fontSize: 13, padding: '3px 8px', outline: 'none' }}
+        className="toolbox-button toolbox-control toolbox-select"
       >
         <option value="">All</option>
         {projects.map((p) => (
@@ -42,5 +43,20 @@ export function ProjectFilter() {
         ))}
       </select>
     </div>
+  );
+}
+
+function ProjectLabel() {
+  return (
+    <span
+      style={{
+        fontSize: 13,
+        color: 'var(--page-text)',
+        userSelect: 'none',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      Project:
+    </span>
   );
 }

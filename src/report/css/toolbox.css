@@ -55,8 +55,34 @@
   cursor: pointer;
 }
 
+.toolbox-control {
+  box-sizing: border-box;
+  height: 29px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
 .toolbox-button:hover {
   background: var(--button-bg-hover);
+}
+
+.toolbox-select {
+  padding: 0 9px;
+  outline: none;
+}
+
+.toolbox-static-control {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  color: var(--page-text);
+  background: none;
+  border: 1px solid var(--button-border);
+  cursor: default;
+  user-select: text;
+  color: var(--button-text);
+  font-weight: 500;
+  opacity: 0.9;
 }
 
 .reset-zoom-button {
