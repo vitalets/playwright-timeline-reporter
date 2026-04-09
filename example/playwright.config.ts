@@ -1,13 +1,10 @@
 import { defineConfig } from '@playwright/test';
+// In a real project import from 'playwright-timeline-reporter'.
+import { timelineReporter } from '..';
 
 export default defineConfig({
   workers: 3,
-  reporter: [
-    // In a real project use: timelineReporter() from 'playwright-timeline-reporter'.
-    ['../dist/reporter.js'],
-    ['dot'],
-    ['blob'],
-  ],
+  reporter: [timelineReporter(), ['dot'], ['blob']],
   use: {
     baseURL: 'https://playwright.dev/',
   },
