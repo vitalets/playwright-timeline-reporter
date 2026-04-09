@@ -105,6 +105,6 @@ export default class TimelineReporter implements Reporter {
   }
 
   private warn(message: string) {
-    logger.warn(`Timeline Reporter: ${message}`);
+    logger.warn(`[timeline-reporter]: ${message}`);
   }
 }
