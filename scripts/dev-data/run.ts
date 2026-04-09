@@ -3,8 +3,10 @@
  *
  * Usage:
  *   npm run dev-data
- *   npm run dev-data -- basic
- *   npm run dev-data -- projects
+ *   npm run dev-data -- one-project
+ *   npm run dev-data -- two-projects
+ *   npm run dev-data -- many-projects
+ *   npm run dev-data -- no-projects
  *   npm run dev-data -- projects-deps
  *   npm run dev-data -- shards
  */

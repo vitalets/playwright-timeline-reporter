@@ -14,7 +14,7 @@ export default defineConfig({
     [
       `${projectRoot}/src/reporter.ts`,
       {
-        outputFile: `${projectRoot}/src/report/with-basic.tpl.html`,
+        outputFile: `${projectRoot}/src/report/with-two-projects.tpl.html`,
       },
     ],
   ],
