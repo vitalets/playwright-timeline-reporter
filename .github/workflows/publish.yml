@@ -83,7 +83,7 @@ jobs:
           git add package.json CHANGELOG.md
           git commit --no-verify -m "v${{ env.VERSION }}"
           git tag "v${{ env.VERSION }}"
-          git push --no-verify --tags
+          git push --no-verify origin HEAD --tags
 
       - name: Publish to npm
         if: ${{ !inputs.dry-run && !inputs.skip-npm-publish }}
