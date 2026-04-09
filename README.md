@@ -24,23 +24,11 @@ Helps you optimize test performance:
 
 Plug it into any Playwright project and get a self-contained HTML report.
 
-## Live Demos
-
-### Basic
+## Live Demo
 
 <p align="center">
-  <a href="https://vitalets.github.io/playwright-timeline-reporter/basic/">
-    <img src="docs/screenshots/basic.png" alt="Basic timeline report screenshot">
-  </a>
-  <br>
-  <em>Click the screenshot to open the live report ↗</em>
-</p>
-
-### With Sharding
-
-<p align="center">
-  <a href="https://vitalets.github.io/playwright-timeline-reporter/shards/">
-    <img src="docs/screenshots/shards.png" alt="Sharded timeline report screenshot">
+  <a href="https://vitalets.github.io/playwright-timeline-reporter/demos/index.html">
+    <img src="https://vitalets.github.io/playwright-timeline-reporter/demos/screenshot.png" alt="Timeline report screenshot">
   </a>
   <br>
   <em>Click the screenshot to open the live report ↗</em>
