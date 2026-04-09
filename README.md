@@ -116,6 +116,8 @@ In the report you can do the following:
 - Use the search box to find a file, test, hook, fixture, or error.
 - Copy the built-in AI prompt and paste it into any AI chat for analysis.
 
+> **Your input is appreciated:** help improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962)
+
 ## Sharding
 
 For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
@@ -145,6 +147,11 @@ npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./
 Open `./timeline-report/index.html` to see the unified timeline across all shards.
 
 > For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
+
+## Packages to speedup tests
+
+- [@global-cache/playwright](https://github.com/vitalets/global-cache) - Cache and reuse data between Playwright workers.
+- [request-mocking-protocol](https://github.com/vitalets/request-mocking-protocol) - Mock server-side API calls.
 
 ## License
 
