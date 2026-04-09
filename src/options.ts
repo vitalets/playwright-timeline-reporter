@@ -4,7 +4,7 @@
 import path from 'node:path';
 
 export type TimelineReporterOptions = {
-  /** Path to the report file. Defaults to `./timeline-report/index.html`. */
+  /** Path to the report file (relative to config dir). */
   outputFile?: string;
   /** Path to a custom prompt template file. The file must include the `{data}` placeholder exactly once. */
   promptTemplateFile?: string;

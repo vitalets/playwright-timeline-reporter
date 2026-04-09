@@ -78,7 +78,8 @@ export default class TimelineReporter implements Reporter {
   private openStream() {
     const templatePath = fileURLToPath(new URL('./report/index.tpl.html', import.meta.url));
     const template = fs.readFileSync(templatePath, 'utf8');
-    this.stream = new JsonStream({ template, filePath: this.options.outputFile });
+    const filePath = this.resolveOutputFile();
+    this.stream = new JsonStream({ template, filePath });
     this.stream.open();
   }
 
@@ -102,6 +103,16 @@ export default class TimelineReporter implements Reporter {
         `Failed to read prompt template file: ${promptTemplateFile}.\nError: ${e?.message}`,
       );
     }
+  }
+
+  private resolveOutputFile() {
+    // Resolve reporter output file from the Playwright config dir.
+    // Playwright does the same for built-in reporters.
+    // The only difference: for default values, Playwright resolves
+    // against the closest package.json. This value isn’t exposed via
+    // the reporter API, so we follow a simple approach—always resolve from the config dir.
+    // See: https://github.com/microsoft/playwright/blob/main/packages/playwright/src/util.ts#L246
+    return path.resolve(this.configDir, this.options.outputFile);
   }
 
   private warn(message: string) {
