@@ -80,7 +80,7 @@ After your test run, open `./timeline-report/index.html` in any browser.
 - **Type:** `string`
 - **Default:** `./timeline-report/index.html`
 
-Path for the generated report file (relative to config dir).
+Path for the generated report file, relative to config dir.
 
 #### `promptTemplateFile`
 
