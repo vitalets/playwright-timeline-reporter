@@ -98,17 +98,18 @@ export default defineConfig({
 
 In the report you can do the following:
 
-- Review the overall timeline to spot the slowest spans.
-- Hover any span to inspect its type, details and source location.
-- Click spans to isolate a specific test, hook, or fixture.
-- Click worker restart markers to inspect restart reasons.
-- Switch between all projects and a single project to isolate project-specific bottlenecks.
-- Click a worker or shard label to focus on it.
-- Select a region to zoom in for deeper investigation.
-- Use the search box to find a file, test, hook, fixture, or error.
-- Copy the built-in AI prompt and paste it into any AI chat for analysis.
+- **Review the timeline** to spot the slowest spans.
+- **Hover any span** to inspect its type, details, and source location.
+- **Click spans** to isolate a specific test, hook, or fixture.
+- **Inspect restart markers** to understand worker restart reasons.
+- **Switch projects** to isolate project-specific bottlenecks.
+- **Focus on a worker or shard** by clicking its label.
+- **Select a region** to zoom in for deeper investigation.
+- **Search** for files, tests, tags, or error messages.
+- **Copy the AI prompt** and paste it into any AI chat for analysis.
 
-> **Your input is appreciated:** help improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962)
+> [!NOTE]
+> **Your input is appreciated:** improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962)
 
 ## Sharding
 
