@@ -5,6 +5,7 @@
 ## [Unreleased]
 
 - Show the project name instead of the filter when there is only one project.
+- UI minor fixes.
 
 ## [1.0.0] - 2026-04-09
 
