@@ -68,6 +68,7 @@
   font-weight: 600;
   padding: 3px 7px;
   background: var(--tooltip-tag-value-bg);
+  opacity: 0.9;
 }
 
 .title-chip-link {

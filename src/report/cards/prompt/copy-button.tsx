@@ -35,27 +35,13 @@ export function CopyButton({ text }: { text: string }) {
       {copied ? (
         <span>Copied</span>
       ) : (
-        <button
-          type="button"
-          onClick={handleCopy}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            border: 'none',
-            background: 'transparent',
-            padding: 0,
-            cursor: 'pointer',
-            color: 'inherit',
-            fontSize: 'inherit',
-          }}
-        >
+        <button type="button" onClick={handleCopy} className="prompt-copy-button">
           {action === 'copy' ? (
             <CopyIcon width={14} height={14} />
           ) : (
             <DownloadIcon width={14} height={14} />
           )}
-          Prompt
+          prompt
         </button>
       )}
     </span>
