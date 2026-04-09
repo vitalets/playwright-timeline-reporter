@@ -75,10 +75,19 @@ After your test run, open `./timeline-report/index.html` in any browser.
 
 ## Options
 
-| Option               | Type     | Default                        | Description                                                                                                                                                                                                       |
-| -------------------- | -------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `outputFile`         | `string` | `./timeline-report/index.html` | Path for the generated report file (relative to config dir).                                                                                                                                                      |
-| `promptTemplateFile` | `string` | —                              | Path to a custom LLM prompt template; must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts). |
+#### `outputFile`
+
+- **Type:** `string`
+- **Default:** `./timeline-report/index.html`
+
+Path for the generated report file (relative to config dir).
+
+#### `promptTemplateFile`
+
+- **Type:** `string`
+- **Default:** —
+
+Path to a custom LLM prompt template, must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts).
 
 Example with options:
 
