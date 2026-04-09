@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 // In a real project import from 'playwright-timeline-reporter'.
-import { timelineReporter } from '..';
+import { timelineReporter } from '../dist/index.js';
 
 export default defineConfig({
   workers: 3,

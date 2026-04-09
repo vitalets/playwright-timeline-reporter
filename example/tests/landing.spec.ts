@@ -1,4 +1,4 @@
-import { test, delay } from './fixtures';
+import { test, delay } from './fixtures.js';
 import { expect } from '@playwright/test';
 
 test.beforeAll(async ({ browser }) => {

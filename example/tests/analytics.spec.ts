@@ -1,4 +1,4 @@
-import { test } from './fixtures';
+import { test } from './fixtures.js';
 
 test.describe('Analytics', () => {
   test('send analytics', { tag: ['@analytics'] }, async ({ page, failingTestFixture }) => {

@@ -1,4 +1,4 @@
-import { test, delay } from './fixtures';
+import { test, delay } from './fixtures.js';
 import { expect } from '@playwright/test';
 
 // beforeAll hook with intentional error (element not found)

@@ -1,4 +1,4 @@
-import { test as base, expect, Page, BrowserContext } from '@playwright/test';
+import { test as base, Page, BrowserContext } from '@playwright/test';
 
 type TestFixtures = {
   docsPage: Page;
