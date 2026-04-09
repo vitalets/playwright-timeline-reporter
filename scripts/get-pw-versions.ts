@@ -3,14 +3,14 @@
  * and outputs a JSON array of the latest stable patch per minor series.
  * Excludes any pre-release versions (beta, rc, alpha).
  *
- * Usage: npx tsx scripts/get-pw-versions.ts <minVersion>
- * Example: npx tsx scripts/get-pw-versions.ts 1.45
+ * Usage: node scripts/get-pw-versions.ts <minVersion>
+ * Example: node scripts/get-pw-versions.ts 1.45
  */
 import { execSync } from 'node:child_process';
 
 const minVersion = process.argv[2];
 if (!minVersion || !/^\d+\.\d+$/.test(minVersion)) {
-  console.error('Usage: npx tsx scripts/get-pw-versions.ts <major.minor>  (e.g. 1.45)');
+  console.error('Usage: node scripts/get-pw-versions.ts <major.minor>  (e.g. 1.45)');
   process.exit(1);
 }
 

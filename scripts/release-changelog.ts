@@ -4,7 +4,7 @@
  * it, and prints the release notes to stdout for use in CI (e.g. GitHub Release body).
  *
  * Usage:
- *   npx tsx scripts/release-changelog.ts <version>
+ *   node scripts/release-changelog.ts <version>
  */
 import fs from 'node:fs';
 
