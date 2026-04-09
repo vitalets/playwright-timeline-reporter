@@ -34,6 +34,8 @@ Plug it into any Playwright project and get a self-contained HTML report.
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
+> Also check the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+
 ## Installation
 
 Install with any package manager:
