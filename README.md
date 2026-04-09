@@ -34,7 +34,7 @@ Plug it into any Playwright project and get a self-contained HTML report.
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
-> Also check the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+> Also check out the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
 
 ## Installation
 
@@ -83,10 +83,12 @@ After your test run, open `./timeline-report/index.html` in any browser.
 Example with options:
 
 ```ts
+import { timelineReporter } from 'playwright-timeline-reporter';
+
 export default defineConfig({
   reporter: [
     timelineReporter({
-      outputFile: './my-reports/timeline.html',
+      outputFile: './reports/timeline.html',
     }),
   ],
 });
@@ -141,7 +143,7 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 ## Packages to speedup tests
 
 - [@global-cache/playwright](https://github.com/vitalets/global-cache) - Cache and reuse data between Playwright workers.
-- [request-mocking-protocol](https://github.com/vitalets/request-mocking-protocol) - Mock server-side API calls.
+- [request-mocking-protocol](https://github.com/vitalets/request-mocking-protocol) - Mock server-side API calls in tests.
 
 ## License
 
