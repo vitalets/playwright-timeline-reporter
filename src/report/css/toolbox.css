@@ -87,12 +87,10 @@
 
 .reset-zoom-button {
   user-select: none;
-  font-size: 13px;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  border-radius: 8px;
-  padding: 2px 10px;
+  padding: 0 10px;
 }
 
 .reset-zoom-button-active {

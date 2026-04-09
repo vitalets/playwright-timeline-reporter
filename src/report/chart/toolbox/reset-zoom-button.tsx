@@ -4,7 +4,7 @@ import { useSelectedArea } from '../state/selected-area.js';
 
 export function ResetZoomButton() {
   const { isZoomed, resetSelectedArea } = useSelectedArea();
-  const className = `reset-zoom-button ${
+  const className = `reset-zoom-button toolbox-control ${
     isZoomed ? 'reset-zoom-button-active' : 'reset-zoom-button-inactive'
   }`;
 
