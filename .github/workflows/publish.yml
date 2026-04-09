@@ -48,6 +48,7 @@ jobs:
       - run: npm run build
       - run: npm run tsc
       - run: npx publint
+      - run: npm run test:all
 
       - run: |
           git config user.name "github-actions[bot]"
@@ -55,6 +56,7 @@ jobs:
 
       - name: Bump version
         # --preid sets the identifier in the version string for prereleases, e.g. 1.0.0-beta.0.
+        # NPM tag (e.g. next) is a different thing defined during npm publish.
         # For normal releases (patch/minor/major) this option is ignored by npm.
         run: |
           VERSION_ARG=${{ inputs.release-version }}
