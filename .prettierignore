@@ -1,5 +1,8 @@
 node_modules
 dist
+package-lock.json
 timeline-report
 *.log
 .DS_Store
+/docs
+/src/report/with*.html
