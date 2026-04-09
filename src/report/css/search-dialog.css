@@ -162,13 +162,8 @@
   background: color-mix(in srgb, var(--card-bg) 78%, var(--button-bg-hover));
 }
 
-.search-dialog-close:hover,
-.search-dialog-close:focus-visible {
-  transform: translateY(-1px);
-}
-
 .search-dialog-close-icon {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1;
 }
 
