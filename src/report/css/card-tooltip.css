@@ -22,6 +22,10 @@
   opacity: 1;
 }
 
+.tooltip-button__trigger svg {
+  display: block;
+}
+
 .tooltip-button__content {
   position: fixed;
   background: var(--tooltip-bg);
