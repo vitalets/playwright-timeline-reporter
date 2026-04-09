@@ -18,6 +18,10 @@ on:
       - 'tsconfig*.json'
       - '.npmrc'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   MIN_PW_VERSION: '1.45'
 
