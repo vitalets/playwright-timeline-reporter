@@ -53,8 +53,29 @@ function runTests(extraArgs: string[] = [], env?: NodeJS.ProcessEnv) {
 
 function spawnAsync(command: string, args: string[], cwd?: string, env?: NodeJS.ProcessEnv) {
   return new Promise<void>((resolve, reject) => {
-    const child = spawn(command, args, { stdio: 'inherit', cwd, env: { ...process.env, ...env } });
+    const child = spawn(command, args, {
+      stdio: ['inherit', 'pipe', 'pipe'],
+      cwd,
+      env: { ...process.env, ...env },
+    });
+    let output = '';
+    child.stdout?.on('data', (chunk: Buffer) => {
+      output += chunk.toString();
+      process.stdout.write(chunk);
+    });
+    child.stderr?.on('data', (chunk: Buffer) => {
+      output += chunk.toString();
+      process.stderr.write(chunk);
+    });
     child.on('error', reject);
-    child.on('close', () => resolve());
+    child.on('close', (code, signal) => {
+      if (code === 0 || !output.includes('node:internal')) {
+        resolve();
+        return;
+      }
+
+      const details = signal ? `signal ${signal}` : `exit code ${code ?? 'unknown'}`;
+      reject(new Error(`Command failed: ${command} ${args.join(' ')} (${details})`));
+    });
   });
 }
