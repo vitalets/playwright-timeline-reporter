@@ -1,14 +1,6 @@
 /**
  * Worker-lanes algorithm: distributes Playwright test timings into visual timeline lanes.
  *
- * Works in two phases per shard:
- *   1. Marker analysis — derives peak global and per-project concurrency from timing
- *      overlap, without relying on any Playwright config flags (marker-analysis.ts).
- *   2. Backtracking assignment — assigns tests to lanes via recursive search, branching
- *      at ambiguous points and discarding branches that exceed observed concurrency
- *      limits (assign-test.ts). Surviving branches are scored by restart-gap variance
- *      and the best is returned (scoring.ts).
- *
  * See README.md for the full algorithm description and rationale.
  */
 import { TestTimings } from '../../../test-timings/types.js';
