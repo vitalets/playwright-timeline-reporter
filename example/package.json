@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "npx playwright test",
+    "test:merge": "npx playwright merge-reports -c playwright.config.ts ./blob-report",
     "timeline": "open ./timeline-report/index.html"
   }
 }

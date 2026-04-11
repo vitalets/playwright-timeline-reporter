@@ -1,6 +1,6 @@
 /** Builds shard-axis merge report segments with vertical bounds for the current worker scale. */
 import type { MergeReportInfo } from '../../../../run-info.js';
-import type { WorkerData } from '../../../data/workers.js';
+import type { WorkerData } from '../../../data/index.js';
 import type { WorkersScale } from '../../scales/workers.js';
 
 // MergeReportInfo enriched with Y coordinates.

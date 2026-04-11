@@ -1,7 +1,7 @@
 /**
  * Computes run-wide invocation counts for hook and fixture spans shown in the chart.
  */
-import type { WorkerData } from './workers.js';
+import type { WorkerData } from './index.js';
 import type { ChartSpan } from './tests.js';
 
 type FixtureCounters = {
