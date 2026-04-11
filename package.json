@@ -19,8 +19,8 @@
   },
   "files": [
     "dist",
-    "src",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "prepare": "git config core.hooksPath scripts/git-hooks",
