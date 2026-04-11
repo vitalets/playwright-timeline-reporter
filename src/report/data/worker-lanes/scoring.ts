@@ -26,7 +26,7 @@ export function pickBestBranch(results: WorkerLane[][]): WorkerLane[] {
   return bestResult;
 }
 
-function scoreBranch(lanes: WorkerLane[]): number {
+export function scoreBranch(lanes: WorkerLane[]): number {
   const gapsByProject = new Map<string, number[]>();
   for (const lane of lanes) {
     collectRestartGaps(lane.tests, gapsByProject);
@@ -34,6 +34,23 @@ function scoreBranch(lanes: WorkerLane[]): number {
   let total = 0;
   for (const gaps of gapsByProject.values()) {
     total += populationVariance(gaps);
+  }
+  return total;
+}
+
+/**
+ * Like scoreBranch but only considers the last `windowSize` restart gaps per project.
+ * Used during beam pruning so that scoring is sensitive to recent branching decisions
+ * rather than diluted by the long shared history common to all beams.
+ */
+export function scoreRecentBranch(lanes: WorkerLane[], windowSize: number): number {
+  const gapsByProject = new Map<string, number[]>();
+  for (const lane of lanes) {
+    collectRestartGaps(lane.tests, gapsByProject);
+  }
+  let total = 0;
+  for (const gaps of gapsByProject.values()) {
+    total += populationVariance(gaps.slice(-windowSize));
   }
   return total;
 }

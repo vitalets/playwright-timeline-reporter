@@ -5,7 +5,7 @@
  */
 import { TestTimings } from '../../../test-timings/types.js';
 import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
-import { TestAssigner, type AssignContext } from './test-assigner.js';
+import { beamAssign, type AssignContext } from './test-assigner.js';
 import { type WorkerLane } from './lane.js';
 import { testRef } from './debug.js';
 
@@ -24,12 +24,12 @@ export class WorkerLanes {
     this.logPhase1Results();
     const ctx = this.buildContext();
     const lanePool = this.analysis.lanePool.map((l) => l.clone());
-    const result = new TestAssigner(this.sortedTests, lanePool, ctx).assign();
+    const result = beamAssign(this.sortedTests, lanePool, ctx);
     if (!result) {
-      throw new Error('WorkerLanes2: failed to assign all tests — all branches were discarded.');
+      throw new Error('WorkerLanes: failed to assign all tests — all beams were discarded.');
     }
     this.logFinalLanes(result);
-    return result.map((lane) => ({ tests: lane.tests }));
+    return result.filter((lane) => lane.tests.length > 0).map((lane) => ({ tests: lane.tests }));
   }
 
   private buildContext(): AssignContext {
@@ -37,6 +37,8 @@ export class WorkerLanes {
       lastTestInWorker: this.analysis.lastTestInWorker,
       maxParallelWorkers: this.analysis.maxParallelWorkers,
       maxParallelWorkersPerProject: this.analysis.maxParallelWorkersPerProject,
+      maxBranches: 10,
+      restartsCountUntilPruningBranches: 5,
       log: (...args: unknown[]) => this.log(...args),
     };
   }
