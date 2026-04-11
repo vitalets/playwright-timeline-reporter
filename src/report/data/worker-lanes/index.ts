@@ -38,7 +38,7 @@ export class WorkerLanes {
       maxParallelWorkers: this.analysis.maxParallelWorkers,
       maxParallelWorkersPerProject: this.analysis.maxParallelWorkersPerProject,
       maxBranches: 10,
-      restartsCountUntilPruningBranches: 5,
+      restartsCountUntilPruningBranches: 3,
       log: (...args: unknown[]) => this.log(...args),
     };
   }
