@@ -8,10 +8,13 @@ export type TimelineReporterOptions = {
   outputFile?: string;
   /** Path to a custom prompt template file. The file must include the `{data}` placeholder exactly once. */
   promptTemplateFile?: string;
+  /** Enables reporter debug logs and extra debug data in the generated HTML report. */
+  debug?: boolean;
 };
 
 const defaults = {
   outputFile: path.join('timeline-report', 'index.html'),
+  debug: false,
 } satisfies Partial<TimelineReporterOptions>;
 
 export type TimelineReporterOptionsResolved = ReturnType<typeof resolveOptions>;

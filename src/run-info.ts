@@ -9,6 +9,7 @@ import type { FullConfig, FullResult } from '@playwright/test/reporter';
 export type RunInfo = {
   reporterVersion: string;
   reporterError?: string;
+  debug?: boolean;
   status: FullResult['status'];
   startTime: number;
   duration: number;
@@ -30,15 +31,18 @@ export type MergeReportInfo = {
   tag?: string;
 };
 
+// eslint-disable-next-line max-params
 export function getRunInfo(
   result: FullResult,
   config: FullConfig,
   mergeReports: Record<string, MergeReportInfo>,
   reporterError?: string,
+  debug?: boolean,
 ): RunInfo {
   return {
     reporterVersion: getReporterVersion(),
     reporterError,
+    debug,
     status: result.status,
     startTime: result.startTime.getTime(),
     duration: result.duration,

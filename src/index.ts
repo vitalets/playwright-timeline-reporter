@@ -70,6 +70,7 @@ export default class TimelineReporter implements Reporter {
       this.config!,
       this.mergeReports.reports,
       this.mergeReports.error,
+      this.options.debug,
     );
     await this.stream?.close({
       '// __RUN_INFO__': runInfo,
@@ -120,4 +121,10 @@ export default class TimelineReporter implements Reporter {
   private warn(message: string) {
     logger.warn(`[timeline-reporter]: ${message}`);
   }
+
+  // for future use
+  // private debug(message: string, data?: unknown) {
+  //   if (!this.options.debug) return;
+  //   logger.log('[timeline-reporter:debug]', message, data ?? '');
+  // }
 }

@@ -34,8 +34,7 @@ export function buildChartData(allTests: TestTimings[], runInfo: RunInfo): Chart
   sortShards(shards, runInfo);
 
   shards.map(({ mergeReportId, tests }) => {
-    // const workerLanes = new WorkerLanes(tests, runInfo.fullyParallel).build();
-    const workerLanes = new WorkerLanes(tests, { debug: true }).build();
+    const workerLanes = new WorkerLanes(tests, { debug: runInfo.debug }).build();
     sortWorkersWithinShard(workerLanes);
 
     workerLanes.forEach(({ tests }, index) => {

@@ -88,6 +88,13 @@ Path for the generated report file, relative to config dir.
 
 Path to a custom LLM prompt template, must contain `{data}` exactly once. See the [default prompt](https://github.com/vitalets/playwright-timeline-reporter/blob/main/src/report/cards/prompt/default-prompt.ts).
 
+#### `debug`
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+Enables debug logging in the reporter and extra debug details in the generated HTML report.
+
 Example with options:
 
 ```ts
@@ -99,6 +106,7 @@ export default defineConfig({
       'playwright-timeline-reporter',
       {
         outputFile: './reports/timeline.html',
+        debug: true,
       },
     ],
   ],
