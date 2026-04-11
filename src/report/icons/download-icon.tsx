@@ -1,5 +1,5 @@
 /**
- * Download icon used by the AI Insights prompt button when the prompt is too large to copy.
+ * Download icon used by the AI Insights prompt button.
  */
 import { SVGProps } from 'react';
 
