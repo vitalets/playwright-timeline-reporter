@@ -64,10 +64,9 @@ Add the reporter to your `playwright.config.ts`:
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import { timelineReporter } from 'playwright-timeline-reporter';
 
 export default defineConfig({
-  reporter: [timelineReporter()],
+  reporter: [['playwright-timeline-reporter']],
 });
 ```
 
@@ -92,13 +91,16 @@ Path to a custom LLM prompt template, must contain `{data}` exactly once. See th
 Example with options:
 
 ```ts
-import { timelineReporter } from 'playwright-timeline-reporter';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   reporter: [
-    timelineReporter({
-      outputFile: './reports/timeline.html',
-    }),
+    [
+      'playwright-timeline-reporter',
+      {
+        outputFile: './reports/timeline.html',
+      },
+    ],
   ],
 });
 ```

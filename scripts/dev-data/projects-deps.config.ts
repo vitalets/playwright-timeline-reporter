@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: [
     ['dot'],
     [
-      `${projectRoot}/src/reporter.ts`,
+      `${projectRoot}/src/index.ts`,
       {
         outputFile: `${projectRoot}/src/report/with-projects-deps.tpl.html`,
       },

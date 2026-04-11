@@ -13,7 +13,7 @@ export default defineConfig({
     ['dot'],
     process.argv.includes('merge-reports')
       ? [
-          `${projectRoot}/src/reporter.ts`,
+          `${projectRoot}/src/index.ts`,
           {
             outputFile: `${projectRoot}/src/report/with-shards.tpl.html`,
           },
