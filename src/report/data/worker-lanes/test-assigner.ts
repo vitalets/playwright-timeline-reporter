@@ -117,15 +117,15 @@ function expandNewWorker(
  */
 function pruneBeams(beams: BeamState[], ctx: AssignContext): BeamState[] {
   if (beams.length <= ctx.maxBranches) return beams;
-  const maxGaps = Math.max(...beams.map((b) => countRestartGaps(b.lanes)));
-  if (maxGaps < ctx.restartsCountUntilPruningBranches) return beams;
+  const restartsCount = Math.max(...beams.map((b) => countRestartGaps(b.lanes)));
+  if (restartsCount < ctx.restartsCountUntilPruningBranches) return beams;
   beams.sort(
     (a, b) =>
       scoreRecentBranch(a.lanes, ctx.restartsCountUntilPruningBranches) -
       scoreRecentBranch(b.lanes, ctx.restartsCountUntilPruningBranches),
   );
   const pruned = beams.slice(0, ctx.maxBranches);
-  ctx.log(`  pruned ${beams.length} → ${pruned.length} beams (maxGaps=${maxGaps})`);
+  ctx.log(`BRANCHES PRUNED: ${beams.length} → ${pruned.length} beams`);
   return pruned;
 }
 
@@ -201,18 +201,20 @@ function tryFreshLane(
   const activeLanes = lanes.filter((l) => l.lastTestEndTime > test.startTime);
   if (activeLanes.length >= ctx.maxParallelWorkers) {
     ctx.log(
-      `  C: ${testRef(test)} → DISCARD` +
+      `DISCARD: ${testRef(test)}` +
         ` (activeLanes=${activeLanes.length} >= maxParallelWorkers=${ctx.maxParallelWorkers})`,
     );
     return null;
   }
   const unusedLane = lanes.find((l) => l.tests.length === 0);
   if (!unusedLane) {
-    ctx.log(`  C: ${testRef(test)} → DISCARD (no unused lane in pool)`);
+    ctx.log(`DISCARD: ${testRef(test)} (no unused lane in pool)`);
     return null;
   }
   const laneIdx = lanes.indexOf(unusedLane);
-  ctx.log(`  C: ${testRef(test)} → lane[${laneIdx}] (new slot, activeLanes=${activeLanes.length})`);
+  ctx.log(
+    `FRESH LINE: ${testRef(test)} → lane[${laneIdx}] (new slot, activeLanes=${activeLanes.length})`,
+  );
   const next = cloneLanes(lanes);
   next[laneIdx].tests.push(test);
   return { lanes: next };

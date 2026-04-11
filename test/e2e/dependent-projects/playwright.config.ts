@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: './specs',
   fullyParallel: true,
   workers: 3,
-  reporter: [['../../../dist/index.js']],
+  reporter: [['../../../dist/index.js', { debug: true }]],
   projects: [
     {
       name: 'project1',

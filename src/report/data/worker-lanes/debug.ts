@@ -17,3 +17,7 @@ export function testRef(t: TestTimings): string {
     `@${t.startTime}+${t.totalDuration}ms`,
   ].join(' ');
 }
+
+export function debug(...args: unknown[]) {
+  console.log('[worker-lanes]', ...args);
+}

@@ -4,10 +4,9 @@
  * See README.md for the full algorithm description and rationale.
  */
 import { TestTimings } from '../../../test-timings/types.js';
+import { debug } from './debug.js';
 import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
 import { beamAssign, type AssignContext } from './test-assigner.js';
-import { type WorkerLane } from './lane.js';
-import { testRef } from './debug.js';
 
 export class WorkerLanes {
   private readonly analysis: MarkerAnalysisResult;
@@ -28,7 +27,6 @@ export class WorkerLanes {
     if (!result) {
       throw new Error('WorkerLanes: failed to assign all tests — all beams were discarded.');
     }
-    this.logFinalLanes(result);
     return result.filter((lane) => lane.tests.length > 0).map((lane) => ({ tests: lane.tests }));
   }
 
@@ -44,30 +42,13 @@ export class WorkerLanes {
   }
 
   private log(...args: unknown[]) {
-    if (this.debug) console.log('[workers2]', ...args);
+    if (this.debug) debug(...args);
   }
 
   private logPhase1Results() {
     if (!this.debug) return;
-    this.log('=== INPUT TESTS ===');
-    this.sortedTests.forEach((t, i) => this.log(`  [${i}] ${testRef(t)}`));
-    this.log('=== PHASE 1 RESULTS ===');
-    this.log(`  maxParallelWorkers: ${this.analysis.maxParallelWorkers}`);
+    this.log(`maxParallelWorkers: ${this.analysis.maxParallelWorkers}`);
     const ppStr = JSON.stringify(Object.fromEntries(this.analysis.maxParallelWorkersPerProject));
-    this.log(`  maxParallelWorkersPerProject: ${ppStr}`);
-    const idxs = [...this.analysis.lastTestInWorker]
-      .map((t) => t.workerIndex)
-      .sort((a, b) => a - b);
-    this.log(`  lastTestInWorker (workerIndexes): [${idxs.join(', ')}]`);
-    this.log('=== PHASE 2 ASSIGNMENT ===');
-  }
-
-  private logFinalLanes(lanes: WorkerLane[]) {
-    if (!this.debug) return;
-    this.log('=== FINAL LANES ===');
-    lanes.forEach((lane, i) => {
-      const tests = lane.tests.map((t) => testRef(t)).join(' → ');
-      this.log(`  lane[${i}]: ${tests || '(empty)'}`);
-    });
+    this.log(`maxParallelWorkersPerProject: ${ppStr}`);
   }
 }

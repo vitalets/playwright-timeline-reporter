@@ -16,6 +16,7 @@ export default defineConfig({
       `${projectRoot}/src/index.ts`,
       {
         outputFile: `${projectRoot}/src/report/with-no-projects.tpl.html`,
+        debug: true,
       },
     ],
   ],
