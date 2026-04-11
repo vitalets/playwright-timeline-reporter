@@ -29,13 +29,13 @@ export type AssignContext = {
  */
 export class TestAssigner {
   constructor(
-    private readonly testTimings: TestTimings[],
+    private readonly tests: TestTimings[],
     private readonly lanes: WorkerLane[],
     private readonly ctx: AssignContext,
   ) {}
 
   assign(): WorkerLane[] | null {
-    if (this.testTimings.length === 0) return this.lanes;
+    if (this.tests.length === 0) return this.lanes;
     // Try same-worker continuation first (unambiguous — at most one lane can match).
     const sameWorker = this.trySameWorker();
     if (sameWorker !== undefined) return sameWorker;
@@ -51,7 +51,7 @@ export class TestAssigner {
    * Returns undefined when no matching lane exists (fall through to Step B/C).
    */
   private trySameWorker(): WorkerLane[] | null | undefined {
-    const [test, ...rest] = this.testTimings;
+    const [test, ...rest] = this.tests;
     const laneIdx = this.lanes.findIndex((lane) => lane.lastWorkerIndex === test.workerIndex);
     if (laneIdx < 0) return undefined;
     this.ctx.log(`  A: ${testRef(test)} → lane[${laneIdx}] (same workerIndex)`);
@@ -78,7 +78,7 @@ export class TestAssigner {
    * Discard this branch.
    */
   private tryFreshLane(): WorkerLane[] | null {
-    const [test, ...rest] = this.testTimings;
+    const [test, ...rest] = this.tests;
     const activeLanes = this.lanes.filter((l) => l.lastTestEndTime > test.startTime);
     if (activeLanes.length >= this.ctx.maxParallelWorkers) {
       this.ctx.log(
@@ -105,7 +105,7 @@ export class TestAssigner {
 
   /** Exactly one eligible lane — append and recurse without branching. */
   private tryCandidateAt(candidate: WorkerLane): WorkerLane[] | null {
-    const [test, ...rest] = this.testTimings;
+    const [test, ...rest] = this.tests;
     const laneIdx = this.lanes.indexOf(candidate);
     this.ctx.log(`  B: ${testRef(test)} → lane[${laneIdx}] (1 candidate)`);
     const next = cloneLanes(this.lanes);
@@ -119,7 +119,7 @@ export class TestAssigner {
    * Returns null only if every branch is discarded.
    */
   private branchAllCandidates(candidates: WorkerLane[]): WorkerLane[] | null {
-    const [test, ...rest] = this.testTimings;
+    const [test, ...rest] = this.tests;
     const idxs = candidates.map((c) => this.lanes.indexOf(c));
     this.ctx.log(`  B: ${testRef(test)} → branching into lanes [${idxs.join(', ')}]`);
     const results = candidates
@@ -160,7 +160,7 @@ export class TestAssigner {
    * only free project lane ended with a passing test.
    */
   private getCandidateLanes(): WorkerLane[] {
-    const test = this.testTimings[0];
+    const test = this.tests[0];
     let candidates = this.lanes.filter(
       (lane) =>
         lane.lastTest !== undefined &&

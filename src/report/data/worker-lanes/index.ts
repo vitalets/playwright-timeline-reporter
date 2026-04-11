@@ -5,7 +5,7 @@
  */
 import { TestTimings } from '../../../test-timings/types.js';
 import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
-import { TestAssigner, type AssignContext } from './assign-test.js';
+import { TestAssigner, type AssignContext } from './test-assigner.js';
 import { type WorkerLane } from './lane.js';
 import { testRef } from './debug.js';
 
