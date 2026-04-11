@@ -9,8 +9,11 @@ import { TestTimings } from '../../../test-timings/types.js';
  */
 export function testRef(t: TestTimings): string {
   const title = t.testBody.title.join(' > ');
-  return (
-    `W${t.workerIndex}/P${t.parallelIndex} ${t.projectName}` +
-    ` "${title}" [${t.status}] @${t.startTime}+${t.totalDuration}ms`
-  );
+  return [
+    `W${t.workerIndex}/P${t.parallelIndex}`,
+    t.projectName,
+    `"${title}"`,
+    `[${t.status}]`,
+    `@${t.startTime}+${t.totalDuration}ms`,
+  ].join(' ');
 }
