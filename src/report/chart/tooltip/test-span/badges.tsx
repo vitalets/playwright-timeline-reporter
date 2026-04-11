@@ -5,22 +5,18 @@ import { ChartSpan } from '../../../data/tests.js';
 import { formatTime } from '../../../utils.js';
 import { Badge } from '../badge.js';
 
-interface Field {
+type Field = {
   label: string;
-  value: string;
-}
+  value?: string | number;
+};
 
-interface FieldsProps {
-  chartSpan: ChartSpan;
-}
-
-export function Badges({ chartSpan }: FieldsProps) {
+export function Badges({ chartSpan }: { chartSpan: ChartSpan }) {
   const fields: Field[] = [
     ...getDurationBadge(chartSpan),
     ...getRetryBadge(chartSpan),
-    // these are not very informative
-    // ...getInvocationsBadge(chartSpan),
-    // ...getWorkerIndexBadge(chartSpan),
+    // for debug
+    { label: 'Worker Index', value: chartSpan.test.workerIndex },
+    { label: 'Parallel Index', value: chartSpan.test.parallelIndex },
   ];
 
   const rows: Field[][] = [];
@@ -54,5 +50,5 @@ function getDurationBadge(chartSpan: ChartSpan): Field[] {
 
 function getRetryBadge(chartSpan: ChartSpan): Field[] {
   if (chartSpan.test.retry === 0) return [];
-  return [{ label: 'Retry', value: String(chartSpan.test.retry) }];
+  return [{ label: 'Retry', value: chartSpan.test.retry }];
 }
