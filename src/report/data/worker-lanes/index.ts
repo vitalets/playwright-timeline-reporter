@@ -6,14 +6,14 @@
  *      overlap, without relying on any Playwright config flags (marker-analysis.ts).
  *   2. Backtracking assignment — assigns tests to lanes via recursive search, branching
  *      at ambiguous points and discarding branches that exceed observed concurrency
- *      limits (assign.ts). Surviving branches are scored by restart-gap variance
+ *      limits (assign-test.ts). Surviving branches are scored by restart-gap variance
  *      and the best is returned (scoring.ts).
  *
  * See README.md for the full algorithm description and rationale.
  */
 import { TestTimings } from '../../../test-timings/types.js';
 import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
-import { assignTests, type AssignContext } from './assign.js';
+import { TestAssigner, type AssignContext } from './assign-test.js';
 import { type WorkerLane } from './lane.js';
 import { testRef } from './debug.js';
 
@@ -32,7 +32,7 @@ export class WorkerLanes {
     this.logPhase1Results();
     const ctx = this.buildContext();
     const lanePool = this.analysis.lanePool.map((l) => l.clone());
-    const result = assignTests(this.sortedTests, lanePool, ctx);
+    const result = new TestAssigner(this.sortedTests, lanePool, ctx).assign();
     if (!result) {
       throw new Error('WorkerLanes2: failed to assign all tests — all branches were discarded.');
     }
