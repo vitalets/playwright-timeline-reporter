@@ -51,7 +51,7 @@ test.describe('MergeSharding', () => {
 
 function expectSuccess(cmd: string) {
   const mr = new MergeReports();
-  mr.tryProcessShardFiles(cmd.split(' '));
+  mr.tryProcessReportFiles(cmd.split(' '));
 
   expect(mr.reports).toEqual({
     '1': expect.objectContaining({
@@ -68,7 +68,7 @@ function expectSuccess(cmd: string) {
 
 function expectError(cmd: string, error: string) {
   const mr = new MergeReports();
-  mr.tryProcessShardFiles(cmd.split(' '));
+  mr.tryProcessReportFiles(cmd.split(' '));
 
   expect(mr.error).toContain(error);
 }

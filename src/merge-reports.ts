@@ -44,9 +44,9 @@ export class MergeReports {
     string /* merge report id */
   > = {};
 
-  tryProcessShardFiles(argv = process.argv) {
+  tryProcessReportFiles(argv = process.argv) {
     try {
-      this.processMergeReportsFiles(argv);
+      this.processReportFiles(argv);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       this.setError(`Failed to process shard files: ${message}`);
@@ -62,7 +62,7 @@ export class MergeReports {
     return this.testResultIdToReportId[testResultId];
   }
 
-  private processMergeReportsFiles(argv: string[]) {
+  private processReportFiles(argv: string[]) {
     const cmdIndex = argv.findIndex((arg) => arg === 'merge-reports');
     if (cmdIndex === -1) return;
 
@@ -70,7 +70,7 @@ export class MergeReports {
     const reportsDir = this.resolveReportsDir(reportsDirArg);
     if (!reportsDir) return;
 
-    const jsonlFiles = getReportsFiles(reportsDir);
+    const jsonlFiles = getReportFiles(reportsDir);
     if (jsonlFiles.length === 0) {
       this.setError(`No report files found in the merge reports directory: ${reportsDirArg}`);
       return;
@@ -126,7 +126,7 @@ export class MergeReports {
   }
 }
 
-function getReportsFiles(reportDir: string) {
+function getReportFiles(reportDir: string) {
   return fs
     .readdirSync(reportDir)
     .filter((entry) => entry.endsWith('.jsonl'))

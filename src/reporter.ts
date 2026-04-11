@@ -42,7 +42,7 @@ export default class TimelineReporter implements Reporter {
   onBegin(config: FullConfig) {
     this.config = config;
     this.configDir = config.configFile ? path.dirname(config.configFile) : process.cwd();
-    this.mergeReports.tryProcessShardFiles();
+    this.mergeReports.tryProcessReportFiles();
     this.openStream();
   }
 
