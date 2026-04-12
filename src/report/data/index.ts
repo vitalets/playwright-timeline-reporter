@@ -3,7 +3,7 @@
  */
 import type { RunInfo } from '../../run-info.js';
 import type { TestTimings } from '../../test-timings/types.js';
-import { WorkerLanes } from './worker-lanes/index.js';
+import { WorkerLanesByRestartDuration } from './worker-lanes/by-restart-duration/index.js';
 import { WorkerRestart } from './worker-restarts.js';
 import { buildWorkerTests, type ChartTest } from './tests.js';
 import { buildWorkerRestarts } from './worker-restarts.js';
@@ -34,7 +34,7 @@ export function buildChartData(allTests: TestTimings[], runInfo: RunInfo): Chart
   sortShards(shards, runInfo);
 
   shards.map(({ mergeReportId, tests }) => {
-    const workerLanes = new WorkerLanes(tests, { debug: runInfo.debug }).build();
+    const workerLanes = new WorkerLanesByRestartDuration(tests, { debug: runInfo.debug }).build();
     sortWorkersWithinShard(workerLanes);
 
     workerLanes.forEach(({ tests }, index) => {

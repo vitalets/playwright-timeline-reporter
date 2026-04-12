@@ -1,54 +1,25 @@
-/**
- * Worker-lanes algorithm: distributes Playwright test timings into visual timeline lanes.
- *
- * See README.md for the full algorithm description and rationale.
- */
 import { TestTimings } from '../../../test-timings/types.js';
-import { debug } from './debug.js';
-import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
-import { beamAssign, type AssignContext } from './test-assigner.js';
+import { ChartTest } from '../tests.js';
+import { WorkerLanesByParallelIndex } from './by-parallal-index/index.js';
+import { WorkerLanesByRestartDuration } from './by-restart-duration/index.js';
 
-export class WorkerLanes {
-  private readonly analysis: MarkerAnalysisResult;
-  private readonly sortedTests: TestTimings[];
-  private readonly debug: boolean;
+export type WorkerData = {
+  laneIndex: number;
+  workerIndex: number; // worker index within the shard / merge report
+  tests: ChartTest[];
+  mergeReportId?: string;
+};
 
-  constructor(tests: TestTimings[], { debug = false }: { debug?: boolean } = {}) {
-    this.debug = debug;
-    this.sortedTests = [...tests].sort((a, b) => a.startTime - b.startTime);
-    this.analysis = analyzeMarkers(this.sortedTests);
-  }
+type WorkerLanesStrategy = 'parallel-index' | 'restart-duration';
+const strategy: WorkerLanesStrategy = 'restart-duration';
 
-  build(): { tests: TestTimings[] }[] {
-    this.logPhase1Results();
-    const ctx = this.buildContext();
-    const lanePool = this.analysis.lanePool.map((l) => l.clone());
-    const result = beamAssign(this.sortedTests, lanePool, ctx);
-    if (!result) {
-      throw new Error('WorkerLanes: failed to assign all tests — all beams were discarded.');
-    }
-    return result.filter((lane) => lane.tests.length > 0).map((lane) => ({ tests: lane.tests }));
-  }
-
-  private buildContext(): AssignContext {
-    return {
-      lastTestInWorker: this.analysis.lastTestInWorker,
-      maxParallelWorkers: this.analysis.maxParallelWorkers,
-      maxParallelWorkersPerProject: this.analysis.maxParallelWorkersPerProject,
-      maxBranches: 10,
-      restartsCountUntilPruningBranches: 3,
-      log: (...args: unknown[]) => this.log(...args),
-    };
-  }
-
-  private log(...args: unknown[]) {
-    if (this.debug) debug(...args);
-  }
-
-  private logPhase1Results() {
-    if (!this.debug) return;
-    this.log(`maxParallelWorkers: ${this.analysis.maxParallelWorkers}`);
-    const ppStr = JSON.stringify(Object.fromEntries(this.analysis.maxParallelWorkersPerProject));
-    this.log(`maxParallelWorkersPerProject: ${ppStr}`);
+export function buildWorkerLanes(
+  tests: TestTimings[],
+  { debug = false }: { debug?: boolean } = {},
+) {
+  if (strategy === 'parallel-index') {
+    return new WorkerLanesByParallelIndex(tests).build();
+  } else {
+    return new WorkerLanesByRestartDuration(tests, { debug }).build();
   }
 }
