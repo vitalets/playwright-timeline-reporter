@@ -153,16 +153,14 @@ function countLaneRestartGaps(lane: WorkerLane): number {
  *   1. Its last test is in lastTestInWorker — its worker has no further tests
  *      scheduled, so the lane can be taken over by a new worker.
  *   2. Its last test's end time ≤ this test's start time — the lane is idle.
- *   3. (Lane consolidation) If the project has already occupied its per-project
+ *   3. Its last test did not pass in the same project as the current test.
+ *      A passing test should not trigger a same-project worker restart, so those
+ *      lanes are excluded from restart candidates.
+ *   4. (Lane consolidation) If the project has already occupied its per-project
  *      maximum number of concurrent lanes in this branch, restrict to lanes that
  *      already have tests from this project. This prevents a project with workers:1
  *      (all tests failing) from spreading across lanes — each failure bumps workerIndex,
  *      but all must funnel into the one established project lane.
- *
- * NOTE: There is intentionally no same-project/clean-ended exclusion.
- * The lastTestInWorker guard already ensures the predecessor worker is truly finished.
- * Adding a status-based exclusion would conflict with the consolidation rule when the
- * only free project lane ended with a passing test.
  */
 function getCandidateLanes(
   lanes: WorkerLane[],
@@ -173,7 +171,8 @@ function getCandidateLanes(
     (lane) =>
       lane.lastTest !== undefined &&
       ctx.lastTestInWorker.has(lane.lastTest) &&
-      lane.lastTestEndTime <= test.startTime,
+      lane.lastTestEndTime <= test.startTime &&
+      !isSameProjectPassedLane(lane, test),
   );
   const projectLanesUsed = lanes.filter((lane) =>
     lane.tests.some((t) => t.projectName === test.projectName),
@@ -186,6 +185,10 @@ function getCandidateLanes(
   }
   candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
   return candidates;
+}
+
+function isSameProjectPassedLane(lane: WorkerLane, test: TestTimings): boolean {
+  return lane.lastTest?.projectName === test.projectName && lane.lastTest.status === 'passed';
 }
 
 /**

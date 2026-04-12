@@ -35,7 +35,7 @@ Tests are processed in `startTime` order. For each test:
 If any lane's last test shares the test's `workerIndex`, the test comes from the same Playwright worker process. Append it to that lane with no branching.
 
 **Step B — New `workerIndex`, candidates exist**
-Collect eligible lanes (worker done + idle + consolidation rule below).
+Collect eligible lanes (worker done + idle + same-project passed exclusion + consolidation rule below).
 
 - 1 candidate → assign directly.
 - 2+ candidates → try each as a separate branch; collect all non-null results; pick the best-scoring survivor (see Branch scoring below).
@@ -46,6 +46,10 @@ The test needs a fresh slot. If the number of currently active lanes already equ
 ### Lane consolidation rule (Step B)
 
 Count `projectLanesUsed` = distinct lanes already containing tests from this project. If `projectLanesUsed >= maxParallelWorkersPerProject[project]`, restrict candidates to those existing project lanes. This prevents a project with `workers: 1` (where every failing test bumps `workerIndex`) from spreading across lanes — all must funnel into the one established project lane.
+
+### Same-project passed exclusion (Step B)
+
+If a candidate lane's last test belongs to the same project and finished with status `passed`, exclude that lane. A passing test should not imply a worker restart inside the same project, so assigning the next same-project test to that lane would create an artificial restart.
 
 ## Branch scoring (`scoring.ts`)
 
