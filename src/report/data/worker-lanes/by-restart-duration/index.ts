@@ -5,18 +5,21 @@
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { debug } from './debug.js';
-import { analyzeMarkers, type MarkerAnalysisResult } from './marker-analysis.js';
+import {
+  analyzeParallelWorkers,
+  type ParallelWorkersAnalysis,
+} from './analyze-parallel-workers.js';
 import { beamAssign, type AssignContext } from './test-assigner.js';
 
 export class WorkerLanesByRestartDuration {
-  private readonly analysis: MarkerAnalysisResult;
+  private readonly analysis: ParallelWorkersAnalysis;
   private readonly sortedTests: TestTimings[];
   private readonly debug: boolean;
 
   constructor(tests: TestTimings[], { debug = false }: { debug?: boolean } = {}) {
     this.debug = debug;
     this.sortedTests = [...tests].sort((a, b) => a.startTime - b.startTime);
-    this.analysis = analyzeMarkers(this.sortedTests);
+    this.analysis = analyzeParallelWorkers(this.sortedTests);
   }
 
   build(): { tests: TestTimings[] }[] {

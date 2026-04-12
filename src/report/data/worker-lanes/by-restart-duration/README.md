@@ -18,7 +18,7 @@ By default Playwright runs test files in parallel across the configured worker p
 
 This algorithm therefore derives the actual lane assignment purely from observed timing data (`workerIndex`, `parallelIndex`, `startTime`, `duration`), with no dependency on any Playwright config flags.
 
-## Phase 1 — Marker analysis (`marker-analysis.ts`)
+## Phase 1 — Parallel-worker analysis (`analyze-parallel-workers.ts`)
 
 Each test contributes a `start` and `end` timing marker. Markers are sorted by time (end-before-start on ties, to avoid counting boundary moments as concurrent) and walked with a running `Set<parallelIndex>`. This yields:
 

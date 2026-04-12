@@ -35,7 +35,7 @@
     "dev:deps": "parcel serve --no-cache src/report/with-projects-deps.tpl.html",
     "dev:shards": "parcel serve --no-cache src/report/with-shards.tpl.html",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build --no-cache src/report/index.tpl.html --dist-dir dist/report",
-    "test": "npm run build && npx playwright test -c test/e2e/parallel-mode-in-file",
+    "test": "npm run build && npx playwright test -c test/e2e/non-fully-parallel",
     "test:timings": "npx playwright test -c test/timings",
     "test:merge": "npx playwright test -c test/merge-reports",
     "test:all": "npm run test && npm run test:timings && npm run test:merge",

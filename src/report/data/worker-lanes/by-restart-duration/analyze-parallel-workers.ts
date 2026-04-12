@@ -1,11 +1,11 @@
 /**
- * Phase 1: scan test timings to derive peak concurrency limits and pre-create lane pool.
+ * Phase 1: analyze test timings to derive parallel-worker limits and pre-create lane pool.
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane } from './lane.js';
 
 /** Shared result produced by Phase 1 and consumed by Phase 2. */
-export type MarkerAnalysisResult = {
+export type ParallelWorkersAnalysis = {
   /** Global peak concurrency observed across all tests in the run. */
   maxParallelWorkers: number;
   /** Per-project peak concurrency, used by the lane consolidation rule in Phase 2. */
@@ -21,10 +21,10 @@ export type MarkerAnalysisResult = {
 };
 
 /**
- * Analyse timing markers from `sortedTests` (pre-sorted by startTime) and return
- * the peak concurrency data and pre-created lane pool for Phase 2.
+ * Analyze `sortedTests` (pre-sorted by startTime) to derive peak parallel-worker
+ * usage data and the pre-created lane pool for Phase 2.
  */
-export function analyzeMarkers(sortedTests: TestTimings[]): MarkerAnalysisResult {
+export function analyzeParallelWorkers(sortedTests: TestTimings[]): ParallelWorkersAnalysis {
   const markers = buildSortedMarkers(sortedTests);
   const peaks = walkMarkers(markers);
   const lastTestInWorker = buildLastTestInWorker(sortedTests);
