@@ -1,10 +1,10 @@
 /**
- * Catch rendering errors in the chart area and render a shared error panel.
+ * Catch rendering errors in the report app and render a shared error panel.
  */
 import { Component } from 'react';
 import { ReportError } from './error.js';
 
-export class ChartErrorBoundary extends Component<
+export class ReportErrorBoundary extends Component<
   { children: React.ReactNode },
   { error: Error | null }
 > {
