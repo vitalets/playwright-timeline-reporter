@@ -23,10 +23,7 @@ export function App() {
 }
 
 function AppContent() {
-  const timingsData = (readJson('#timeline-data') as TestTimings[]).map((t) => ({
-    ...t,
-    tags: t.tags ?? [],
-  }));
+  const timingsData = readJson('#timeline-data') as TestTimings[];
   const runInfo = readJson('#run-info') as RunInfo;
   const promptTemplate = readJson('#prompt-template') as string;
   const chartData = buildChartData(timingsData, runInfo);
