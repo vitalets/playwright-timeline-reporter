@@ -11,7 +11,7 @@ import type {
   FullConfig,
   FullResult,
 } from '@playwright/test/reporter';
-import { getRunInfo } from './run-info.js';
+import { getRunInfo, RunInfo } from './run-info.js';
 import { JsonStream } from './utils/json-stream.js';
 import {
   resolveOptions,
@@ -20,8 +20,11 @@ import {
 } from './options.js';
 import { MergeReports } from './merge-reports.js';
 import { TestTimingsBuilder } from './test-timings/index.js';
+import { TestTimings } from './test-timings/types.js';
 
 export type { TimelineReporterOptions };
+
+const TEMPLATE_PATH = fileURLToPath(new URL('./report/index.tpl.html', import.meta.url));
 
 const logger = console;
 
@@ -61,7 +64,7 @@ export default class TimelineReporter implements Reporter {
     if (mergeReportId !== undefined) this.currentMergeReportId = mergeReportId;
     data.mergeReportId = this.currentMergeReportId;
 
-    this.stream?.write(data);
+    this.writeStream(data);
   }
 
   async onEnd(result: FullResult) {
@@ -72,18 +75,25 @@ export default class TimelineReporter implements Reporter {
       this.mergeReports.error,
       this.options.debug,
     );
+    await this.closeStream(runInfo);
+  }
+
+  private openStream() {
+    const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
+    const outputFile = this.resolveOutputFile();
+    this.stream = new JsonStream({ template, filePath: outputFile });
+    this.stream.open();
+  }
+
+  protected writeStream(data: TestTimings) {
+    this.stream?.write(data);
+  }
+
+  protected async closeStream(runInfo: RunInfo) {
     await this.stream?.close({
       '// __RUN_INFO__': runInfo,
       '// __PROMPT_TEMPLATE__': this.getPromptTemplate() || '',
     });
-  }
-
-  private openStream() {
-    const templatePath = fileURLToPath(new URL('./report/index.tpl.html', import.meta.url));
-    const template = fs.readFileSync(templatePath, 'utf8');
-    const filePath = this.resolveOutputFile();
-    this.stream = new JsonStream({ template, filePath });
-    this.stream.open();
   }
 
   private getPromptTemplate() {
