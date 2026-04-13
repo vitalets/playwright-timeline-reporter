@@ -8,7 +8,7 @@
 
 ## Coding Guidelines
 
-- Add a concise JSDoc comment at the top of every source file you create describing the purpose of the file.
+- Add a concise JSDoc comment at the top of every file in src/ you create describing the purpose of the file.
 
 - In every file, place exported functions and components before non-exported helper functions. Try to order helper functions as they are used in the main exported component/function.
 

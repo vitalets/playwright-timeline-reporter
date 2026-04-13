@@ -2,6 +2,9 @@ import { test } from '@playwright/test';
 import { setTimeout } from 'node:timers/promises';
 
 test('test 1', async () => {
-  await setTimeout(1500);
-  throw new Error('Test error');
+  await setTimeout(100);
+});
+
+test('test 2', async ({}) => {
+  await setTimeout(200);
 });

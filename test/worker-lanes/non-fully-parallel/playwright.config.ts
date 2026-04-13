@@ -4,5 +4,5 @@ export default defineConfig({
   testDir: './specs',
   fullyParallel: true,
   workers: 3,
-  reporter: [['../../../dist/index.js', { debug: true }]],
+  reporter: [['../reporter.ts', { debug: true }]],
 });
