@@ -3,12 +3,12 @@
  */
 import type { RunInfo } from '../../run-info.js';
 import type { TestTimings } from '../../test-timings/types.js';
-import { WorkerLanesByRestartDuration } from './worker-lanes/by-restart-duration/index.js';
 import { WorkerRestart } from './worker-restarts.js';
 import { buildWorkerTests, type ChartTest } from './tests.js';
 import { buildWorkerRestarts } from './worker-restarts.js';
 import { buildProjects, type ProjectData } from './projects.js';
 import { groupBy } from '../../utils/group-by.js';
+import { buildWorkerLanes } from './worker-lanes/index.js';
 
 export type WorkerData = {
   laneIndex: number;
@@ -34,7 +34,7 @@ export function buildChartData(allTests: TestTimings[], runInfo: RunInfo): Chart
   sortShards(shards, runInfo);
 
   shards.map(({ mergeReportId, tests }) => {
-    const workerLanes = new WorkerLanesByRestartDuration(tests, { debug: runInfo.debug }).build();
+    const workerLanes = buildWorkerLanes(tests, { debug: runInfo.debug });
     sortWorkersWithinShard(workerLanes);
 
     workerLanes.forEach(({ tests }, index) => {
