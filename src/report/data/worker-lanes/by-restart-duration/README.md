@@ -38,7 +38,7 @@ If any lane's last test shares the test's `workerIndex`, the test comes from the
 Collect eligible lanes (worker done + idle + same-project passed exclusion + consolidation rule below).
 
 - 1 candidate → assign directly.
-- 2+ candidates → try each as a separate branch; collect all non-null results; pick the best-scoring survivor (see Branch scoring below).
+- 2+ candidates → try each as a separate branch; collect all non-null results; pick the best-ranked survivor (see Branch scoring below).
 
 **Step C — New `workerIndex`, no candidates**
 The test needs a fresh slot. If the number of currently active lanes already equals `maxParallelWorkers`, this branch would exceed the observed physical concurrency peak — discard it (`return null`). Otherwise claim the next empty lane from the pool.
@@ -53,4 +53,9 @@ If a candidate lane's last test belongs to the same project and finished with st
 
 ## Branch scoring (`scoring.ts`)
 
-When multiple branches survive, each is scored by the sum of per-project population variance of same-project worker-restart gaps (idle time between consecutive same-project tests in a lane that have different `workerIndex` values). Lower variance = more evenly spaced restarts = visually correct lane layout. The lowest-scoring branch wins; ties go to the first in traversal order. Cross-project transitions are excluded from scoring because they include browser/context setup overhead.
+When multiple branches survive, each branch gets a restart-duration variability value equal to the sum of per-project population variance of same-project worker-restart gaps (idle time between consecutive same-project tests in a lane that have different `workerIndex` values). Lower variability means more evenly spaced restarts and usually a more correct lane layout. Cross-project transitions are excluded because another project can have its own worker limit, so large gaps there are expected and are not useful for lane selection.
+
+If multiple branches have the same restart-duration variability, tie-breaking works like this:
+
+- Prefer a branch where every test file stays within a single lane for its project (`splitFilesCount === 0`). This matches non-fully-parallel runs where files should not hop between lanes.
+- Otherwise treat the run as effectively fully parallel and pick the branch with the smallest total same-project restart duration.

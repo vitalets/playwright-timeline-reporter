@@ -3,7 +3,7 @@
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane, cloneLanes } from './lane.js';
-import { scoreBranch, scoreRecentBranch } from './scoring.js';
+import { pickBestBranch, scoreRecentBranch } from './scoring.js';
 import { testRef } from './debug.js';
 
 /** Algorithm context passed unchanged through the assignment loop. */
@@ -17,11 +17,11 @@ export type AssignContext = {
   /** Maximum number of partial branches kept after each pruning step. */
   maxBranches: number;
   /**
-   * Number of most-recent restart gaps per project to use when scoring branches during pruning.
+   * Number of most-recent restart gaps per project to use when ranking branches during pruning.
    * Using only recent gaps makes the pruning signal sensitive to the latest decisions instead
    * of being diluted by the long history of identical early gaps shared by all branches.
-   * Pruning is also deferred until this many gaps have accumulated — before that the variance
-   * signal is too weak to distinguish branches reliably.
+   * Pruning is also deferred until this many gaps have accumulated — before that the
+   * restart-duration variability signal is too weak to distinguish branches reliably.
    * The final winner selection still uses all gaps for global quality.
    */
   restartsCountUntilPruningBranches: number;
@@ -37,10 +37,10 @@ type Branch = { lanes: WorkerLane[] };
  *
  * For each test (in startTime order), every tracked branch is expanded into one or
  * more successor branches (one per candidate lane). After expansion the pool is pruned
- * back to `maxBranches` by restart-gap variance score — but only once enough gaps have
- * accumulated to make the variance signal meaningful.
+ * back to `maxBranches` by recent restart-duration variability — but only once enough
+ * gaps have accumulated to make that signal meaningful.
  *
- * Returns the best-scored lanes on completion, or null if all branches were discarded
+ * Returns the best-ranked lanes on completion, or null if all branches were discarded
  * (constraint violation — should not occur with valid input).
  */
 export class TestAssigner {
@@ -63,8 +63,7 @@ export class TestAssigner {
       if (nextBranches.length === 0) return null;
       this.branches = this.pruneBranches(nextBranches);
     }
-    this.branches.sort((a, b) => scoreBranch(a.lanes) - scoreBranch(b.lanes));
-    return this.branches[0].lanes;
+    return pickBestBranch(this.branches.map((branch) => branch.lanes));
   }
 
   // ─── Branch expansion ────────────────────────────────────────────────────────
