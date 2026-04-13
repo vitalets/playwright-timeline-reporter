@@ -128,7 +128,7 @@ In the report you can do the following:
 - **Copy the AI prompt** and paste it into any AI chat for analysis.
 
 > [!NOTE]
-> **Your input is appreciated:** improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962)
+> **Your input is appreciated:** improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
 
 ## Sharding
 
@@ -159,6 +159,12 @@ npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./
 Open `./timeline-report/index.html` to see the unified timeline across all shards.
 
 > For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
+
+## Limitations
+
+Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed. See [microsoft/playwright#40175](https://github.com/microsoft/playwright/issues/40175).
+
+This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be inaccurate.
 
 ## Packages to speedup tests
 
