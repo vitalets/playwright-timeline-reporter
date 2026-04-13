@@ -9,7 +9,7 @@ import {
   analyzeParallelWorkers,
   type ParallelWorkersAnalysis,
 } from './analyze-parallel-workers.js';
-import { beamAssign, type AssignContext } from './test-assigner.js';
+import { TestAssigner, type AssignContext } from './test-assigner.js';
 
 export class WorkerLanesByRestartDuration {
   private readonly analysis: ParallelWorkersAnalysis;
@@ -23,12 +23,14 @@ export class WorkerLanesByRestartDuration {
   }
 
   build(): { tests: TestTimings[] }[] {
-    this.logPhase1Results();
+    this.logAnalysisResults();
     const ctx = this.buildContext();
     const lanePool = this.analysis.lanePool.map((l) => l.clone());
-    const result = beamAssign(this.sortedTests, lanePool, ctx);
+    const result = new TestAssigner(this.sortedTests, lanePool, ctx).run();
     if (!result) {
-      throw new Error('WorkerLanes: failed to assign all tests — all beams were discarded.');
+      throw new Error(
+        'WorkerLanes: failed to assign all tests — all candidate branches were discarded.',
+      );
     }
     return result.filter((lane) => lane.tests.length > 0).map((lane) => ({ tests: lane.tests }));
   }
@@ -48,7 +50,7 @@ export class WorkerLanesByRestartDuration {
     if (this.debug) debug(...args);
   }
 
-  private logPhase1Results() {
+  private logAnalysisResults() {
     if (!this.debug) return;
     this.log(`maxParallelWorkers: ${this.analysis.maxParallelWorkers}`);
     const ppStr = JSON.stringify(Object.fromEntries(this.analysis.maxParallelWorkersPerProject));

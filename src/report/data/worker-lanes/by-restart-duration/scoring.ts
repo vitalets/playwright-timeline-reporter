@@ -40,8 +40,8 @@ export function scoreBranch(lanes: WorkerLane[]): number {
 
 /**
  * Like scoreBranch but only considers the last `windowSize` restart gaps per project.
- * Used during beam pruning so that scoring is sensitive to recent branching decisions
- * rather than diluted by the long shared history common to all beams.
+ * Used during branch pruning so that scoring is sensitive to recent branching decisions
+ * rather than diluted by the long shared history common to all candidate branches.
  */
 export function scoreRecentBranch(lanes: WorkerLane[], windowSize: number): number {
   const gapsByProject = new Map<string, number[]>();

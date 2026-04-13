@@ -1,14 +1,14 @@
 /**
- * Phase 1: analyze test timings to derive parallel-worker limits and pre-create lane pool.
+ * Analyze test timings to derive parallel-worker limits and pre-create the lane pool.
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane } from './lane.js';
 
-/** Shared result produced by Phase 1 and consumed by Phase 2. */
+/** Shared analysis result consumed by the lane assignment logic. */
 export type ParallelWorkersAnalysis = {
   /** Global peak concurrency observed across all tests in the run. */
   maxParallelWorkers: number;
-  /** Per-project peak concurrency, used by the lane consolidation rule in Phase 2. */
+  /** Per-project peak concurrency, used by the lane consolidation rule during assignment. */
   maxParallelWorkersPerProject: Map<string, number>;
   /**
    * The last TestTimings for each distinct workerIndex (in startTime order).
@@ -22,7 +22,7 @@ export type ParallelWorkersAnalysis = {
 
 /**
  * Analyze `sortedTests` (pre-sorted by startTime) to derive peak parallel-worker
- * usage data and the pre-created lane pool for Phase 2.
+ * usage data and the pre-created lane pool for assignment.
  */
 export function analyzeParallelWorkers(sortedTests: TestTimings[]): ParallelWorkersAnalysis {
   const markers = buildSortedMarkers(sortedTests);
@@ -86,7 +86,7 @@ function buildSortedMarkers(tests: TestTimings[]): Marker[] {
  *
  * We need both because a project with workers:1 may only ever use parallelIndex=0
  * even while other projects concurrently use 0/1/2. The per-project peak is used
- * in Phase 2 (lane consolidation) to prevent a single-worker project from spreading.
+ * in lane consolidation to prevent a single-worker project from spreading.
  */
 function walkMarkers(markers: Marker[]): PeakResult {
   const globalActive = new Set<number>();
