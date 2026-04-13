@@ -15,9 +15,14 @@ export class WorkerLanesByRestartDuration {
   private readonly analysis: ParallelWorkersAnalysis;
   private readonly sortedTests: TestTimings[];
   private readonly debug: boolean;
+  private readonly fullyParallel: boolean;
 
-  constructor(tests: TestTimings[], { debug = false }: { debug?: boolean } = {}) {
+  constructor(
+    tests: TestTimings[],
+    { debug = false, fullyParallel = false }: { debug?: boolean; fullyParallel?: boolean } = {},
+  ) {
     this.debug = debug;
+    this.fullyParallel = fullyParallel;
     this.sortedTests = [...tests].sort((a, b) => a.startTime - b.startTime);
     this.analysis = analyzeParallelWorkers(this.sortedTests);
   }
@@ -36,12 +41,18 @@ export class WorkerLanesByRestartDuration {
   }
 
   private buildContext(): AssignContext {
+    const restartsCountUntilPruningBranches = 3;
+    // If all workers become candidates at some decision point, keep enough branches
+    // to repeat that full candidate fan-out across several restart windows and still
+    // have a chance to converge on the best branch.
+    const maxBranches = restartsCountUntilPruningBranches * this.analysis.maxParallelWorkers;
     return {
       lastTestInWorker: this.analysis.lastTestInWorker,
       maxParallelWorkers: this.analysis.maxParallelWorkers,
+      fullyParallel: this.fullyParallel,
       maxParallelWorkersPerProject: this.analysis.maxParallelWorkersPerProject,
-      maxBranches: 10,
-      restartsCountUntilPruningBranches: 3,
+      maxBranches,
+      restartsCountUntilPruningBranches,
       log: (...args: unknown[]) => this.log(...args),
     };
   }

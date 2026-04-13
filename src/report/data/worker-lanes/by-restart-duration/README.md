@@ -57,5 +57,5 @@ When multiple branches survive, each branch gets a restart-duration variability 
 
 If multiple branches have the same restart-duration variability, tie-breaking works like this:
 
-- Prefer a branch where every test file stays within a single lane for its project (`splitFilesCount === 0`). This matches non-fully-parallel runs where files should not hop between lanes.
-- Otherwise treat the run as effectively fully parallel and pick the branch with the smallest total same-project restart duration.
+- If Playwright `fullyParallel` is `false`, prefer a branch where every test file stays within a single lane for its project (`splitFilesCount === 0`). This matches non-fully-parallel runs where files should not hop between lanes.
+- Then pick the branch with the smallest total same-project restart duration.

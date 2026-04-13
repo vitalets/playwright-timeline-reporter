@@ -13,13 +13,18 @@ export type WorkerData = {
 type WorkerLanesStrategy = 'parallel-index' | 'restart-duration';
 const strategy: WorkerLanesStrategy = 'restart-duration';
 
+type BuildWorkerLanesOptions = {
+  debug?: boolean;
+  fullyParallel?: boolean;
+};
+
 export function buildWorkerLanes(
   tests: TestTimings[],
-  { debug = false }: { debug?: boolean } = {},
+  { debug = false, fullyParallel = false }: BuildWorkerLanesOptions = {},
 ) {
   if (strategy === 'parallel-index') {
     return new WorkerLanesByParallelIndex(tests).build();
   } else {
-    return new WorkerLanesByRestartDuration(tests, { debug }).build();
+    return new WorkerLanesByRestartDuration(tests, { debug, fullyParallel }).build();
   }
 }

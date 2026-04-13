@@ -10,6 +10,10 @@ type BranchMetrics = {
   splitFilesCount: number;
 };
 
+type PickBestBranchOptions = {
+  fullyParallel?: boolean;
+};
+
 /**
  * Given multiple fully-assigned lane snapshots (each a valid solution), pick the one
  * with the lowest restart-duration variability across projects.
@@ -21,15 +25,19 @@ type BranchMetrics = {
  * useful for lane selection.
  *
  * When restart-duration variability ties:
- * 1. Prefer a branch where every test file stays within a single lane for its project.
- * 2. Otherwise prefer the branch with the lowest total same-project restart duration.
+ * 1. If the run is not fully parallel, prefer a branch where every test file stays
+ *    within a single lane for its project.
+ * 2. Then prefer the branch with the lowest total same-project restart duration.
  */
-export function pickBestBranch(results: WorkerLane[][]): WorkerLane[] {
+export function pickBestBranch(
+  results: WorkerLane[][],
+  { fullyParallel = false }: PickBestBranchOptions = {},
+): WorkerLane[] {
   let bestResult = results[0];
   let bestMetrics = getBranchMetrics(results[0]);
   for (let i = 1; i < results.length; i++) {
     const metrics = getBranchMetrics(results[i]);
-    if (compareBranchMetrics(metrics, bestMetrics) < 0) {
+    if (compareBranchMetrics(metrics, bestMetrics, { fullyParallel }) < 0) {
       bestMetrics = metrics;
       bestResult = results[i];
     }
@@ -37,47 +45,54 @@ export function pickBestBranch(results: WorkerLane[][]): WorkerLane[] {
   return bestResult;
 }
 
-export function scoreBranch(lanes: WorkerLane[]): number {
-  const gapsByProject = new Map<string, number[]>();
-  for (const lane of lanes) {
-    collectRestartGaps(lane.tests, gapsByProject);
-  }
-  let total = 0;
-  for (const gaps of gapsByProject.values()) {
-    total += populationVariance(gaps);
-  }
-  return total;
+function getBranchMetrics(lanes: WorkerLane[]): BranchMetrics {
+  return {
+    restartDurationVariability: getRestartDurationVariability(lanes),
+    totalRestartDuration: getTotalRestartDuration(lanes),
+    splitFilesCount: getSplitFilesCount(lanes),
+  };
 }
 
 /**
- * Like scoreBranch but only considers the last `windowSize` restart gaps per project.
- * Used during branch pruning so that restart-duration variability stays sensitive to
- * recent branching decisions rather than diluted by the long shared history common to
- * all candidate branches.
+ * Returns restart-duration variability across all restart gaps, or only across the
+ * last `windowSize` gaps per project when a pruning window is provided.
  */
-export function scoreRecentBranch(lanes: WorkerLane[], windowSize: number): number {
+export function getRestartDurationVariability(lanes: WorkerLane[], windowSize?: number): number {
   const gapsByProject = new Map<string, number[]>();
   for (const lane of lanes) {
     collectRestartGaps(lane.tests, gapsByProject);
   }
+  return getRestartDurationVariabilityFromGaps(gapsByProject, windowSize);
+}
+
+export function getTotalRestartDuration(lanes: WorkerLane[]): number {
+  const gapsByProject = new Map<string, number[]>();
   let total = 0;
-  for (const gaps of gapsByProject.values()) {
-    total += populationVariance(gaps.slice(-windowSize));
+  for (const lane of lanes) {
+    total += collectRestartGaps(lane.tests, gapsByProject);
   }
   return total;
 }
 
-function getBranchMetrics(lanes: WorkerLane[]): BranchMetrics {
-  const gapsByProject = new Map<string, number[]>();
-  let totalRestartDuration = 0;
-  for (const lane of lanes) {
-    totalRestartDuration += collectRestartGaps(lane.tests, gapsByProject);
+export function getSplitFilesCount(lanes: WorkerLane[]): number {
+  const projectFiles = new Map<string, Map<string, Set<number>>>();
+  lanes.forEach((lane, laneIndex) => {
+    for (const test of lane.tests) {
+      const file = test.testBody.location.file;
+      const files = projectFiles.get(test.projectName) ?? new Map<string, Set<number>>();
+      const laneIndexes = files.get(file) ?? new Set<number>();
+      laneIndexes.add(laneIndex);
+      files.set(file, laneIndexes);
+      projectFiles.set(test.projectName, files);
+    }
+  });
+  let splitFilesCount = 0;
+  for (const files of projectFiles.values()) {
+    for (const laneIndexes of files.values()) {
+      if (laneIndexes.size > 1) splitFilesCount++;
+    }
   }
-  return {
-    restartDurationVariability: sumProjectVariances(gapsByProject),
-    totalRestartDuration,
-    splitFilesCount: countSplitFiles(lanes),
-  };
+  return splitFilesCount;
 }
 
 /**
@@ -101,48 +116,52 @@ function collectRestartGaps(tests: TestTimings[], gapsByProject: Map<string, num
   return totalDuration;
 }
 
-function sumProjectVariances(gapsByProject: Map<string, number[]>): number {
+function getRestartDurationVariabilityFromGaps(
+  gapsByProject: Map<string, number[]>,
+  windowSize?: number,
+): number {
   let total = 0;
   for (const gaps of gapsByProject.values()) {
-    total += populationVariance(gaps);
+    total += populationVariance(windowSize === undefined ? gaps : gaps.slice(-windowSize));
   }
   return total;
 }
 
-function countSplitFiles(lanes: WorkerLane[]): number {
-  const projectFiles = new Map<string, Map<string, Set<number>>>();
-  lanes.forEach((lane, laneIndex) => {
-    for (const test of lane.tests) {
-      const file = test.testBody.location.file;
-      const files = projectFiles.get(test.projectName) ?? new Map<string, Set<number>>();
-      const laneIndexes = files.get(file) ?? new Set<number>();
-      laneIndexes.add(laneIndex);
-      files.set(file, laneIndexes);
-      projectFiles.set(test.projectName, files);
-    }
-  });
-  let splitFilesCount = 0;
-  for (const files of projectFiles.values()) {
-    for (const laneIndexes of files.values()) {
-      if (laneIndexes.size > 1) splitFilesCount++;
-    }
-  }
-  return splitFilesCount;
+function compareBranchMetrics(
+  a: BranchMetrics,
+  b: BranchMetrics,
+  { fullyParallel }: PickBestBranchOptions,
+): number {
+  return (
+    preferLowerRestartDurationVariability(a, b) ||
+    preferNoSplitFilesInNonFullyParallelRun(a, b, { fullyParallel }) ||
+    preferLowerTotalRestartDuration(a, b) ||
+    preferLowerSplitFilesCount(a, b)
+  );
 }
 
-function compareBranchMetrics(a: BranchMetrics, b: BranchMetrics): number {
-  if (a.restartDurationVariability !== b.restartDurationVariability) {
-    return a.restartDurationVariability - b.restartDurationVariability;
-  }
+function preferLowerRestartDurationVariability(a: BranchMetrics, b: BranchMetrics): number {
+  return a.restartDurationVariability - b.restartDurationVariability;
+}
+
+function preferNoSplitFilesInNonFullyParallelRun(
+  a: BranchMetrics,
+  b: BranchMetrics,
+  { fullyParallel }: PickBestBranchOptions,
+): number {
+  if (fullyParallel) return 0;
 
   const aHasNoSplitFiles = a.splitFilesCount === 0;
   const bHasNoSplitFiles = b.splitFilesCount === 0;
-  if (aHasNoSplitFiles !== bHasNoSplitFiles) return aHasNoSplitFiles ? -1 : 1;
+  if (aHasNoSplitFiles === bHasNoSplitFiles) return 0;
+  return aHasNoSplitFiles ? -1 : 1;
+}
 
-  if (a.totalRestartDuration !== b.totalRestartDuration) {
-    return a.totalRestartDuration - b.totalRestartDuration;
-  }
+function preferLowerTotalRestartDuration(a: BranchMetrics, b: BranchMetrics): number {
+  return a.totalRestartDuration - b.totalRestartDuration;
+}
 
+function preferLowerSplitFilesCount(a: BranchMetrics, b: BranchMetrics): number {
   return a.splitFilesCount - b.splitFilesCount;
 }
 

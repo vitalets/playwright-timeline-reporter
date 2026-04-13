@@ -3,7 +3,7 @@
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane, cloneLanes } from './lane.js';
-import { pickBestBranch, scoreRecentBranch } from './scoring.js';
+import { getRestartDurationVariability, pickBestBranch } from './scoring.js';
 import { testRef } from './debug.js';
 
 /** Algorithm context passed unchanged through the assignment loop. */
@@ -12,6 +12,8 @@ export type AssignContext = {
   lastTestInWorker: Set<TestTimings>;
   /** Global peak concurrency — hard upper bound on simultaneous lanes. */
   maxParallelWorkers: number;
+  /** Whether Playwright config enabled fully parallel mode for this run/shard. */
+  fullyParallel: boolean;
   /** Per-project peak concurrency, used for lane consolidation. */
   maxParallelWorkersPerProject: Map<string, number>;
   /** Maximum number of partial branches kept after each pruning step. */
@@ -63,7 +65,12 @@ export class TestAssigner {
       if (nextBranches.length === 0) return null;
       this.branches = this.pruneBranches(nextBranches);
     }
-    return pickBestBranch(this.branches.map((branch) => branch.lanes));
+    return pickBestBranch(
+      this.branches.map((branch) => branch.lanes),
+      {
+        fullyParallel: this.ctx.fullyParallel,
+      },
+    );
   }
 
   // ─── Branch expansion ────────────────────────────────────────────────────────
@@ -118,8 +125,9 @@ export class TestAssigner {
 
   /**
    * Prune the branch pool to `maxBranches` branches.
-   * Branches are ranked by scoreRecentBranch (last pruningWindowSize gaps per project) so that
-   * pruning decisions reflect the most recent assignments rather than the long shared history.
+   * Branches are ranked by getRestartDurationVariability with the pruning window
+   * applied to the last gaps per project, so pruning decisions reflect the most
+   * recent assignments rather than the long shared history.
    * Pruning is skipped until at least minWorkerRestartsBeforePruning gaps exist in any branch.
    */
   private pruneBranches(branches: Branch[]): Branch[] {
@@ -128,8 +136,8 @@ export class TestAssigner {
     if (restartsCount < this.ctx.restartsCountUntilPruningBranches) return branches;
     branches.sort(
       (a, b) =>
-        scoreRecentBranch(a.lanes, this.ctx.restartsCountUntilPruningBranches) -
-        scoreRecentBranch(b.lanes, this.ctx.restartsCountUntilPruningBranches),
+        getRestartDurationVariability(a.lanes, this.ctx.restartsCountUntilPruningBranches) -
+        getRestartDurationVariability(b.lanes, this.ctx.restartsCountUntilPruningBranches),
     );
     const pruned = branches.slice(0, this.ctx.maxBranches);
     this.ctx.log(`BRANCHES PRUNED: ${branches.length} → ${pruned.length}`);
