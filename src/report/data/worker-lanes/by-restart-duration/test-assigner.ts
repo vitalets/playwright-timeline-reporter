@@ -3,11 +3,30 @@
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane, cloneLanes } from './lane.js';
-import { getRestartDurationVariability, pickBestBranch } from './scoring.js';
-import { testRef } from './debug.js';
+import { WorkerLanesDebug } from './debug.js';
+import { getBranchMetrics, getRestartDurationVariability, pickBestBranchIndex } from './scoring.js';
 
-/** Algorithm context passed unchanged through the assignment loop. */
-export type AssignContext = {
+/**
+ * Minimum idle gap required to consider a worker restart physically plausible.
+ * An effectively instant handoff is too short to represent a real worker restart,
+ * so such lanes are excluded from restart candidates.
+ */
+const MIN_RESTART_GAP_MS = 50;
+
+/**
+ * Number of most-recent restart gaps per project to use when ranking branches during pruning.
+ * Using only recent gaps makes the pruning signal sensitive to the latest decisions instead
+ * of being diluted by the long history of identical early gaps shared by all branches.
+ * Pruning is also deferred until this many gaps have accumulated — before that the
+ * restart-duration variability signal is too weak to distinguish branches reliably.
+ *
+ * This constant also determines the branch budget via:
+ * `maxBranches = RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * maxParallelWorkers`.
+ */
+const RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES = 4;
+
+/** Parameters passed unchanged through the assignment loop. */
+export type TestAssignerParams = {
   /** Set of tests that are the last test for their workerIndex in the run. */
   lastTestInWorker: Set<TestTimings>;
   /** Global peak concurrency — hard upper bound on simultaneous lanes. */
@@ -16,19 +35,8 @@ export type AssignContext = {
   fullyParallel: boolean;
   /** Per-project peak concurrency, used for lane consolidation. */
   maxParallelWorkersPerProject: Map<string, number>;
-  /** Maximum number of partial branches kept after each pruning step. */
-  maxBranches: number;
-  /**
-   * Number of most-recent restart gaps per project to use when ranking branches during pruning.
-   * Using only recent gaps makes the pruning signal sensitive to the latest decisions instead
-   * of being diluted by the long history of identical early gaps shared by all branches.
-   * Pruning is also deferred until this many gaps have accumulated — before that the
-   * restart-duration variability signal is too weak to distinguish branches reliably.
-   * The final winner selection still uses all gaps for global quality.
-   */
-  restartsCountUntilPruningBranches: number;
-  /** Debug logger (no-op when debug mode is off). */
-  log: (...args: unknown[]) => void;
+  /** Debug logger wrapper that handles enabled/disabled mode internally. */
+  debug: WorkerLanesDebug;
 };
 
 /** A single partial lane-assignment branch tracked during search. */
@@ -53,7 +61,7 @@ export class TestAssigner {
   constructor(
     private readonly tests: TestTimings[],
     initialLanes: WorkerLane[],
-    private readonly ctx: AssignContext,
+    private readonly params: TestAssignerParams,
   ) {
     this.branches = [{ lanes: initialLanes }];
   }
@@ -65,12 +73,13 @@ export class TestAssigner {
       if (nextBranches.length === 0) return null;
       this.branches = this.pruneBranches(nextBranches);
     }
-    return pickBestBranch(
-      this.branches.map((branch) => branch.lanes),
-      {
-        fullyParallel: this.ctx.fullyParallel,
-      },
-    );
+    const branches = this.branches.map((branch) => branch.lanes);
+    const branchMetrics = branches.map((lanes) => getBranchMetrics(lanes));
+    const bestBranchIndex = pickBestBranchIndex(branchMetrics, {
+      fullyParallel: this.params.fullyParallel,
+    });
+    this.logFinalBranchDecision(branchMetrics, bestBranchIndex);
+    return branches[bestBranchIndex];
   }
 
   // ─── Branch expansion ────────────────────────────────────────────────────────
@@ -103,16 +112,24 @@ export class TestAssigner {
       out.push({ lanes: next });
       return;
     }
-    this.expandNewWorker(out);
+    this.expandForNewWorker(out);
   }
 
   /** Expand the current branch for a test whose workerIndex has not been seen yet. */
-  private expandNewWorker(out: Branch[]): void {
+  private expandForNewWorker(out: Branch[]): void {
     const candidates = this.getCandidateLanes();
     if (candidates.length === 0) {
       const freshBranch = this.tryFreshLane();
       if (freshBranch) out.push(freshBranch);
       return;
+    }
+    if (candidates.length > 1) {
+      this.params.debug.logBranchFanOut(
+        this.test,
+        candidates,
+        this.currentLanes,
+        out.length + candidates.length,
+      );
     }
     for (const candidate of candidates) {
       const next = cloneLanes(this.currentLanes);
@@ -131,16 +148,16 @@ export class TestAssigner {
    * Pruning is skipped until at least minWorkerRestartsBeforePruning gaps exist in any branch.
    */
   private pruneBranches(branches: Branch[]): Branch[] {
-    if (branches.length <= this.ctx.maxBranches) return branches;
+    if (branches.length <= this.maxBranches) return branches;
     const restartsCount = Math.max(...branches.map((branch) => countRestartGaps(branch.lanes)));
-    if (restartsCount < this.ctx.restartsCountUntilPruningBranches) return branches;
+    if (restartsCount < RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES) return branches;
     branches.sort(
       (a, b) =>
-        getRestartDurationVariability(a.lanes, this.ctx.restartsCountUntilPruningBranches) -
-        getRestartDurationVariability(b.lanes, this.ctx.restartsCountUntilPruningBranches),
+        getRestartDurationVariability(a.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES) -
+        getRestartDurationVariability(b.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES),
     );
-    const pruned = branches.slice(0, this.ctx.maxBranches);
-    this.ctx.log(`BRANCHES PRUNED: ${branches.length} → ${pruned.length}`);
+    const pruned = branches.slice(0, this.maxBranches);
+    this.params.debug.logBranchesPruned(branches.length, pruned.length);
     return pruned;
   }
 
@@ -153,10 +170,12 @@ export class TestAssigner {
    *   1. Its last test is in lastTestInWorker — its worker has no further tests
    *      scheduled, so the lane can be taken over by a new worker.
    *   2. Its last test's end time ≤ this test's start time — the lane is idle.
-   *   3. Its last test did not pass in the same project as the current test.
+   *   3. The idle gap is at least MIN_RESTART_GAP_MS — an effectively instant handoff is
+   *      too short to represent a real worker restart, so that lane is excluded.
+   *   4. Its last test did not pass in the same project as the current test.
    *      A passing test should not trigger a same-project worker restart, so those
    *      lanes are excluded from restart candidates.
-   *   4. (Lane consolidation) If the project has already occupied its per-project
+   *   5. (Lane consolidation) If the project has already occupied its per-project
    *      maximum number of concurrent lanes in this branch, restrict to lanes that
    *      already have tests from this project. This prevents a project with workers:1
    *      (all tests failing) from spreading across lanes — each failure bumps workerIndex,
@@ -166,14 +185,14 @@ export class TestAssigner {
     let candidates = this.currentLanes.filter(
       (lane) =>
         lane.lastTest !== undefined &&
-        this.ctx.lastTestInWorker.has(lane.lastTest) &&
-        lane.lastTestEndTime <= this.test.startTime &&
+        this.params.lastTestInWorker.has(lane.lastTest) &&
+        this.getRestartGap(lane) >= MIN_RESTART_GAP_MS &&
         !this.isSameProjectPassedLane(lane),
     );
     const projectLanesUsed = this.currentLanes.filter((lane) =>
       lane.tests.some((laneTest) => laneTest.projectName === this.test.projectName),
     ).length;
-    const maxForProject = this.ctx.maxParallelWorkersPerProject.get(this.test.projectName) ?? 1;
+    const maxForProject = this.params.maxParallelWorkersPerProject.get(this.test.projectName) ?? 1;
     if (projectLanesUsed >= maxForProject) {
       candidates = candidates.filter((lane) =>
         lane.tests.some((laneTest) => laneTest.projectName === this.test.projectName),
@@ -189,6 +208,10 @@ export class TestAssigner {
     );
   }
 
+  private getRestartGap(lane: WorkerLane): number {
+    return this.test.startTime - lane.lastTestEndTime;
+  }
+
   /**
    * No eligible candidate lanes — try opening a fresh slot from the pre-created pool.
    * Returns null (this branch is discarded) if opening a new slot would exceed
@@ -198,31 +221,32 @@ export class TestAssigner {
     const activeLanes = this.currentLanes.filter(
       (lane) => lane.lastTestEndTime > this.test.startTime,
     );
-    if (activeLanes.length >= this.ctx.maxParallelWorkers) {
-      this.ctx.log(
-        `DISCARD: ${testRef(this.test)}` +
-          ` (activeLanes=${activeLanes.length} >= maxParallelWorkers=${this.ctx.maxParallelWorkers})`,
-      );
-      return null;
-    }
+    if (activeLanes.length >= this.params.maxParallelWorkers) return null;
     const unusedLane = this.currentLanes.find((lane) => lane.tests.length === 0);
-    if (!unusedLane) {
-      this.ctx.log(`DISCARD: ${testRef(this.test)} (no unused lane in pool)`);
-      return null;
-    }
-    const laneIdx = this.currentLanes.indexOf(unusedLane);
-    this.ctx.log(
-      `FRESH LINE: ${testRef(this.test)} → lane[${laneIdx}]` +
-        ` (new slot, activeLanes=${activeLanes.length})`,
-    );
+    if (!unusedLane) return null;
     const next = cloneLanes(this.currentLanes);
-    next[laneIdx].tests.push(this.test);
+    next[this.currentLanes.indexOf(unusedLane)].tests.push(this.test);
     return { lanes: next };
+  }
+
+  private logFinalBranchDecision(
+    branches: ReturnType<typeof getBranchMetrics>[],
+    bestBranchIndex: number,
+  ): void {
+    this.params.debug.logFinalBranchScoring({
+      fullyParallel: this.params.fullyParallel,
+      branches,
+      selectedIndex: bestBranchIndex,
+    });
   }
 
   private get currentLanes(): WorkerLane[] {
     if (!this.currentBranch) throw new Error('TestAssigner: currentBranch is not set');
     return this.currentBranch.lanes;
+  }
+
+  private get maxBranches(): number {
+    return RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * this.params.maxParallelWorkers;
   }
 
   private get test(): TestTimings {

@@ -35,7 +35,7 @@ Tests are processed in `startTime` order. For each test:
 If any lane's last test shares the test's `workerIndex`, the test comes from the same Playwright worker process. Append it to that lane with no branching.
 
 **Step B — New `workerIndex`, candidates exist**
-Collect eligible lanes (worker done + idle + same-project passed exclusion + consolidation rule below).
+Collect eligible lanes (worker done + idle + minimum restart gap + same-project passed exclusion + consolidation rule below).
 
 - 1 candidate → assign directly.
 - 2+ candidates → try each as a separate branch; collect all non-null results; pick the best-ranked survivor (see Branch scoring below).
@@ -50,6 +50,10 @@ Count `projectLanesUsed` = distinct lanes already containing tests from this pro
 ### Same-project passed exclusion (Step B)
 
 If a candidate lane's last test belongs to the same project and finished with status `passed`, exclude that lane. A passing test should not imply a worker restart inside the same project, so assigning the next same-project test to that lane would create an artificial restart.
+
+### Minimum restart gap (Step B)
+
+If the idle gap between a candidate lane's last test end and the next test start is below the configured minimum restart gap, exclude that lane. A worker restart is not instantaneous, so an effectively zero-gap handoff is not treated as a valid restart candidate.
 
 ## Branch scoring (`scoring.ts`)
 

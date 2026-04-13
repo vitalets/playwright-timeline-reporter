@@ -4,7 +4,7 @@
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane } from './lane.js';
 
-type BranchMetrics = {
+export type BranchMetrics = {
   restartDurationVariability: number;
   totalRestartDuration: number;
   splitFilesCount: number;
@@ -29,23 +29,22 @@ type PickBestBranchOptions = {
  *    within a single lane for its project.
  * 2. Then prefer the branch with the lowest total same-project restart duration.
  */
-export function pickBestBranch(
-  results: WorkerLane[][],
+export function pickBestBranchIndex(
+  branches: BranchMetrics[],
   { fullyParallel = false }: PickBestBranchOptions = {},
-): WorkerLane[] {
-  let bestResult = results[0];
-  let bestMetrics = getBranchMetrics(results[0]);
-  for (let i = 1; i < results.length; i++) {
-    const metrics = getBranchMetrics(results[i]);
-    if (compareBranchMetrics(metrics, bestMetrics, { fullyParallel }) < 0) {
-      bestMetrics = metrics;
-      bestResult = results[i];
+) {
+  let bestIndex = 0;
+  let bestMetrics = branches[0];
+  for (let i = 1; i < branches.length; i++) {
+    if (compareBranchMetrics(branches[i], bestMetrics, { fullyParallel }) < 0) {
+      bestMetrics = branches[i];
+      bestIndex = i;
     }
   }
-  return bestResult;
+  return bestIndex;
 }
 
-function getBranchMetrics(lanes: WorkerLane[]): BranchMetrics {
+export function getBranchMetrics(lanes: WorkerLane[]): BranchMetrics {
   return {
     restartDurationVariability: getRestartDurationVariability(lanes),
     totalRestartDuration: getTotalRestartDuration(lanes),
