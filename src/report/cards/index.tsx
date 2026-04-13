@@ -17,6 +17,7 @@ export function Cards({
   promptTemplate: string;
 }) {
   const { runInfo } = chartData;
+  const hasProjects = chartData.projects.length > 0;
 
   return (
     <section className="cards-grid">
@@ -27,7 +28,7 @@ export function Cards({
         value={chartData.workers.length}
       />
       <Card label="Worker Restarts" value={chartData.restarts.length} />
-      <Card label="Projects" value={chartData.projects.length || '-'} />
+      {hasProjects ? <Card label="Projects" value={chartData.projects.length} /> : null}
       <FullyParallelCard runInfo={runInfo} />
       <ScoreCard chartData={chartData} />
       <PromptCard chartData={chartData} promptTemplate={promptTemplate} />
