@@ -7,7 +7,7 @@ import { MinMax } from './lib/types.js';
 // add 1px padding to the right and top to prevent clipping of axis lines
 const CHART_PADDING = { left: 0, top: 1, right: 1, bottom: 50 };
 const SHARDS_AXIS_WIDTH = 30;
-const WORKERS_AXIS_WIDTH = 80;
+const WORKERS_AXIS_WIDTH = 140;
 
 // minmax values for row heights
 const ROW_MIN = 45;
