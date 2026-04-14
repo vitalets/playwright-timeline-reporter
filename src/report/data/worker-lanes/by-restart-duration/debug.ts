@@ -52,28 +52,33 @@ export class WorkerLanesDebug {
     if (!this.enabled) return;
     const { fullyParallel, branches, selectedIndex } = options;
     if (branches.length <= 1) return;
-    this.log(`FINAL BRANCH SCORING (fullyParallel=${fullyParallel}):`);
+    const maxInProjectRestarts = Math.max(...branches.map((b) => b.inProjectRestarts));
+    this.log(
+      `FINAL BRANCH SCORING (fullyParallel=${fullyParallel}, maxInProjectRestarts=${maxInProjectRestarts}):`,
+    );
     const rows = branches.map((branch, index) => ({
       index,
+      inProjectRestarts: String(branch.inProjectRestarts),
       variability: formatMetricNumber(branch.restartDurationVariability),
       totalRestart: formatMetricNumber(branch.totalRestartDuration),
       splitFiles: String(branch.splitFilesCount),
     }));
     const indexWidth = Math.max(...rows.map((row) => String(row.index).length));
+    const inProjectRestartsWidth = Math.max(...rows.map((row) => row.inProjectRestarts.length));
     const variabilityWidth = Math.max(...rows.map((row) => row.variability.length));
     const totalRestartWidth = Math.max(...rows.map((row) => row.totalRestart.length));
     const splitFilesWidth = Math.max(...rows.map((row) => row.splitFiles.length));
     rows.forEach((row) => {
       this.log(
         `  [${String(row.index).padStart(indexWidth)}]: ` +
+          `inProjectRestarts = ${row.inProjectRestarts.padStart(inProjectRestartsWidth)}, ` +
           `restartVariability = ${row.variability.padStart(variabilityWidth)}, ` +
           `totalRestart = ${row.totalRestart.padStart(totalRestartWidth)}, ` +
           `splitFiles = ${row.splitFiles.padStart(splitFilesWidth)}`,
       );
     });
-    this.log(
-      `FINAL BRANCH SELECTED: [${selectedIndex}] preferred because ${getPreferredReason(options)}`,
-    );
+    const reason = getPreferredReason({ ...options, maxInProjectRestarts });
+    this.log(`FINAL BRANCH SELECTED: [${selectedIndex}] preferred because ${reason}`);
   }
 }
 
@@ -118,69 +123,27 @@ function getFileName(filePath: string): string {
   return filePath.split(/[/\\]/).pop() || filePath;
 }
 
-// eslint-disable-next-line visual/complexity
 function getPreferredReason({
   fullyParallel,
   branches,
   selectedIndex,
+  maxInProjectRestarts,
 }: {
   fullyParallel: boolean;
   branches: BranchMetrics[];
   selectedIndex: number;
+  maxInProjectRestarts: number;
 }): string {
+  if (branches.length === 1) return 'only surviving branch';
   const selected = branches[selectedIndex];
-  const alternatives = branches.filter((_, index) => index !== selectedIndex);
-  const bestAlternative = alternatives.reduce<BranchMetrics | undefined>((best, candidate) => {
-    if (!best) return candidate;
-    return compareBranchScores(candidate, best, fullyParallel) < 0 ? candidate : best;
-  }, undefined);
-
-  if (!bestAlternative) return 'only surviving branch';
-
-  if (selected.restartDurationVariability !== bestAlternative.restartDurationVariability) {
-    return (
-      'lower restart-duration variability ' +
-      `(${formatMetricNumber(selected.restartDurationVariability)} < ` +
-      `${formatMetricNumber(bestAlternative.restartDurationVariability)})`
-    );
+  if (maxInProjectRestarts >= 2) {
+    return `restartDurationVariability=${formatMetricNumber(selected.restartDurationVariability)}`;
   }
-
-  if (!fullyParallel && selected.splitFilesCount === 0 && bestAlternative.splitFilesCount > 0) {
-    return (
-      'fullyParallel=false prefers no split files ' +
-      `(${selected.splitFilesCount} < ${bestAlternative.splitFilesCount})`
-    );
-  }
-
-  if (selected.totalRestartDuration !== bestAlternative.totalRestartDuration) {
-    return (
-      'lower total restart duration ' +
-      `(${formatMetricNumber(selected.totalRestartDuration)} < ` +
-      `${formatMetricNumber(bestAlternative.totalRestartDuration)})`
-    );
-  }
-
-  if (selected.splitFilesCount !== bestAlternative.splitFilesCount) {
-    return `fewer split files (${selected.splitFilesCount} < ${bestAlternative.splitFilesCount})`;
-  }
-
-  return 'ties on all scoring metrics and stays first by branch order';
-}
-
-function compareBranchScores(a: BranchMetrics, b: BranchMetrics, fullyParallel: boolean): number {
-  return (
-    a.restartDurationVariability - b.restartDurationVariability ||
-    compareNoSplitFiles(a, b, fullyParallel) ||
-    a.totalRestartDuration - b.totalRestartDuration ||
-    a.splitFilesCount - b.splitFilesCount
-  );
-}
-
-function compareNoSplitFiles(a: BranchMetrics, b: BranchMetrics, fullyParallel: boolean): number {
-  if (fullyParallel) return 0;
-
-  const aHasNoSplitFiles = a.splitFilesCount === 0;
-  const bHasNoSplitFiles = b.splitFilesCount === 0;
-  if (aHasNoSplitFiles === bHasNoSplitFiles) return 0;
-  return aHasNoSplitFiles ? -1 : 1;
+  const parts = [
+    !fullyParallel ? `splitFiles=${selected.splitFilesCount}` : '',
+    `totalRestartDuration=${formatMetricNumber(selected.totalRestartDuration)}`,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return `heuristic: ${parts}`;
 }

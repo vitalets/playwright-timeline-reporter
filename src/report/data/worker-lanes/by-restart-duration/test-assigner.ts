@@ -4,7 +4,12 @@
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane, cloneLanes } from './lane.js';
 import { WorkerLanesDebug } from './debug.js';
-import { getBranchMetrics, getRestartDurationVariability, pickBestBranchIndex } from './scoring.js';
+import {
+  countRestartGaps,
+  getBranchMetrics,
+  getRestartDurationVariability,
+  pickBestBranchIndex,
+} from './scoring.js';
 
 /**
  * Number of most-recent restart gaps per project to use when ranking branches during pruning.
@@ -253,19 +258,4 @@ export class TestAssigner {
     if (!this.currentTest) throw new Error('TestAssigner: currentTest is not set');
     return this.currentTest;
   }
-}
-
-/** Count same-project worker-restart gap events across all lanes in a branch. */
-function countRestartGaps(lanes: WorkerLane[]): number {
-  return lanes.reduce((sum, lane) => sum + countLaneRestartGaps(lane), 0);
-}
-
-function countLaneRestartGaps(lane: WorkerLane): number {
-  let count = 0;
-  for (let i = 1; i < lane.tests.length; i++) {
-    const prev = lane.tests[i - 1];
-    const curr = lane.tests[i];
-    if (prev.projectName === curr.projectName && prev.workerIndex !== curr.workerIndex) count++;
-  }
-  return count;
 }
