@@ -23,7 +23,8 @@ export function getDir(importMeta) {
 
 export function runPlaywright(t, { flags = '', env: extraEnv = {} } = {}) {
   const cwd = path.dirname(t.filePath);
-  const outputFile = path.join(cwd, 'out', filenamify(t.name), 'index.html');
+  const reportDir = getReportDir(cwd, t.name);
+  const outputFile = path.join(cwd, 'out', reportDir, 'index.html');
   const env = {
     PLAYWRIGHT_TIMELINE_OUTPUT_FILE: outputFile,
     ...defaultEnv,
@@ -63,6 +64,13 @@ export function assertLanes(lanes, expected) {
   } catch (e) {
     throw new Error(e.message);
   }
+}
+
+function getReportDir(cwd, testName) {
+  const dir = path.basename(cwd);
+  // strip directory name from the test name, because it is redundant and makes it too long.
+  const truncatedTestName = testName.replace(dir, '').trim();
+  return truncatedTestName ? filenamify(truncatedTestName) : '';
 }
 
 function filenamify(name) {
