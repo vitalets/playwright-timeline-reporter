@@ -25,7 +25,7 @@ test(`${dir} (one failing)`, () => {
   ]);
 });
 
-function normalizeLastTestName(lanes: string[][]): void {
+function normalizeLastTestName(lanes) {
   lanes.forEach(
     (lane) => (lane[lane.length - 1] = lane[lane.length - 1].replace(/test \d/, 'test X')),
   );

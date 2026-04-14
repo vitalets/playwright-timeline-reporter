@@ -1,8 +1,4 @@
-/**
- * Worker-lane snapshot test for the parallel-mode-in-file scenario.
- */
-import { test } from 'node:test';
-import { getDir, runPlaywright, assertLanes } from '../_helpers/pw-run.js';
+import { test, getDir, runPlaywright, assertLanes } from '../_helpers/pw-run.js';
 
 const dir = getDir(import.meta);
 

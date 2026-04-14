@@ -1,5 +1,6 @@
 /**
  * Helpers used on nodejs level to run Playwright tests via child process.
+ * Keep this file as js, because it works with globPatterns of node:test.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,13 +10,6 @@ import { expect } from '@playwright/test';
 
 export { test };
 
-type WorkerLanes = string[][];
-
-type RunPlaywrightOptions = {
-  flags?: string;
-  env?: NodeJS.ProcessEnv;
-};
-
 const env = {
   FORCE_COLOR: '0',
   PLAYWRIGHT_FORCE_TTY: '0',
@@ -24,14 +18,11 @@ const env = {
   // PLAYWRIGHT_TIMELINE_OUTPUT_FILE
 };
 
-export function getDir(importMeta: ImportMeta): string {
+export function getDir(importMeta) {
   return path.basename(importMeta.dirname);
 }
 
-export function runPlaywright(
-  dir: string,
-  { flags = '', env: extraEnv = {} }: RunPlaywrightOptions = {},
-): WorkerLanes {
+export function runPlaywright(dir, { flags = '', env: extraEnv = {} } = {}) {
   const scenarioDir = path.join(import.meta.dirname, '..', dir);
   const result = spawnSync(
     'npx',
@@ -62,10 +53,10 @@ export function runPlaywright(
   // console.log(result.stdout);
 
   const lanesFile = path.join(scenarioDir, 'timeline-report', 'lanes.json');
-  return JSON.parse(fs.readFileSync(lanesFile, 'utf8')) as WorkerLanes;
+  return JSON.parse(fs.readFileSync(lanesFile, 'utf8'));
 }
 
-export function assertLanes(lanes: WorkerLanes, expected: WorkerLanes): void {
+export function assertLanes(lanes, expected) {
   try {
     expect(lanes).toEqual(expected);
   } catch (e) {
