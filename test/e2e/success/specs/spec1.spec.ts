@@ -7,7 +7,7 @@ test('test 1', async () => {
 
 test('test 2', async () => {
   await setTimeout(200);
-  throw new Error('Test error');
+  // throw new Error('Test error');
 });
 
 test('test 3', async () => {
