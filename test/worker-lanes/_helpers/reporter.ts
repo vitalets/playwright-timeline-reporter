@@ -4,10 +4,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import TimelineReporter from '../../dist/index.js';
-import { buildChartData, type ChartData } from '../../src/report/data/index.js';
-import type { RunInfo } from '../../src/run-info.js';
-import type { TestTimings } from '../../src/test-timings/types.js';
+import TimelineReporter from '../../../dist/index.js';
+import { buildChartData, type ChartData } from '../../../src/report/data/index.js';
+import type { RunInfo } from '../../../src/run-info.js';
+import type { TestTimings } from '../../../src/test-timings/types.js';
 
 export default class WorkerLanesReporter extends TimelineReporter {
   testTimings: TestTimings[] = [];
