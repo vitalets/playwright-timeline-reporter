@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-14
+
 - Added an optional `debug` reporter option to enable reporter logs.
 - Removed the `timelineReporter()` helper. Use the reporter directly as a string path: `reporter: [['playwright-timeline-reporter']]`.
 - Refactored worker-lanes algorithm.

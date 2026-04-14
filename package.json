@@ -1,7 +1,7 @@
 {
   "name": "playwright-timeline-reporter",
   "description": "Interactive timeline report for Playwright test runs",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitalets/playwright-timeline-reporter.git"
