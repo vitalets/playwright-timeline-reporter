@@ -55,8 +55,8 @@ export class WorkerLanesDebug {
     this.log(`FINAL BRANCH SCORING (fullyParallel=${fullyParallel}):`);
     const rows = branches.map((branch, index) => ({
       index,
-      variability: String(branch.restartDurationVariability),
-      totalRestart: String(branch.totalRestartDuration),
+      variability: formatMetricNumber(branch.restartDurationVariability),
+      totalRestart: formatMetricNumber(branch.totalRestartDuration),
       splitFiles: String(branch.splitFilesCount),
     }));
     const indexWidth = Math.max(...rows.map((row) => String(row.index).length));
@@ -75,6 +75,12 @@ export class WorkerLanesDebug {
       `FINAL BRANCH SELECTED: [${selectedIndex}] preferred because ${getPreferredReason(options)}`,
     );
   }
+}
+
+function formatMetricNumber(value: number): string {
+  if (!Number.isFinite(value)) return String(value);
+  if (Number.isInteger(value)) return String(value);
+  return value.toFixed(0);
 }
 
 function formatProjectWorkers(maxParallelWorkersPerProject: Map<string, number>): string {
@@ -129,12 +135,13 @@ function getPreferredReason({
     return compareBranchScores(candidate, best, fullyParallel) < 0 ? candidate : best;
   }, undefined);
 
-  if (!bestAlternative) return 'it is the only surviving branch';
+  if (!bestAlternative) return 'only surviving branch';
 
   if (selected.restartDurationVariability !== bestAlternative.restartDurationVariability) {
     return (
-      'it has lower restart-duration variability ' +
-      `(${selected.restartDurationVariability} < ${bestAlternative.restartDurationVariability})`
+      'lower restart-duration variability ' +
+      `(${formatMetricNumber(selected.restartDurationVariability)} < ` +
+      `${formatMetricNumber(bestAlternative.restartDurationVariability)})`
     );
   }
 
@@ -147,16 +154,17 @@ function getPreferredReason({
 
   if (selected.totalRestartDuration !== bestAlternative.totalRestartDuration) {
     return (
-      'it has lower total restart duration ' +
-      `(${selected.totalRestartDuration} < ${bestAlternative.totalRestartDuration})`
+      'lower total restart duration ' +
+      `(${formatMetricNumber(selected.totalRestartDuration)} < ` +
+      `${formatMetricNumber(bestAlternative.totalRestartDuration)})`
     );
   }
 
   if (selected.splitFilesCount !== bestAlternative.splitFilesCount) {
-    return `it has fewer split files (${selected.splitFilesCount} < ${bestAlternative.splitFilesCount})`;
+    return `fewer split files (${selected.splitFilesCount} < ${bestAlternative.splitFilesCount})`;
   }
 
-  return 'it ties on all scoring metrics and stays first by branch order';
+  return 'ties on all scoring metrics and stays first by branch order';
 }
 
 function compareBranchScores(a: BranchMetrics, b: BranchMetrics, fullyParallel: boolean): number {
