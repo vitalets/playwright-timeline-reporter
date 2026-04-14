@@ -9,6 +9,13 @@ import { expect } from '@playwright/test';
 
 export { test };
 
+type WorkerLanes = string[][];
+
+type RunPlaywrightOptions = {
+  flags?: string;
+  env?: NodeJS.ProcessEnv;
+};
+
 const env = {
   FORCE_COLOR: '0',
   PLAYWRIGHT_FORCE_TTY: '0',
@@ -17,13 +24,15 @@ const env = {
   // PLAYWRIGHT_TIMELINE_OUTPUT_FILE
 };
 
-export function getDir(importMeta) {
+export function getDir(importMeta: ImportMeta): string {
   return path.basename(importMeta.dirname);
 }
 
-export function runPlaywright(dir, options = {}) {
+export function runPlaywright(
+  dir: string,
+  { flags = '', env: extraEnv = {} }: RunPlaywrightOptions = {},
+): WorkerLanes {
   const scenarioDir = path.join(import.meta.dirname, '..', dir);
-  const { flags = '', env: extraEnv = {} } = options;
   const result = spawnSync(
     'npx',
     [
@@ -44,8 +53,7 @@ export function runPlaywright(dir, options = {}) {
     throw new Error(`Failed to spawn playwright: ${result.error.message}`);
   }
 
-  const validExitCodes = [0, 1];
-  if (!validExitCodes.includes(result.status)) {
+  if (result.status !== 0 && result.status !== 1) {
     const output = (result.stdout ?? '') + (result.stderr ?? '');
     throw new Error(`Playwright exited with code ${result.status}.\n${output}`);
   }
@@ -54,10 +62,10 @@ export function runPlaywright(dir, options = {}) {
   // console.log(result.stdout);
 
   const lanesFile = path.join(scenarioDir, 'timeline-report', 'lanes.json');
-  return JSON.parse(fs.readFileSync(lanesFile, 'utf8'));
+  return JSON.parse(fs.readFileSync(lanesFile, 'utf8')) as WorkerLanes;
 }
 
-export function assertLanes(lanes, expected) {
+export function assertLanes(lanes: WorkerLanes, expected: WorkerLanes): void {
   try {
     expect(lanes).toEqual(expected);
   } catch (e) {
