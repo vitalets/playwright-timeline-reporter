@@ -1,6 +1,6 @@
 {
   "name": "playwright-timeline-reporter",
-  "description": "Interactive timeline report for Playwright test runs",
+  "description": "Interactive timeline report for Playwright",
   "version": "1.1.0",
   "repository": {
     "type": "git",
