@@ -8,7 +8,7 @@ export { test };
 
 export async function testBody(testInfo: TestInfo, delay: number, error?: string) {
   await new Promise((resolve) => setTimeout(resolve, delay));
-  if (error || process.env.FAIL_TEST === buildTestTitle(testInfo)) {
+  if (error || process.env.FAIL_TEST?.includes(buildTestTitle(testInfo))) {
     throw new Error(error || `error`);
   }
 }

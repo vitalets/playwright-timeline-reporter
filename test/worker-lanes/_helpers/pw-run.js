@@ -10,7 +10,6 @@ import { expect } from '@playwright/test';
 export { test };
 
 const env = {
-  ...process.env,
   FORCE_COLOR: '0',
   PLAYWRIGHT_FORCE_TTY: '0',
   PLAYWRIGHT_TIMELINE_DEBUG: '1',
@@ -37,7 +36,7 @@ export function runPlaywright(dir, options = {}) {
     {
       cwd: scenarioDir,
       encoding: 'utf8',
-      env: { ...env, ...extraEnv },
+      env: { ...process.env, ...env, ...extraEnv },
     },
   );
 
