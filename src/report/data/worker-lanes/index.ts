@@ -1,6 +1,6 @@
 import { TestTimings } from '../../../test-timings/types.js';
 import { ChartTest } from '../tests.js';
-import { WorkerLanesByParallelIndex } from './by-parallal-index/index.js';
+import { WorkerLanesByParallelIndex } from './by-parallel-index/index.js';
 import { WorkerLanesByRestartGaps } from './by-restart-gaps/index.js';
 
 export type WorkerData = {
