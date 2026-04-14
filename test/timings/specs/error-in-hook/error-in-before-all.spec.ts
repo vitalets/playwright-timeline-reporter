@@ -1,4 +1,4 @@
-import { base, delay } from '../../../helpers.js';
+import { base, delay } from '../../helpers.js';
 
 const test = base.extend({});
 

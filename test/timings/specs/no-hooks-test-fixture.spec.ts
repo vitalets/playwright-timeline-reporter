@@ -1,4 +1,4 @@
-import { base, delay, fixture } from '../../helpers.js';
+import { base, delay, fixture } from '../helpers.js';
 
 const base1 = base.extend<{ testFixture3: void }>({
   testFixture3: async ({}, use) => fixture(100, use, 100),

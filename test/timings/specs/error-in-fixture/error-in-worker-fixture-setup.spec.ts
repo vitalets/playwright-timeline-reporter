@@ -1,4 +1,4 @@
-import { base, delay, fixture } from '../../../helpers.js';
+import { base, delay, fixture } from '../../helpers.js';
 
 const test = base.extend<{}, { workerFixture: void }>({
   workerFixture: [async ({}, use) => fixture([100, 'my error'], use, 100), { scope: 'worker' }],

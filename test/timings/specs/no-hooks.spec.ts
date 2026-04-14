@@ -1,4 +1,4 @@
-import { base as test, delay } from '../../helpers.js';
+import { base as test, delay } from '../helpers.js';
 
 test('test 1', ({}) => delay(100));
 

@@ -1,7 +1,7 @@
 /**
  * Error in test fixture setup, referenced in beforeAll hook.
  */
-import { base, delay, fixture } from '../../../helpers.js';
+import { base, delay, fixture } from '../../helpers.js';
 
 const test = base.extend<{ testFixture: void }>({
   testFixture: async ({}, use) => fixture([100, 'my error'], use, 100),

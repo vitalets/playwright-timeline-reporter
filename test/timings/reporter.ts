@@ -13,7 +13,7 @@ import type {
 } from '@playwright/test/reporter';
 import { expect } from '@playwright/test';
 import { TestTimingsBuilder } from '../../src/test-timings/index.js';
-import { renderTimings, round } from '../helpers.js';
+import { renderTimings, round } from './helpers.js';
 
 const logger = console;
 
