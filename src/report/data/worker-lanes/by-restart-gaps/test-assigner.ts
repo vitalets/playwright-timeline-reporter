@@ -168,25 +168,10 @@ export class TestAssigner {
 
   // ─── Candidate lane collection ──────────────────────────────────────────────
 
-  /**
-   * Collect lanes eligible to receive a test whose workerIndex has not been seen yet.
-   *
-   * A lane is eligible when ALL of the following hold:
-   *   1. Its last test is in lastTestInWorker — its worker has no further tests
-   *      scheduled, so the lane can be taken over by a new worker.
-   *   2. Its last test's end time ≤ this test's start time — the lane is idle.
-   *   3. The idle gap is at least MIN_RESTART_GAP_MS — an effectively instant handoff is
-   *      too short to represent a real worker restart, so that lane is excluded.
-   *   4. Its last test did not pass in the same project as the current test.
-   *      A passing test should not trigger a same-project worker restart, so those
-   *      lanes are excluded from restart candidates.
-   *   5. (Lane consolidation) If the project has already occupied its per-project
-   *      maximum number of concurrent lanes in this branch, restrict to lanes that
-   *      already have tests from this project. This prevents a project with workers:1
-   *      (all tests failing) from spreading across lanes — each failure bumps workerIndex,
-   *      but all must funnel into the one established project lane.
-   */
+  /** Collect lanes eligible to receive a test whose workerIndex has not been seen yet. */
   private getCandidateLanes(): WorkerLane[] {
+    // Candidate lane must be idle, worker must be done, gap must be plausible,
+    // and the lane must not have a passed test from the same project (otherwise why workerIndex changed?).
     let candidates = this.currentLanes.filter(
       (lane) =>
         lane.lastTest !== undefined &&
@@ -194,6 +179,9 @@ export class TestAssigner {
         this.getRestartGap(lane) >= MIN_RESTART_GAP_MS &&
         !this.isSameProjectPassedLane(lane),
     );
+    // Lane consolidation: if the project is already at its per-project lane ceiling,
+    // restrict to lanes that already contain tests from this project. Prevents a project with
+    // own workers limit from spreading across other lanes.
     const projectLanesUsed = this.currentLanes.filter((lane) =>
       lane.tests.some((laneTest) => laneTest.projectName === this.test.projectName),
     ).length;
@@ -203,6 +191,11 @@ export class TestAssigner {
         lane.tests.some((laneTest) => laneTest.projectName === this.test.projectName),
       );
     }
+    // Switched-away exclusion: prefer lanes that have not switched away from this
+    // project. Returning a project to a lane that already moved on would create an interleaved
+    // sequence (project A - project B - project A). Fall back to all candidates if every one has switched away.
+    const notSwitchedAway = candidates.filter((lane) => !this.hasSwitchedFromProject(lane));
+    if (notSwitchedAway.length > 0) candidates = notSwitchedAway;
     candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
     return candidates;
   }
@@ -211,6 +204,13 @@ export class TestAssigner {
     return (
       lane.lastTest?.projectName === this.test.projectName && lane.lastTest.status === 'passed'
     );
+  }
+
+  /** Returns true when the lane previously ran tests from the current project but its last
+   *  test belongs to a different project — i.e. the lane has switched away from this project. */
+  private hasSwitchedFromProject(lane: WorkerLane): boolean {
+    if (lane.lastTest?.projectName === this.test.projectName) return false;
+    return lane.tests.some((t) => t.projectName === this.test.projectName);
   }
 
   private getRestartGap(lane: WorkerLane): number {
