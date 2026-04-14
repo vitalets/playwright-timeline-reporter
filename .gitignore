@@ -13,3 +13,4 @@ dist
 src/report/with-*.tpl.html
 /todo.txt
 
+test/**/out

@@ -10,20 +10,25 @@ import { expect } from '@playwright/test';
 
 export { test };
 
-const env = {
+const defaultEnv = {
+  ...process.env,
   FORCE_COLOR: '0',
   PLAYWRIGHT_FORCE_TTY: '0',
   PLAYWRIGHT_TIMELINE_DEBUG: '1',
-  // todo: provide custom paths for output files (multiple tests in a dir).
-  // PLAYWRIGHT_TIMELINE_OUTPUT_FILE
 };
 
 export function getDir(importMeta) {
   return path.basename(importMeta.dirname);
 }
 
-export function runPlaywright(dir, { flags = '', env: extraEnv = {} } = {}) {
-  const scenarioDir = path.join(import.meta.dirname, '..', dir);
+export function runPlaywright(t, { flags = '', env: extraEnv = {} } = {}) {
+  const cwd = path.dirname(t.filePath);
+  const outputFile = path.join(cwd, 'out', filenamify(t.name), 'index.html');
+  const env = {
+    PLAYWRIGHT_TIMELINE_OUTPUT_FILE: outputFile,
+    ...defaultEnv,
+    ...extraEnv,
+  };
   const result = spawnSync(
     'npx',
     [
@@ -33,11 +38,7 @@ export function runPlaywright(dir, { flags = '', env: extraEnv = {} } = {}) {
       '--reporter=../_helpers/reporter.ts',
       ...flags.split(' ').filter(Boolean),
     ],
-    {
-      cwd: scenarioDir,
-      encoding: 'utf8',
-      env: { ...process.env, ...env, ...extraEnv },
-    },
+    { cwd, env },
   );
 
   if (result.error) {
@@ -52,7 +53,7 @@ export function runPlaywright(dir, { flags = '', env: extraEnv = {} } = {}) {
   // todo: add smart output when needed
   // console.log(result.stdout);
 
-  const lanesFile = path.join(scenarioDir, 'timeline-report', 'lanes.json');
+  const lanesFile = path.join(path.dirname(outputFile), 'lanes.json');
   return JSON.parse(fs.readFileSync(lanesFile, 'utf8'));
 }
 
@@ -62,4 +63,11 @@ export function assertLanes(lanes, expected) {
   } catch (e) {
     throw new Error(e.message);
   }
+}
+
+function filenamify(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
