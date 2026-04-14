@@ -12,6 +12,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      # no way to avoid repeating the paths here
       - 'src/**'
       - 'test/**'
       - 'package*.json'
@@ -67,4 +68,11 @@ jobs:
         env:
           npm_config_min_release_age: 0
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:all
+      - run: |
+          npm run test:e2e
+          npm run test:timings
+          npm run test:merge
+      # test:lanes are heavy, run only in the latest pw
+      - if: matrix.playwright-version == '1.59' || matrix.playwright-version == 'beta'
+        run: |
+          npm run test:lanes

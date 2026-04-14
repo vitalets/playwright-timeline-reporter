@@ -1,10 +1,8 @@
 import { test } from '@playwright/test';
 import { setTimeout } from 'node:timers/promises';
 
-test.describe.configure({ mode: 'parallel' });
-
 test('test 1', async () => {
-  await setTimeout(200);
+  await setTimeout(100);
 });
 
 test('test 2', async () => {
@@ -13,6 +11,5 @@ test('test 2', async () => {
 });
 
 test('test 3', async () => {
-  await setTimeout(300);
-  throw new Error('Test error');
+  await setTimeout(400);
 });

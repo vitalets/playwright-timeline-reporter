@@ -2,7 +2,7 @@ import { test, getDir, runPlaywright, assertLanes } from '../_helpers/pw-run.js'
 
 const dir = getDir(import.meta);
 
-test(`${dir} (all tests pass)`, () => {
+test(`${dir} (all passing)`, () => {
   const lanes = runPlaywright(dir);
 
   // tests of project 3 can be in any order, so unify that
@@ -14,7 +14,7 @@ test(`${dir} (all tests pass)`, () => {
   ]);
 });
 
-test(`${dir} (test 1 in p2 fails)`, () => {
+test(`${dir} (one failing)`, () => {
   const lanes = runPlaywright(dir, {
     env: { FAIL_TEST: 'p2 spec1 test 1' },
   });
