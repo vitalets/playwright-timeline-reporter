@@ -7,13 +7,6 @@ import { WorkerLanesDebug } from './debug.js';
 import { getBranchMetrics, getRestartDurationVariability, pickBestBranchIndex } from './scoring.js';
 
 /**
- * Minimum idle gap required to consider a worker restart physically plausible.
- * An effectively instant handoff is too short to represent a real worker restart,
- * so such lanes are excluded from restart candidates.
- */
-const MIN_RESTART_GAP_MS = 50;
-
-/**
  * Number of most-recent restart gaps per project to use when ranking branches during pruning.
  * Using only recent gaps makes the pruning signal sensitive to the latest decisions instead
  * of being diluted by the long history of identical early gaps shared by all branches.
@@ -24,6 +17,13 @@ const MIN_RESTART_GAP_MS = 50;
  * `maxBranches = RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * maxParallelWorkers`.
  */
 const RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES = 4;
+
+/**
+ * Minimum idle gap required to consider a worker restart physically plausible.
+ * An effectively instant handoff is too short to represent a real worker restart,
+ * so such lanes are excluded from restart candidates.
+ */
+const MIN_RESTART_GAP_MS = 50;
 
 /** Parameters passed unchanged through the assignment loop. */
 export type TestAssignerParams = {
