@@ -78,6 +78,7 @@ After your test run, open `./timeline-report/index.html` in any browser.
 
 - **Type:** `string`
 - **Default:** `./timeline-report/index.html`
+- **Env var:** `PLAYWRIGHT_TIMELINE_OUTPUT_FILE`
 
 Path for the generated report file, relative to config dir.
 
@@ -92,6 +93,7 @@ Path to a custom LLM prompt template, must contain `{data}` exactly once. See th
 
 - **Type:** `boolean`
 - **Default:** `false`
+- **Env var:** `PLAYWRIGHT_TIMELINE_DEBUG`
 
 Enables debug logging in the reporter and extra debug details in the generated HTML report.
 

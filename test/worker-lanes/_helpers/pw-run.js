@@ -13,13 +13,14 @@ const env = {
   ...process.env,
   FORCE_COLOR: '0',
   PLAYWRIGHT_FORCE_TTY: '0',
+  PLAYWRIGHT_TIMELINE_DEBUG: '1',
+  // todo: provide custom paths for output files (multiple tests in a dir).
+  // PLAYWRIGHT_TIMELINE_OUTPUT_FILE
 };
 
 export function getDir(importMeta) {
   return path.basename(importMeta.dirname);
 }
-
-// todo: provide custom paths for output files (multiple tests in a dir).
 
 export function runPlaywright(dir, options = {}) {
   const scenarioDir = path.join(import.meta.dirname, '..', dir);
