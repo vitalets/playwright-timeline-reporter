@@ -197,6 +197,7 @@ export class TestAssigner {
     const notSwitchedAway = candidates.filter((lane) => !this.hasSwitchedFromProject(lane));
     if (notSwitchedAway.length > 0) candidates = notSwitchedAway;
     candidates.sort((a, b) => a.lastTestEndTime - b.lastTestEndTime);
+
     return candidates;
   }
 

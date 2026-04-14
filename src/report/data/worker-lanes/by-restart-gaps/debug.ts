@@ -41,7 +41,7 @@ export class WorkerLanesDebug {
 
   logBranchesPruned(totalBranchesBefore: number, totalBranchesAfter: number) {
     if (!this.enabled) return;
-    this.log(`PRUNE: totalBranches ${totalBranchesBefore} -> ${totalBranchesAfter}`);
+    this.log(`PRUNE BRANCHES: ${totalBranchesBefore} -> ${totalBranchesAfter}`);
   }
 
   logFinalBranchScoring(options: {
@@ -51,12 +51,13 @@ export class WorkerLanesDebug {
   }) {
     if (!this.enabled) return;
     const { fullyParallel, branches, selectedIndex } = options;
+    this.log(`FINAL BRANCHES: ${branches.length}`);
     if (branches.length <= 1) return;
     const maxRestartGapsCount = Math.max(...branches.map((b) => b.restartGapsCount));
     const approach = maxRestartGapsCount >= 2 ? 'variability' : 'heuristic';
     const approachSuffix = approach === 'heuristic' ? `, fullyParallel=${fullyParallel}` : '';
     const header = `maxRestartGapsCount=${maxRestartGapsCount}, approach=${approach}${approachSuffix}`;
-    this.log(`FINAL BRANCH SCORING (${header}):`);
+    this.log(`FINAL BRANCHES SCORING (${header}):`);
     const rows = buildBranchRows(branches);
     const widths = computeBranchRowWidths(rows);
     rows.forEach((row) => {
@@ -64,7 +65,7 @@ export class WorkerLanesDebug {
       this.log(`  [${String(row.index).padStart(widths.indexWidth)}]: ${cols}`);
     });
     const reason = getPreferredReason({ ...options, maxRestartGapsCount });
-    this.log(`FINAL BRANCH SELECTED: [${selectedIndex}] preferred because ${reason}`);
+    this.log(`SELECTED BRANCH: [${selectedIndex}] preferred because ${reason}`);
   }
 }
 
