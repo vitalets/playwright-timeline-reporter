@@ -130,7 +130,7 @@ In the report you can do the following:
 - **Copy the AI prompt** and paste it into any AI chat for analysis.
 
 > [!NOTE]
-> **Your input is appreciated:** improve the reporter by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
+> **Your input is appreciated:** you can make the reporter even better by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
 
 ## Sharding
 
