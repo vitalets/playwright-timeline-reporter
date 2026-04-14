@@ -5,13 +5,10 @@
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLanesDebug } from './debug.js';
-import {
-  analyzeParallelWorkers,
-  type ParallelWorkersAnalysis,
-} from './analyze-parallel-workers.js';
+import { analyzeParallelWorkers, type ParallelWorkersAnalysis } from './analyze-workers.js';
 import { TestAssigner, type TestAssignerParams } from './test-assigner.js';
 
-export class WorkerLanesByRestartDuration {
+export class WorkerLanesByRestartGaps {
   private readonly analysis: ParallelWorkersAnalysis;
   private readonly sortedTests: TestTimings[];
   private readonly debug: WorkerLanesDebug;

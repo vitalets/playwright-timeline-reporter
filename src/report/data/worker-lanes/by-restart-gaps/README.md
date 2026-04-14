@@ -18,7 +18,7 @@ By default Playwright runs test files in parallel across the configured worker p
 
 This algorithm therefore derives the actual lane assignment purely from observed timing data (`workerIndex`, `parallelIndex`, `startTime`, `duration`), with no dependency on any Playwright config flags.
 
-## Phase 1 — Parallel-worker analysis (`analyze-parallel-workers.ts`)
+## Phase 1 — Parallel-worker analysis (`analyze-workers.ts`)
 
 Each test contributes a `start` and `end` timing marker. Markers are sorted by time (end-before-start on ties, to avoid counting boundary moments as concurrent) and walked with a running `Set<parallelIndex>`. This yields:
 
@@ -57,9 +57,9 @@ If the idle gap between a candidate lane's last test end and the next test start
 
 ## Branch scoring (`scoring.ts`)
 
-When multiple branches survive, each branch gets a restart-duration variability value equal to the sum of per-project population variance of same-project worker-restart gaps (idle time between consecutive same-project tests in a lane that have different `workerIndex` values). Lower variability means more evenly spaced restarts and usually a more correct lane layout. Cross-project transitions are excluded because another project can have its own worker limit, so large gaps there are expected and are not useful for lane selection.
+When multiple branches survive, each branch gets a restart-gaps variability value equal to the sum of per-project population variance of same-project worker-restart gaps (idle time between consecutive same-project tests in a lane that have different `workerIndex` values). Lower variability means more evenly spaced restarts and usually a more correct lane layout. Cross-project transitions are excluded because another project can have its own worker limit, so large gaps there are expected and are not useful for lane selection.
 
-If multiple branches have the same restart-duration variability, tie-breaking works like this:
+If multiple branches have the same restart-gaps variability, tie-breaking works like this:
 
 - If Playwright `fullyParallel` is `false`, prefer a branch where every test file stays within a single lane for its project (`splitFilesCount === 0`). This matches non-fully-parallel runs where files should not hop between lanes.
-- Then pick the branch with the smallest total same-project restart duration.
+- Then pick the branch with the smallest total same-project restart-gaps sum.

@@ -7,7 +7,7 @@ import { WorkerLanesDebug } from './debug.js';
 import {
   countRestartGaps,
   getBranchMetrics,
-  getRestartDurationVariability,
+  getRestartGapsVariability,
   pickBestBranchIndex,
 } from './scoring.js';
 
@@ -16,7 +16,7 @@ import {
  * Using only recent gaps makes the pruning signal sensitive to the latest decisions instead
  * of being diluted by the long history of identical early gaps shared by all branches.
  * Pruning is also deferred until this many gaps have accumulated — before that the
- * restart-duration variability signal is too weak to distinguish branches reliably.
+ * restart-gaps variability signal is too weak to distinguish branches reliably.
  *
  * This constant also determines the branch budget via:
  * `maxBranches = RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * maxParallelWorkers`.
@@ -52,7 +52,7 @@ type Branch = { lanes: WorkerLane[] };
  *
  * For each test (in startTime order), every tracked branch is expanded into one or
  * more successor branches (one per candidate lane). After expansion the pool is pruned
- * back to `maxBranches` by recent restart-duration variability — but only once enough
+ * back to `maxBranches` by recent restart-gaps variability — but only once enough
  * gaps have accumulated to make that signal meaningful.
  *
  * Returns the best-ranked lanes on completion, or null if all branches were discarded
@@ -147,7 +147,7 @@ export class TestAssigner {
 
   /**
    * Prune the branch pool to `maxBranches` branches.
-   * Branches are ranked by getRestartDurationVariability with the pruning window
+   * Branches are ranked by getRestartGapsVariability with the pruning window
    * applied to the last gaps per project, so pruning decisions reflect the most
    * recent assignments rather than the long shared history.
    * Pruning is skipped until at least minWorkerRestartsBeforePruning gaps exist in any branch.
@@ -158,8 +158,8 @@ export class TestAssigner {
     if (restartsCount < RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES) return branches;
     branches.sort(
       (a, b) =>
-        getRestartDurationVariability(a.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES) -
-        getRestartDurationVariability(b.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES),
+        getRestartGapsVariability(a.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES) -
+        getRestartGapsVariability(b.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES),
     );
     const pruned = branches.slice(0, this.maxBranches);
     this.params.debug.logBranchesPruned(branches.length, pruned.length);

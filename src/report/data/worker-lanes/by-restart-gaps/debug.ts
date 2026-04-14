@@ -52,32 +52,18 @@ export class WorkerLanesDebug {
     if (!this.enabled) return;
     const { fullyParallel, branches, selectedIndex } = options;
     if (branches.length <= 1) return;
-    const maxInProjectRestarts = Math.max(...branches.map((b) => b.inProjectRestarts));
-    this.log(
-      `FINAL BRANCH SCORING (fullyParallel=${fullyParallel}, maxInProjectRestarts=${maxInProjectRestarts}):`,
-    );
-    const rows = branches.map((branch, index) => ({
-      index,
-      inProjectRestarts: String(branch.inProjectRestarts),
-      variability: formatMetricNumber(branch.restartDurationVariability),
-      totalRestart: formatMetricNumber(branch.totalRestartDuration),
-      splitFiles: String(branch.splitFilesCount),
-    }));
-    const indexWidth = Math.max(...rows.map((row) => String(row.index).length));
-    const inProjectRestartsWidth = Math.max(...rows.map((row) => row.inProjectRestarts.length));
-    const variabilityWidth = Math.max(...rows.map((row) => row.variability.length));
-    const totalRestartWidth = Math.max(...rows.map((row) => row.totalRestart.length));
-    const splitFilesWidth = Math.max(...rows.map((row) => row.splitFiles.length));
+    const maxRestartGapsCount = Math.max(...branches.map((b) => b.restartGapsCount));
+    const approach = maxRestartGapsCount >= 2 ? 'variability' : 'heuristic';
+    const approachSuffix = approach === 'heuristic' ? `, fullyParallel=${fullyParallel}` : '';
+    const header = `maxRestartGapsCount=${maxRestartGapsCount}, approach=${approach}${approachSuffix}`;
+    this.log(`FINAL BRANCH SCORING (${header}):`);
+    const rows = buildBranchRows(branches);
+    const widths = computeBranchRowWidths(rows);
     rows.forEach((row) => {
-      this.log(
-        `  [${String(row.index).padStart(indexWidth)}]: ` +
-          `inProjectRestarts = ${row.inProjectRestarts.padStart(inProjectRestartsWidth)}, ` +
-          `restartVariability = ${row.variability.padStart(variabilityWidth)}, ` +
-          `totalRestart = ${row.totalRestart.padStart(totalRestartWidth)}, ` +
-          `splitFiles = ${row.splitFiles.padStart(splitFilesWidth)}`,
-      );
+      const cols = formatBranchRow(row, approach, widths);
+      this.log(`  [${String(row.index).padStart(widths.indexWidth)}]: ${cols}`);
     });
-    const reason = getPreferredReason({ ...options, maxInProjectRestarts });
+    const reason = getPreferredReason({ ...options, maxRestartGapsCount });
     this.log(`FINAL BRANCH SELECTED: [${selectedIndex}] preferred because ${reason}`);
   }
 }
@@ -123,25 +109,77 @@ function getFileName(filePath: string): string {
   return filePath.split(/[/\\]/).pop() || filePath;
 }
 
+type BranchRowWidths = {
+  indexWidth: number;
+  restartGapsCountWidth: number;
+  variabilityWidth: number;
+  restartGapsSumWidth: number;
+  splitFilesWidth: number;
+};
+
+type BranchRow = {
+  index: number;
+  restartGapsCount: string;
+  variability: string;
+  restartGapsSum: string;
+  splitFiles: string;
+};
+
+function buildBranchRows(branches: BranchMetrics[]): BranchRow[] {
+  return branches
+    .map((branch, index) => ({
+      index,
+      restartGapsCount: String(branch.restartGapsCount),
+      variability: formatMetricNumber(branch.restartGapsVariability),
+      restartGapsSum: formatMetricNumber(branch.restartGapsSum),
+      splitFiles: String(branch.splitFilesCount),
+    }))
+    .sort((a, b) => Number(b.restartGapsCount) - Number(a.restartGapsCount));
+}
+
+function computeBranchRowWidths(rows: BranchRow[]): BranchRowWidths {
+  return {
+    indexWidth: Math.max(...rows.map((r) => String(r.index).length)),
+    restartGapsCountWidth: Math.max(...rows.map((r) => r.restartGapsCount.length)),
+    variabilityWidth: Math.max(...rows.map((r) => r.variability.length)),
+    restartGapsSumWidth: Math.max(...rows.map((r) => r.restartGapsSum.length)),
+    splitFilesWidth: Math.max(...rows.map((r) => r.splitFiles.length)),
+  };
+}
+
+function formatBranchRow(row: BranchRow, approach: string, widths: BranchRowWidths): string {
+  if (approach === 'variability') {
+    return (
+      `restartGapsCount = ${row.restartGapsCount.padStart(widths.restartGapsCountWidth)}, ` +
+      `restartGapsVariability = ${row.variability.padStart(widths.variabilityWidth)}`
+    );
+  }
+  return (
+    `restartGapsSum = ${row.restartGapsSum.padStart(widths.restartGapsSumWidth)}, ` +
+    `splitFiles = ${row.splitFiles.padStart(widths.splitFilesWidth)}`
+  );
+}
+
 function getPreferredReason({
   fullyParallel,
   branches,
   selectedIndex,
-  maxInProjectRestarts,
+  maxRestartGapsCount,
 }: {
   fullyParallel: boolean;
   branches: BranchMetrics[];
   selectedIndex: number;
-  maxInProjectRestarts: number;
+  maxRestartGapsCount: number;
 }): string {
   if (branches.length === 1) return 'only surviving branch';
   const selected = branches[selectedIndex];
-  if (maxInProjectRestarts >= 2) {
-    return `restartDurationVariability=${formatMetricNumber(selected.restartDurationVariability)}`;
+  if (maxRestartGapsCount >= 2) {
+    const v = formatMetricNumber(selected.restartGapsVariability);
+    return `restartGapsVariability=${v} (with restartGapsCount=${selected.restartGapsCount})`;
   }
   const parts = [
     !fullyParallel ? `splitFiles=${selected.splitFilesCount}` : '',
-    `totalRestartDuration=${formatMetricNumber(selected.totalRestartDuration)}`,
+    `restartGapsSum=${formatMetricNumber(selected.restartGapsSum)}`,
   ]
     .filter(Boolean)
     .join(', ');

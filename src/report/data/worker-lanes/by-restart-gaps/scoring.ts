@@ -1,14 +1,14 @@
 /**
- * Branch selection: rank surviving branches by restart-duration variability and tie-break metrics.
+ * Branch selection: rank surviving branches by restart-gaps variability and tie-break metrics.
  */
 import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane } from './lane.js';
 
 export type BranchMetrics = {
   /** Number of same-project worker restarts in this branch's lane assignment. */
-  inProjectRestarts: number;
-  restartDurationVariability: number;
-  totalRestartDuration: number;
+  restartGapsCount: number;
+  restartGapsVariability: number;
+  restartGapsSum: number;
   splitFilesCount: number;
 };
 
@@ -19,16 +19,16 @@ type PickBestBranchOptions = {
 /**
  * Given multiple fully-assigned lane snapshots (each a valid solution), pick the best one.
  *
- * The selection strategy depends on `maxInProjectRestarts` — the maximum in-project restart
+ * The selection strategy depends on `maxRestartGapsCount` — the maximum in-project restart
  * count across all surviving branches:
  *
- *  - `>= 2` → `pickByVariabilityStrategy`: restrict to branches that share the maximum restart
- *    count, then rank by restart-duration variability. Comparing only branches at the same
+ *  - `>= 2` → `pickByRestartGapsVariability`: restrict to branches that share the maximum restart
+ *    count, then rank by restart-gaps variability. Comparing only branches at the same
  *    restart count ensures the variability scores are on equal footing — a branch with fewer
  *    restarts would trivially score lower variance, not because it is a better assignment but
  *    because it has fewer data points.
  *
- *  - `<= 1` → `pickByRestartDurationHeuristic`: there are not enough restart gaps for
+ *  - `<= 1` → `pickByHeuristic`: there are not enough restart gaps for
  *    distribution analysis (population variance needs at least 2 data points). Fall back
  *    to a simpler heuristic over all branches.
  *
@@ -41,9 +41,9 @@ export function pickBestBranchIndex(
   branches: BranchMetrics[],
   { fullyParallel = false }: PickBestBranchOptions = {},
 ) {
-  const maxInProjectRestarts = Math.max(...branches.map((b) => b.inProjectRestarts));
-  if (maxInProjectRestarts >= 2) {
-    return pickByRestartGapsVariability(branches, maxInProjectRestarts);
+  const maxRestartGapsCount = Math.max(...branches.map((b) => b.restartGapsCount));
+  if (maxRestartGapsCount >= 2) {
+    return pickByRestartGapsVariability(branches, maxRestartGapsCount);
   } else {
     return pickByHeuristic(branches, fullyParallel);
   }
@@ -51,7 +51,7 @@ export function pickBestBranchIndex(
 
 /**
  * Narrow to branches that share the maximum in-project restart count, then pick the one
- * with the lowest restart-duration variability. Only branches with the same restart count
+ * with the lowest restart-gaps variability. Only branches with the same restart count
  * are compared — their restart-gap arrays have equal length, so their variability scores
  * reflect assignment quality rather than data quantity.
  *
@@ -61,16 +61,14 @@ export function pickBestBranchIndex(
  */
 function pickByRestartGapsVariability(
   branches: BranchMetrics[],
-  maxInProjectRestarts: number,
+  maxRestartGapsCount: number,
 ): number {
   const candidates = branches
     .map((metrics, index) => ({ metrics, index }))
-    .filter(({ metrics }) => metrics.inProjectRestarts === maxInProjectRestarts);
+    .filter(({ metrics }) => metrics.restartGapsCount === maxRestartGapsCount);
   let best = candidates[0];
   for (let i = 1; i < candidates.length; i++) {
-    if (
-      candidates[i].metrics.restartDurationVariability < best.metrics.restartDurationVariability
-    ) {
+    if (candidates[i].metrics.restartGapsVariability < best.metrics.restartGapsVariability) {
       best = candidates[i];
     }
   }
@@ -78,14 +76,14 @@ function pickByRestartGapsVariability(
 }
 
 /**
- * Heuristic fallback used when maxInProjectRestarts <= 1. There are not enough restart gaps
- * for restart-duration distribution analysis — a single gap always yields variance = 0
+ * Heuristic fallback used when maxRestartGapsCount <= 1. There are not enough restart gaps
+ * for restart-gaps distribution analysis — a single gap always yields variance = 0
  * regardless of its duration. Pick by simpler metrics over all branches instead.
  */
 function pickByHeuristic(branches: BranchMetrics[], fullyParallel: boolean): number {
   let bestIndex = 0;
   for (let i = 1; i < branches.length; i++) {
-    if (compareByRestartDurationStrategy(branches[i], branches[bestIndex], fullyParallel) < 0) {
+    if (compareByHeuristic(branches[i], branches[bestIndex], fullyParallel) < 0) {
       bestIndex = i;
     }
   }
@@ -94,26 +92,26 @@ function pickByHeuristic(branches: BranchMetrics[], fullyParallel: boolean): num
 
 export function getBranchMetrics(lanes: WorkerLane[]): BranchMetrics {
   return {
-    inProjectRestarts: countRestartGaps(lanes),
-    restartDurationVariability: getRestartDurationVariability(lanes),
-    totalRestartDuration: getTotalRestartDuration(lanes),
+    restartGapsCount: countRestartGaps(lanes),
+    restartGapsVariability: getRestartGapsVariability(lanes),
+    restartGapsSum: getRestartGapsSum(lanes),
     splitFilesCount: getSplitFilesCount(lanes),
   };
 }
 
 /**
- * Returns restart-duration variability across all restart gaps, or only across the
+ * Returns restart-gaps variability across all restart gaps, or only across the
  * last `windowSize` gaps per project when a pruning window is provided.
  */
-export function getRestartDurationVariability(lanes: WorkerLane[], windowSize?: number): number {
+export function getRestartGapsVariability(lanes: WorkerLane[], windowSize?: number): number {
   const gapsByProject = new Map<string, number[]>();
   for (const lane of lanes) {
     collectRestartGaps(lane.tests, gapsByProject);
   }
-  return getRestartDurationVariabilityFromGaps(gapsByProject, windowSize);
+  return getRestartGapsVariabilityFromGaps(gapsByProject, windowSize);
 }
 
-export function getTotalRestartDuration(lanes: WorkerLane[]): number {
+export function getRestartGapsSum(lanes: WorkerLane[]): number {
   const gapsByProject = new Map<string, number[]>();
   let total = 0;
   for (const lane of lanes) {
@@ -155,9 +153,7 @@ export function countRestartGaps(lanes: WorkerLane[]): number {
 function countLaneRestartGaps(lane: WorkerLane): number {
   let count = 0;
   for (let i = 1; i < lane.tests.length; i++) {
-    const prev = lane.tests[i - 1];
-    const curr = lane.tests[i];
-    if (prev.projectName === curr.projectName && prev.workerIndex !== curr.workerIndex) count++;
+    if (isRestartGap(lane.tests[i - 1], lane.tests[i])) count++;
   }
   return count;
 }
@@ -172,8 +168,7 @@ function collectRestartGaps(tests: TestTimings[], gapsByProject: Map<string, num
   for (let i = 1; i < tests.length; i++) {
     const prev = tests[i - 1];
     const curr = tests[i];
-    if (prev.projectName !== curr.projectName) continue;
-    if (prev.workerIndex === curr.workerIndex) continue;
+    if (!isRestartGap(prev, curr)) continue;
     const gap = curr.startTime - (prev.startTime + prev.totalDuration);
     const gaps = gapsByProject.get(curr.projectName) ?? [];
     gaps.push(gap);
@@ -183,7 +178,13 @@ function collectRestartGaps(tests: TestTimings[], gapsByProject: Map<string, num
   return totalDuration;
 }
 
-function getRestartDurationVariabilityFromGaps(
+/** Returns true when two consecutive lane tests represent a same-project worker restart. */
+function isRestartGap(prev: TestTimings, curr: TestTimings): boolean {
+  return prev.projectName === curr.projectName && prev.workerIndex !== curr.workerIndex;
+  // return prev.workerIndex !== curr.workerIndex;
+}
+
+function getRestartGapsVariabilityFromGaps(
   gapsByProject: Map<string, number[]>,
   windowSize?: number,
 ): number {
@@ -196,36 +197,33 @@ function getRestartDurationVariabilityFromGaps(
 
 /**
  * Fallback strategy: rank by restart duration only, skipping variability.
- * Used when maxInProjectRestarts <= 1 — a single restart gap always yields variance = 0
+ * Used when maxRestartGapsCount <= 1 — a single restart gap always yields variance = 0
  * regardless of its duration, so variability cannot distinguish branches.
+ *
+ * In non-fully-parallel mode, branches where every file stays on a single lane
+ * (splitFilesCount === 0) are strongly preferred over those with any splits, because
+ * non-fully-parallel suites assign an entire file to one worker. After that binary
+ * split-files gate, branches are ranked by total restart-gaps duration, and split
+ * count is used only as a final tie-breaker.
  */
-function compareByRestartDurationStrategy(
-  a: BranchMetrics,
-  b: BranchMetrics,
-  fullyParallel: boolean,
-): number {
+function compareByHeuristic(a: BranchMetrics, b: BranchMetrics, fullyParallel: boolean): number {
   return (
-    preferNoSplitFilesInNonFullyParallelRun(a, b, fullyParallel) ||
-    preferLowerTotalRestartDuration(a, b) ||
+    (!fullyParallel && preferNoSplitFiles(a, b)) ||
+    preferLowerRestartGapsSum(a, b) ||
     preferLowerSplitFilesCount(a, b)
   );
 }
 
-function preferNoSplitFilesInNonFullyParallelRun(
-  a: BranchMetrics,
-  b: BranchMetrics,
-  fullyParallel: boolean,
-): number {
-  if (fullyParallel) return 0;
-
+/** Prefer branches with zero split files over those with any splits (binary, not numeric). */
+function preferNoSplitFiles(a: BranchMetrics, b: BranchMetrics): number {
   const aHasNoSplitFiles = a.splitFilesCount === 0;
   const bHasNoSplitFiles = b.splitFilesCount === 0;
   if (aHasNoSplitFiles === bHasNoSplitFiles) return 0;
   return aHasNoSplitFiles ? -1 : 1;
 }
 
-function preferLowerTotalRestartDuration(a: BranchMetrics, b: BranchMetrics): number {
-  return a.totalRestartDuration - b.totalRestartDuration;
+function preferLowerRestartGapsSum(a: BranchMetrics, b: BranchMetrics): number {
+  return a.restartGapsSum - b.restartGapsSum;
 }
 
 function preferLowerSplitFilesCount(a: BranchMetrics, b: BranchMetrics): number {

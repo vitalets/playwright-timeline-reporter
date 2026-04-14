@@ -1,7 +1,7 @@
 import { TestTimings } from '../../../test-timings/types.js';
 import { ChartTest } from '../tests.js';
 import { WorkerLanesByParallelIndex } from './by-parallal-index/index.js';
-import { WorkerLanesByRestartDuration } from './by-restart-duration/index.js';
+import { WorkerLanesByRestartGaps } from './by-restart-gaps/index.js';
 
 export type WorkerData = {
   laneIndex: number;
@@ -10,8 +10,8 @@ export type WorkerData = {
   mergeReportId?: string;
 };
 
-type WorkerLanesStrategy = 'parallel-index' | 'restart-duration';
-const strategy: WorkerLanesStrategy = 'restart-duration';
+type WorkerLanesStrategy = 'parallel-index' | 'restart-gaps';
+const strategy: WorkerLanesStrategy = 'restart-gaps';
 
 type BuildWorkerLanesOptions = {
   debug?: boolean;
@@ -25,6 +25,6 @@ export function buildWorkerLanes(
   if (strategy === 'parallel-index') {
     return new WorkerLanesByParallelIndex(tests).build();
   } else {
-    return new WorkerLanesByRestartDuration(tests, { debug, fullyParallel }).build();
+    return new WorkerLanesByRestartGaps(tests, { debug, fullyParallel }).build();
   }
 }
