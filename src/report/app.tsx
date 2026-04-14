@@ -26,6 +26,8 @@ function AppContent() {
   const timingsData = readJson('#timeline-data') as TestTimings[];
   const runInfo = readJson('#run-info') as RunInfo;
   const promptTemplate = readJson('#prompt-template') as string;
+
+  applyDebugFromUrl(runInfo);
   const chartData = buildChartData(timingsData, runInfo);
 
   return (
@@ -47,4 +49,11 @@ function AppContent() {
       )}
     </div>
   );
+}
+
+function applyDebugFromUrl(runInfo: RunInfo) {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('debug')) {
+    runInfo.debug = true;
+  }
 }

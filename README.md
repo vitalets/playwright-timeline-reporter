@@ -164,9 +164,7 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 
 ## Limitations
 
-Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed. See [microsoft/playwright#40175](https://github.com/microsoft/playwright/issues/40175).
-
-This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be inaccurate.
+Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed ([#40175](https://github.com/microsoft/playwright/issues/40175)). This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be not 100% accurate.
 
 ## Packages to speedup tests
 
