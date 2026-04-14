@@ -40,7 +40,7 @@
     "test:timings": "npx playwright test -c test/timings",
     "test:merge": "npx playwright test -c test/merge-reports",
     "test:lanes": "npm run build && node test/worker-lanes/run.js",
-    "test:all": "npm run test:e2e && npm run test:timings && npm run test:merge",
+    "test:all": "npm run test:e2e && npm run test:timings && npm run test:merge && npm run test:lanes",
     "example": "npm run build && node scripts/example.ts",
     "example:shards": "npm run example -- --shards",
     "pw": "npm i --no-save @playwright/test@$PW",
