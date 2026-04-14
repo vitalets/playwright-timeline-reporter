@@ -38,7 +38,7 @@
     "test": "npm run build && npx playwright test -c test/e2e/non-fully-parallel",
     "test:timings": "npx playwright test -c test/timings",
     "test:merge": "npx playwright test -c test/merge-reports",
-    "test:lanes": "node test/worker-lanes/run.js",
+    "test:lanes": "npm run build && node test/worker-lanes/run.js",
     "test:all": "npm run test && npm run test:timings && npm run test:merge",
     "example": "npm run build && node scripts/example.ts",
     "example:shards": "npm run example -- --shards",
