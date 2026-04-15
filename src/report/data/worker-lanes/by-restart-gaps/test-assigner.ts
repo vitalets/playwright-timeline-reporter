@@ -129,39 +129,34 @@ export class TestAssigner {
   }
 
   /** Expand the current branch for a test whose expansion context is already set. */
-  private expandCurrentBranch(out: Branch[]): void {
+  private expandCurrentBranch(nextBranches: Branch[]): void {
     const laneIdx = this.currentLanes.findIndex(
       (lane) => lane.lastWorkerIndex === this.test.workerIndex,
     );
     if (laneIdx >= 0) {
       const next = cloneLanes(this.currentLanes);
       next[laneIdx].tests.push(this.test);
-      out.push({ lanes: next });
+      nextBranches.push({ lanes: next });
       return;
     }
-    this.expandForNewWorker(out);
+    this.expandForNewWorkerIndex(nextBranches);
   }
 
   /** Expand the current branch for a test whose workerIndex has not been seen yet. */
-  private expandForNewWorker(out: Branch[]): void {
+  private expandForNewWorkerIndex(nextBranches: Branch[]) {
     const candidates = this.getCandidateLanes();
     if (candidates.length === 0) {
       const freshBranch = this.tryFreshLane();
-      if (freshBranch) out.push(freshBranch);
+      if (freshBranch) nextBranches.push(freshBranch);
       return;
     }
     if (candidates.length > 1) {
-      this.params.debug.logBranchFanOut(
-        this.test,
-        candidates,
-        this.currentLanes,
-        out.length + candidates.length,
-      );
+      this.params.debug.logNewBranches(this.test, candidates, this.currentLanes);
     }
     for (const candidate of candidates) {
-      const next = cloneLanes(this.currentLanes);
-      next[this.currentLanes.indexOf(candidate)].tests.push(this.test);
-      out.push({ lanes: next });
+      const nextLanes = cloneLanes(this.currentLanes);
+      nextLanes[this.currentLanes.indexOf(candidate)].tests.push(this.test);
+      nextBranches.push({ lanes: nextLanes });
     }
   }
 
@@ -184,7 +179,7 @@ export class TestAssigner {
         getRestartGapsVariability(b.lanes, RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES),
     );
     const pruned = branches.slice(0, this.maxBranches);
-    this.params.debug.logBranchesPruned(branches.length, pruned.length);
+    this.params.debug.logPruneBranches(branches.length, pruned.length);
     return pruned;
   }
 
@@ -192,14 +187,17 @@ export class TestAssigner {
 
   /** Collect lanes eligible to receive a test whose workerIndex has not been seen yet. */
   private getCandidateLanes(): WorkerLane[] {
-    // Candidate lane must be idle, worker must be done, gap must be plausible,
-    // and the lane must not have a passed test from the same project (otherwise why workerIndex changed?).
+    // Candidate lane:
+    // - last test exists
+    // - last test is marked as the last for its workerIndex
+    // - last test is not a passed test from the same project (otherwise why workerIndex changed?).
+    // - restart gap is above the minimum threshold
     let candidates = this.currentLanes.filter(
       (lane) =>
         lane.lastTest !== undefined &&
         this.params.lastTestInWorker.has(lane.lastTest) &&
-        this.getRestartGap(lane) >= MIN_RESTART_GAP_MS &&
-        !this.isSameProjectPassedLane(lane),
+        !this.isSameProjectPassedLane(lane) &&
+        this.getRestartGap(lane) >= MIN_RESTART_GAP_MS,
     );
     // Lane consolidation: if the project is already at its per-project lane ceiling,
     // restrict to lanes that already contain tests from this project. Prevents a project with
@@ -261,7 +259,7 @@ export class TestAssigner {
     branches: ReturnType<typeof getBranchMetrics>[],
     bestBranchIndex: number,
   ): void {
-    this.params.debug.logFinalBranchScoring({
+    this.params.debug.logFinalBranches({
       fullyParallel: this.params.fullyParallel,
       branches,
       selectedIndex: bestBranchIndex,

@@ -25,26 +25,21 @@ export class WorkerLanesDebug {
     );
   }
 
-  logBranchFanOut(
-    test: TestTimings,
-    candidates: WorkerLane[],
-    currentLanes: WorkerLane[],
-    totalBranches: number,
-  ) {
+  logNewBranches(test: TestTimings, candidates: WorkerLane[], currentLanes: WorkerLane[]) {
     if (!this.enabled) return;
     const rows = buildCandidateRows(candidates, currentLanes);
-    this.log(`NEW BRANCHES (+${rows.length}, total ${totalBranches}): ${testTitleRef(test)}`);
+    this.log(`NEW BRANCHES (+${candidates.length - 1}): ${testTitleRef(test)}`);
     rows.forEach((candidate) => {
       this.log(`  - lane[${candidate.laneIndex}]: ${testTitleRef(candidate.lastTest)}`);
     });
   }
 
-  logBranchesPruned(totalBranchesBefore: number, totalBranchesAfter: number) {
+  logPruneBranches(totalBranchesBefore: number, totalBranchesAfter: number) {
     if (!this.enabled) return;
     this.log(`PRUNE BRANCHES: ${totalBranchesBefore} -> ${totalBranchesAfter}`);
   }
 
-  logFinalBranchScoring(options: {
+  logFinalBranches(options: {
     fullyParallel: boolean;
     branches: BranchMetrics[];
     selectedIndex: number;
