@@ -9,8 +9,10 @@
 import { execSync } from 'node:child_process';
 
 const minVersion = process.argv[2];
+const logger = console;
+
 if (!minVersion || !/^\d+\.\d+$/.test(minVersion)) {
-  console.error('Usage: node scripts/get-pw-versions.ts <major.minor>  (e.g. 1.45)');
+  logger.error('Usage: node scripts/get-pw-versions.ts <major.minor>  (e.g. 1.45)');
   process.exit(1);
 }
 
@@ -61,4 +63,4 @@ const sorted = [...groups.entries()]
   })
   .map(([, v]) => v);
 
-console.log(JSON.stringify(sorted));
+logger.log(JSON.stringify(sorted));

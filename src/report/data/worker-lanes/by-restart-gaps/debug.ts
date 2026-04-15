@@ -5,12 +5,14 @@ import { TestTimings } from '../../../../test-timings/types.js';
 import { WorkerLane } from './lane.js';
 import { BranchMetrics } from './scoring.js';
 
+const logger = console;
+
 export class WorkerLanesDebug {
   constructor(private readonly enabled = false) {}
 
   log(...args: unknown[]) {
     if (!this.enabled) return;
-    console.log('[worker-lanes]', ...args);
+    logger.log('[worker-lanes]', ...args);
   }
 
   logAnalysisSummary(

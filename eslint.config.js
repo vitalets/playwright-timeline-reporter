@@ -41,6 +41,9 @@ export default defineConfig(
         ...globals.node,
       },
     },
+    rules: {
+      'no-console': 'error',
+    },
   },
   // report files rules
   {

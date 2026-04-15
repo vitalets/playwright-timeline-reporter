@@ -9,10 +9,11 @@
 import fs from 'node:fs';
 
 const CHANGELOG_PATH = 'CHANGELOG.md';
+const logger = console;
 
 const version = process.argv[2];
 if (!version) {
-  console.error('Usage: release-changelog.ts <version>');
+  logger.error('Usage: release-changelog.ts <version>');
   process.exit(1);
 }
 
@@ -23,14 +24,14 @@ function main() {
   const newContent = stampChangelog(content, version);
   fs.writeFileSync(CHANGELOG_PATH, newContent);
   const releaseNotes = extractReleaseNotes(newContent, version);
-  console.log(releaseNotes);
+  logger.log(releaseNotes);
 }
 
 function stampChangelog(text: string, version: string) {
   const date = new Date().toISOString().slice(0, 10);
   const updated = text.replace('## [Unreleased]', `## [Unreleased]\n\n## [${version}] - ${date}`);
   if (updated === text) {
-    console.error('Could not find "## [Unreleased]" section in CHANGELOG.md');
+    logger.error('Could not find "## [Unreleased]" section in CHANGELOG.md');
     process.exit(1);
   }
   return updated;
