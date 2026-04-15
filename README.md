@@ -99,7 +99,7 @@ In the report you can do the following:
 - **Copy the AI prompt** and paste it into any AI chat for analysis.
 
 > [!NOTE]
-> **Your input is appreciated:** you can help improve the reporter by upvoting these Playwright issues: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
+> **Your input is appreciated:** you can help improve the reporter by upvoting these Playwright issues: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175).
 
 ## Sharding
 
@@ -111,7 +111,9 @@ For sharded runs, configure each shard to produce a blob report, then merge them
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  reporter: [['blob']],
+  reporter: [
+    ['blob']
+  ],
 });
 ```
 
@@ -124,7 +126,7 @@ npx playwright test --shard=3/3
 **2. Merge the blob reports:**
 
 ```sh
-npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./blob-report
+npx playwright merge-reports --reporter=playwright-timeline-reporter ./blob-report
 ```
 
 Open `./timeline-report/index.html` to see the unified timeline across all shards.
