@@ -13,14 +13,12 @@
 
 </div>
 
-**Playwright Timeline Reporter** visualizes your [Playwright](https://playwright.dev/) tests as an interactive timeline.
-
-Helps you optimize test performance:
+**Playwright Timeline Reporter** renders your [Playwright](https://playwright.dev/) tests as an interactive timeline. You can use it to optimize your test run performance:
 
 - identify slow tests
 - detect costly or repeated hooks and fixtures
 - evaluate worker utilization
-- generate ready-to-use prompt for AI analysis
+- get ready-to-use prompt for AI analysis
 
 Plug it into any Playwright project and get a self-contained HTML report.
 
