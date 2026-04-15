@@ -24,6 +24,13 @@ import {
 const RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES = 4;
 
 /**
+ * Lower bound for max branches kept after pruning.
+ * In very low concurrency runs the pruning signal is weak
+ * and it's cheap to keep more branches, so we set a fixed lower bound to avoid over-pruning.
+ */
+const MAX_BRANCHES_LOWER_BOUND = 30;
+
+/**
  * Minimum idle gap required to consider a worker restart physically plausible.
  * An effectively instant handoff is too short to represent a real worker restart,
  * so such lanes are excluded from restart candidates.
@@ -60,6 +67,7 @@ type Branch = { lanes: WorkerLane[] };
  */
 export class TestAssigner {
   private branches: Branch[];
+  private maxBranches: number;
   private currentBranch: Branch | null = null;
   private currentTest: TestTimings | null = null;
 
@@ -69,6 +77,20 @@ export class TestAssigner {
     private readonly params: TestAssignerParams,
   ) {
     this.branches = [{ lanes: initialLanes }];
+    this.maxBranches = Math.max(
+      MAX_BRANCHES_LOWER_BOUND,
+      RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * this.params.maxParallelWorkers,
+    );
+  }
+
+  private get currentLanes(): WorkerLane[] {
+    if (!this.currentBranch) throw new Error('TestAssigner: currentBranch is not set');
+    return this.currentBranch.lanes;
+  }
+
+  private get test(): TestTimings {
+    if (!this.currentTest) throw new Error('TestAssigner: currentTest is not set');
+    return this.currentTest;
   }
 
   run(): WorkerLane[] | null {
@@ -244,19 +266,5 @@ export class TestAssigner {
       branches,
       selectedIndex: bestBranchIndex,
     });
-  }
-
-  private get currentLanes(): WorkerLane[] {
-    if (!this.currentBranch) throw new Error('TestAssigner: currentBranch is not set');
-    return this.currentBranch.lanes;
-  }
-
-  private get maxBranches(): number {
-    return RESTARTS_COUNT_UNTIL_PRUNING_BRANCHES * this.params.maxParallelWorkers;
-  }
-
-  private get test(): TestTimings {
-    if (!this.currentTest) throw new Error('TestAssigner: currentTest is not set');
-    return this.currentTest;
   }
 }
