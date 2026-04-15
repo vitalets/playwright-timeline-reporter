@@ -32,7 +32,7 @@ Plug it into any Playwright project and get a self-contained HTML report.
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
-> Also check out the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+> Also check out the **sharded** report [demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
 
 ## Installation
 
@@ -64,11 +64,72 @@ Add the reporter to your `playwright.config.ts`:
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  reporter: [['playwright-timeline-reporter']],
+  reporter: [
+    ['playwright-timeline-reporter']
+  ],
 });
 ```
 
-After your test run, open `./timeline-report/index.html` in any browser.
+Additionally, you can provide [options](#options):
+
+```ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  reporter: [
+    ['playwright-timeline-reporter', { /* reporter options */ }],
+  ],
+});
+```
+
+## Usage
+
+Run your tests and open `./timeline-report/index.html` in any browser.
+
+In the report you can do the following:
+
+- **Review the timeline** to spot the slowest spans.
+- **Hover any span** to inspect its type, details, and source location.
+- **Click spans** to isolate a specific test, hook, or fixture.
+- **Inspect restart markers** to understand worker restart reasons.
+- **Switch projects** to isolate project-specific bottlenecks.
+- **Focus on a worker or shard** by clicking its label.
+- **Select a region** to zoom in for deeper investigation.
+- **Search** for files, tests, tags, or error messages.
+- **Copy the AI prompt** and paste it into any AI chat for analysis.
+
+> [!NOTE]
+> **Your input is appreciated:** you can help improve the reporter by upvoting these Playwright issues: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
+
+## Sharding
+
+For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
+
+**1. Run each shard with the blob reporter:**
+
+```ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  reporter: [['blob']],
+});
+```
+
+```sh
+npx playwright test --shard=1/3
+npx playwright test --shard=2/3
+npx playwright test --shard=3/3
+```
+
+**2. Merge the blob reports:**
+
+```sh
+npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./blob-report
+```
+
+Open `./timeline-report/index.html` to see the unified timeline across all shards.
+
+> For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
 
 ## Options
 
@@ -112,53 +173,6 @@ export default defineConfig({
   ],
 });
 ```
-
-## Usage
-
-In the report you can do the following:
-
-- **Review the timeline** to spot the slowest spans.
-- **Hover any span** to inspect its type, details, and source location.
-- **Click spans** to isolate a specific test, hook, or fixture.
-- **Inspect restart markers** to understand worker restart reasons.
-- **Switch projects** to isolate project-specific bottlenecks.
-- **Focus on a worker or shard** by clicking its label.
-- **Select a region** to zoom in for deeper investigation.
-- **Search** for files, tests, tags, or error messages.
-- **Copy the AI prompt** and paste it into any AI chat for analysis.
-
-> [!NOTE]
-> **Your input is appreciated:** you can make the reporter even better by upvoting these issues in the Playwright repo: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)
-
-## Sharding
-
-For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
-
-**1. Run each shard with the blob reporter:**
-
-```ts
-import { defineConfig } from '@playwright/test';
-
-export default defineConfig({
-  reporter: [['blob']],
-});
-```
-
-```sh
-npx playwright test --shard=1/3
-npx playwright test --shard=2/3
-npx playwright test --shard=3/3
-```
-
-**2. Merge the blob reports:**
-
-```sh
-npx playwright merge-reports --reporter=playwright-timeline-reporter/reporter ./blob-report
-```
-
-Open `./timeline-report/index.html` to see the unified timeline across all shards.
-
-> For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
 
 ## Limitations
 

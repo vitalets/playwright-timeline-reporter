@@ -6,3 +6,6 @@ timeline-report
 .DS_Store
 /docs
 /src/report/with*.html
+
+# prettier changes code blocks in readme
+/README.md
