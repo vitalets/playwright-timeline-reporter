@@ -2,6 +2,9 @@ name: test
 
 on:
   workflow_dispatch:
+  schedule:
+    # Nightly at 00:00 UTC, only for Playwright beta
+    - cron: '0 0 * * *'
   push:
     branches: ['**']
     paths:
@@ -38,7 +41,13 @@ jobs:
         with:
           node-version: 24
       - id: get-versions
-        run: echo "versions=$(node scripts/get-pw-versions.ts $MIN_PW_VERSION)" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo 'versions=[]' >> $GITHUB_OUTPUT
+          else
+            versions=$(node scripts/get-pw-versions.ts $MIN_PW_VERSION)
+            echo "versions=$versions" >> $GITHUB_OUTPUT
+          fi
 
   test:
     needs: get-pw-versions
