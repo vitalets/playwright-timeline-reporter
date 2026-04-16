@@ -176,6 +176,10 @@ export default defineConfig({
 });
 ```
 
+## Data Privacy
+
+The reporter embeds all collected data directly into the generated HTML file. It does not send it to any third-party services. Your data remains local unless you choose to share the HTML file yourself.
+
 ## Limitations
 
 Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed ([#40175](https://github.com/microsoft/playwright/issues/40175)). This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be not 100% accurate.
