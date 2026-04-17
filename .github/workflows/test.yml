@@ -45,21 +45,20 @@ jobs:
       - id: get-versions
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            echo 'versions=[]' >> $GITHUB_OUTPUT
+            versions='[]'
           else
             versions=$(node scripts/get-pw-versions.ts $MIN_PW_VERSION)
-            echo "versions=$versions" >> $GITHUB_OUTPUT
           fi
+          versions=$(node -e "const v=$versions; v.push('beta'); console.log(JSON.stringify(v));")
+          echo "versions=$versions" >> $GITHUB_OUTPUT
 
   test:
-    needs: get-pw-versions
     runs-on: ubuntu-24.04
+    needs: get-pw-versions
     timeout-minutes: 5
     strategy:
       matrix:
         playwright-version: ${{ fromJson(needs.get-pw-versions.outputs.versions) }}
-        include:
-          - playwright-version: beta
     steps:
       - uses: actions/checkout@v6
       - name: Set Node version

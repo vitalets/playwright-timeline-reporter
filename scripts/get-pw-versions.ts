@@ -1,12 +1,14 @@
 /**
- * Fetches stable @playwright/test versions from npm, groups them by major.minor,
- * and outputs a JSON array of the latest stable patch per minor series.
+ * Fetches stable @playwright/test versions from npm and outputs a JSON array
+ * of unique major.minor versions above the given minimum.
  * Excludes any pre-release versions (beta, rc, alpha).
  *
- * Usage: node scripts/get-pw-versions.ts <minVersion>
+ * Usage: node scripts/get-pw-versions.ts <major.minor>
  * Example: node scripts/get-pw-versions.ts 1.45
  */
 import { execSync } from 'node:child_process';
+
+type VersionInfo = { major: number; minor: number };
 
 const minVersion = process.argv[2];
 const logger = console;
@@ -16,51 +18,37 @@ if (!minVersion || !/^\d+\.\d+$/.test(minVersion)) {
   process.exit(1);
 }
 
-const [minMajor, minMinor] = minVersion.split('.').map(Number);
+const { major: minMajor, minor: minMinor } = parseVersion(minVersion);
+const cmdOutput = execSync('npm view @playwright/test versions --json', { encoding: 'utf8' });
+const allVersions: string[] = JSON.parse(cmdOutput);
+const versions = allVersions
+  .filter(isStableVersion)
+  .map(parseVersion)
+  .filter(isAboveMinVersion)
+  .sort(acsendingSorter)
+  .map(stringifyVersion);
+const uniqueVersions = [...new Set(versions)];
 
-const raw = execSync('npm view @playwright/test versions --json', { encoding: 'utf8' });
-const allVersions: string[] = JSON.parse(raw);
+logger.log(JSON.stringify(uniqueVersions));
 
-function minorKey(version: string): string {
+function isStableVersion(version: string) {
+  // Exclude pre-release versions (e.g. 1.59.0-beta-1774995564000")
+  return !version.includes('-');
+}
+
+function isAboveMinVersion({ major, minor }: VersionInfo) {
+  return major > minMajor || (major === minMajor && minor >= minMinor);
+}
+
+function acsendingSorter(a: VersionInfo, b: VersionInfo) {
+  return a.major === b.major ? a.minor - b.minor : a.major - b.major;
+}
+
+function parseVersion(version: string) {
   const [major, minor] = version.split('.').map(Number);
+  return { major, minor };
+}
+
+function stringifyVersion({ major, minor }: VersionInfo) {
   return `${major}.${minor}`;
 }
-
-function isAboveMin(version: string): boolean {
-  const [major, minor] = version.split('.').map(Number);
-  if (major !== minMajor) return major > minMajor;
-  return minor >= minMinor;
-}
-
-function compareVersions(a: string, b: string): number {
-  const partsA = a.split('.').map(Number);
-  const partsB = b.split('.').map(Number);
-  for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
-    const diff = (partsA[i] ?? 0) - (partsB[i] ?? 0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
-}
-
-const stable = allVersions.filter((v) => !v.includes('-') && isAboveMin(v));
-
-// Group by major.minor, keep latest patch per group
-const groups = new Map<string, string>();
-for (const v of stable) {
-  const key = minorKey(v);
-  const current = groups.get(key);
-  if (!current || compareVersions(v, current) > 0) {
-    groups.set(key, v);
-  }
-}
-
-// Sort groups by minor key ascending
-const sorted = [...groups.entries()]
-  .sort(([a], [b]) => {
-    const [ma, na] = a.split('.').map(Number);
-    const [mb, nb] = b.split('.').map(Number);
-    return ma !== mb ? ma - mb : na - nb;
-  })
-  .map(([, v]) => v);
-
-logger.log(JSON.stringify(sorted));
