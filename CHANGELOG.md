@@ -18,3 +18,8 @@
 ## [1.0.0] - 2026-04-09
 
 - Initial release.
+
+[unreleased]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.2...v1.1.0
+[1.0.2]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.0...v1.0.2
+[1.0.0]: https://github.com/vitalets/playwright-timeline-reporter/releases/tag/v1.0.0
