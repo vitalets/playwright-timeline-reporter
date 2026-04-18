@@ -176,6 +176,14 @@ export default defineConfig({
 });
 ```
 
+## Learning Playwright
+
+You can also use timeline reporter to better understand and visualize different Playwright concepts. Feel free to add timelines to your posts and presentations. Deploy it to GitHub Pages and share a link with your readers so they can explore the chart themselves.
+
+Example articles: 
+
+- [Playwright in Pictures: Fully Parallel Mode](https://dev.to/vitalets/playwright-in-pictures-fully-parallel-mode-3ecj).
+
 ## Data Privacy
 
 The reporter embeds all collected data directly into the generated HTML file. It does not send it to any third-party services. Your data remains local unless you choose to share the HTML file yourself.
