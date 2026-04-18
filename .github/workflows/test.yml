@@ -3,7 +3,7 @@ name: test
 on:
   workflow_dispatch:
   schedule:
-    # Nightly at 00:00 UTC, only for Playwright beta
+    # Runs nightly at 00:00 UTC
     - cron: '0 0 * * *'
   push:
     branches: ['**']
@@ -43,13 +43,13 @@ jobs:
         with:
           node-version: 24
       - id: get-versions
+        # By schedule run only 'beta' (if beta is actually above the latest).
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            versions='[]'
+            versions=$(node scripts/get-pw-versions.ts beta)
           else
             versions=$(node scripts/get-pw-versions.ts $MIN_PW_VERSION)
           fi
-          versions=$(node -e "const v=$versions; v.push('beta'); console.log(JSON.stringify(v));")
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
   test:
@@ -81,10 +81,10 @@ jobs:
           npm_config_min_release_age: 0
       - run: npx playwright install --with-deps chromium
       - run: |
-          npm run test:e2e
           npm run test:timings
           npm run test:merge
-      # test:lanes are heavy, run only in the latest pw
+      # Run these tests only on the latest pw
       - if: matrix.playwright-version == '1.59' || matrix.playwright-version == 'beta'
         run: |
           npm run test:lanes
+          npm run test:e2e
