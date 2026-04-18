@@ -192,6 +192,8 @@ The reporter embeds all collected data directly into the generated HTML file. It
 
 Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed ([#40175](https://github.com/microsoft/playwright/issues/40175)). This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be not 100% accurate.
 
+If you notice a bug or have any feedback, feel free to [open an issue](https://github.com/vitalets/playwright-timeline-reporter/issues).
+
 ## Packages to speedup tests
 
 - [@global-cache/playwright](https://github.com/vitalets/global-cache) - Cache and reuse data between Playwright workers.
