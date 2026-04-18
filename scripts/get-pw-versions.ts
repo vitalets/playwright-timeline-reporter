@@ -1,11 +1,12 @@
 /**
  * Fetches stable @playwright/test versions from npm and outputs a JSON array
- * of unique major.minor versions above the given minimum.
+ * of unique major.minor versions above the given minimum, or only the latest.
  * Excludes any pre-release versions (beta, rc, alpha).
  *
- * Example:
- * node scripts/get-pw-versions.ts 1.45
- * node scripts/get-pw-versions.ts beta
+ * Examples:
+ * npx tsx scripts/get-pw-versions.ts 1.45
+ * npx tsx scripts/get-pw-versions.ts latest
+ * npx tsx scripts/get-pw-versions.ts beta
  */
 import { execSync } from 'node:child_process';
 
@@ -13,7 +14,7 @@ const sinceVersion = process.argv[2];
 const logger = console;
 
 if (!sinceVersion) {
-  logger.error('Usage: node scripts/get-pw-versions.ts <major.minor|"beta">  (e.g. 1.45)');
+  logger.error('Usage: npx tsx scripts/get-pw-versions.ts <major.minor|"latest"|"beta">');
   process.exit(1);
 }
 
@@ -29,31 +30,30 @@ const outputVersions = getOutputVersions(stableVersions, hasRealBeta);
 logger.log(JSON.stringify(outputVersions));
 
 function getOutputVersions(stableVersions: VersionInfo[], hasRealBeta?: boolean): string[] {
+  const sortedStableVersions = [...stableVersions].sort(acsendingSorter);
+
   if (sinceVersion === 'beta') {
     return hasRealBeta ? ['beta'] : [];
   }
 
-  const sinceV = parseVersion(sinceVersion);
-  const outputVersions = stableVersions
-    .filter((v) => isVersionSince(v, sinceV))
-    .sort(acsendingSorter)
-    .map(stringifyVersion);
+  const outputVersions =
+    sinceVersion === 'latest' ? ['latest'] : getVersionsSince(sortedStableVersions, sinceVersion);
 
   if (hasRealBeta) outputVersions.push('beta');
 
   return [...new Set(outputVersions)];
 }
 
-function getRawVersions() {
+function getRawVersions(): string[] {
   const cmdOutput = execSync('npm view @playwright/test versions --json', { encoding: 'utf8' });
   return JSON.parse(cmdOutput) as string[];
 }
 
-function getStableVersions(rawVersions: string[]) {
+function getStableVersions(rawVersions: string[]): VersionInfo[] {
   return rawVersions.filter(isStableVersion).map(parseVersion);
 }
 
-function getLastBetaVersion(rawVersions: string[]) {
+function getLastBetaVersion(rawVersions: string[]): VersionInfo | undefined {
   const lastBetaVersion = rawVersions.findLast((v) => v.includes('beta'));
   return lastBetaVersion ? parseVersion(lastBetaVersion) : undefined;
 }
@@ -63,34 +63,39 @@ function isRealBetaVersion(
   lastBetaVersion: VersionInfo | undefined,
 ) {
   return (
-    lastBetaVersion &&
+    !!lastBetaVersion &&
     !stableVersions.find(
       (v) => v.major === lastBetaVersion.major && v.minor === lastBetaVersion.minor,
     )
   );
 }
 
-function isStableVersion(version: string) {
+function isStableVersion(version: string): boolean {
   // Exclude pre-release versions (e.g. 1.59.0-beta-1774995564000")
   return !version.includes('-');
 }
 
-function isVersionSince(version: VersionInfo, sinceVersion: VersionInfo) {
+function getVersionsSince(stableVersions: VersionInfo[], sinceVersionRaw: string): string[] {
+  const sinceV = parseVersion(sinceVersionRaw);
+  return stableVersions.filter((v) => isVersionSince(v, sinceV)).map(stringifyVersion);
+}
+
+function isVersionSince(version: VersionInfo, sinceVersion: VersionInfo): boolean {
   return (
     version.major > sinceVersion.major ||
     (version.major === sinceVersion.major && version.minor >= sinceVersion.minor)
   );
 }
 
-function acsendingSorter(a: VersionInfo, b: VersionInfo) {
+function acsendingSorter(a: VersionInfo, b: VersionInfo): number {
   return a.major === b.major ? a.minor - b.minor : a.major - b.major;
 }
 
-function parseVersion(raw: string) {
+function parseVersion(raw: string): VersionInfo {
   const [major, minor] = raw.split('.').map(Number);
   return { raw, major, minor };
 }
 
-function stringifyVersion({ major, minor }: VersionInfo) {
+function stringifyVersion({ major, minor }: VersionInfo): string {
   return `${major}.${minor}`;
 }
