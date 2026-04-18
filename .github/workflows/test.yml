@@ -55,6 +55,7 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     needs: get-pw-versions
+    if: needs.get-pw-versions.outputs.versions != '[]'
     timeout-minutes: 5
     strategy:
       matrix:
