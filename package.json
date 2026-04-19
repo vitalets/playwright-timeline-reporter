@@ -28,6 +28,7 @@
     "prettier": "prettier --check .",
     "prettier:w": "prettier --write .",
     "dev-data": "node scripts/dev-data/run.ts",
+    "demos": "node scripts/demos.ts",
     "dev": "parcel serve --no-cache src/report/with-two-projects.tpl.html",
     "dev:one-project": "parcel serve --no-cache src/report/with-one-project.tpl.html",
     "dev:many-projects": "parcel serve --no-cache src/report/with-many-projects.tpl.html",
@@ -44,6 +45,7 @@
     "example": "npm run build && node scripts/example.ts",
     "example:shards": "npm run example -- --shards",
     "pw": "npm i --no-save @playwright/test@$PW",
+    "pw:versions": "node scripts/pw-versions.ts",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
     "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 7"
   },

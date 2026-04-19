@@ -4,9 +4,9 @@
  * Excludes any pre-release versions (beta, rc, alpha).
  *
  * Examples:
- * npx tsx scripts/get-pw-versions.ts 1.45
- * npx tsx scripts/get-pw-versions.ts latest
- * npx tsx scripts/get-pw-versions.ts beta
+ * npx tsx scripts/pw-versions.ts 1.45
+ * npx tsx scripts/pw-versions.ts latest
+ * npx tsx scripts/pw-versions.ts beta
  */
 import { execSync } from 'node:child_process';
 
@@ -14,7 +14,7 @@ const sinceVersion = process.argv[2];
 const logger = console;
 
 if (!sinceVersion) {
-  logger.error('Usage: npx tsx scripts/get-pw-versions.ts <major.minor|"latest"|"beta">');
+  logger.error('Usage: npx tsx scripts/pw-versions.ts <major.minor|"latest"|"beta">');
   process.exit(1);
 }
 

@@ -2,7 +2,7 @@
  * Build static demo reports by reusing the existing example scripts.
  *
  * Usage:
- * node scripts/build-demos.ts
+ * node scripts/demos.ts
  */
 import fs from 'node:fs';
 import path from 'node:path';

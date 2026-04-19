@@ -33,7 +33,7 @@ env:
   MIN_PW_VERSION: '1.45'
 
 jobs:
-  get-pw-versions:
+  pw-versions:
     runs-on: ubuntu-24.04
     outputs:
       versions: ${{ steps.get-versions.outputs.versions }}
@@ -46,20 +46,20 @@ jobs:
         # By schedule run only 'beta' (if beta is actually above the latest).
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            versions=$(node scripts/get-pw-versions.ts beta)
+            versions=$(node scripts/pw-versions.ts beta)
           else
-            versions=$(node scripts/get-pw-versions.ts $MIN_PW_VERSION)
+            versions=$(node scripts/pw-versions.ts $MIN_PW_VERSION)
           fi
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
   test:
     runs-on: ubuntu-24.04
-    needs: get-pw-versions
-    if: needs.get-pw-versions.outputs.versions != '[]'
+    needs: pw-versions
+    if: needs.pw-versions.outputs.versions != '[]'
     timeout-minutes: 5
     strategy:
       matrix:
-        playwright-version: ${{ fromJson(needs.get-pw-versions.outputs.versions) }}
+        playwright-version: ${{ fromJson(needs.pw-versions.outputs.versions) }}
     steps:
       - uses: actions/checkout@v6
       - name: Set Node version
