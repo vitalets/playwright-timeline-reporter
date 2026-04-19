@@ -15,6 +15,8 @@ const logger = console;
 
 const version = process.argv[2];
 
+main();
+
 /** Updates the changelog for the requested release version. */
 function main() {
   if (!version) {
@@ -133,5 +135,3 @@ function getRepositoryUrl() {
   }
   return `https://github.com/${match[1]}`;
 }
-
-main();
