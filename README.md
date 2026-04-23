@@ -184,6 +184,28 @@ Example articles:
 
 - [Playwright in Pictures: Fully Parallel Mode](https://dev.to/vitalets/playwright-in-pictures-fully-parallel-mode-3ecj)
 
+## Integration with Playwright HTML Reporter
+
+You can integrate a link to the timeline inside Playwright's built-in HTML report:
+
+<img src="https://vitalets.github.io/playwright-timeline-reporter/link-in-html-reporter.png" alt="Timeline in HTML reporter">
+
+Add a timeline report link to the `metadata` object in the Playwright config:
+```ts
+export default defineConfig({
+  metadata: {
+    timeline: 'https://path/to/uploaded/timeline/index.html',
+  }
+});
+```
+
+Then open the HTML report with a **special hash** `#show-metadata-other`:
+```
+http://localhost:9323/#show-metadata-other
+```
+
+> Customization of Playwright HTML report is a bit awkward, see [#35614](https://github.com/microsoft/playwright/issues/35614).
+
 ## Data Privacy
 
 The reporter embeds all collected data directly into the generated HTML file. It does not send it to any third-party services. Your data remains local unless you choose to share the HTML file yourself.
