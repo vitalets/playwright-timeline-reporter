@@ -220,7 +220,7 @@ If you notice a bug or have any feedback, feel free to [open an issue](https://g
 ## Packages to speedup tests
 
 - [@global-cache/playwright](https://github.com/vitalets/global-cache) - Cache and reuse data between Playwright workers.
-- [request-mocking-protocol](https://github.com/vitalets/request-mocking-protocol) - Mock server-side API calls in tests.
+- [request-mocking-protocol](https://github.com/vitalets/request-mocking-protocol) - Mock client-side and server-side API calls in tests.
 
 ## License
 
