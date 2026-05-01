@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Handle `test.use()` invocation, that triggers worker restart.
+
 ## [1.1.0] - 2026-04-14
 
 - Added an optional `debug` reporter option to enable reporter logs.
