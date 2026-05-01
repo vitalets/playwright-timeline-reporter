@@ -183,6 +183,7 @@ You can also use this reporter to better understand and visualize different Play
 Example articles: 
 
 - [Playwright in Pictures: Fully Parallel Mode](https://dev.to/vitalets/playwright-in-pictures-fully-parallel-mode-3ecj)
+- [Playwright in Pictures: Why Workers Restart?](https://dev.to/vitalets/playwright-in-pictures-why-workers-restart-34bp)
 
 ## Integration with Playwright HTML Reporter
 
