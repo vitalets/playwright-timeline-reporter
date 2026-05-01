@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-05-01
+
 - Handle `test.use()` invocation, that triggers worker restart.
 
 ## [1.1.0] - 2026-04-14
@@ -21,7 +23,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/vitalets/playwright-timeline-reporter/releases/tag/v1.0.0
