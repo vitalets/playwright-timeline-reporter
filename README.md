@@ -189,7 +189,7 @@ Example articles:
 
 You can integrate a link to the timeline inside Playwright's built-in HTML report:
 
-<img src="https://vitalets.github.io/playwright-timeline-reporter/link-in-html-reporter.png" alt="Timeline in HTML reporter">
+<img width="800" src="https://vitalets.github.io/playwright-timeline-reporter/link-in-html-reporter.png" alt="Timeline in HTML reporter">
 
 Add a timeline report link to the `metadata` object in the Playwright config:
 ```ts
