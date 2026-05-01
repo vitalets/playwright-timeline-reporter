@@ -49,6 +49,13 @@ export type TestAssignerParams = {
   maxParallelWorkersPerProject: Map<string, number>;
   /** Debug logger wrapper that handles enabled/disabled mode internally. */
   debug: WorkerLanesDebug;
+  /**
+   * Whether to allow attaching to a lane whose last test is a passed test from the same project.
+   * This is used to handle the rare case when there is test.use() invocation of the file that causes a worker restart.
+   * As it's a rare case, we try to find candidates first without this flag,
+   * and only if there is no candidates, then re-try with it.
+   */
+  allowAttachToPassedTest: boolean;
 };
 
 /** A single partial lane-assignment branch tracked during search. */
@@ -185,18 +192,21 @@ export class TestAssigner {
 
   // ─── Candidate lane collection ──────────────────────────────────────────────
 
-  /** Collect lanes eligible to receive a test whose workerIndex has not been seen yet. */
+  /**
+   * Collect lanes eligible to receive a test whose workerIndex has not been seen yet.
+   */
   private getCandidateLanes(): WorkerLane[] {
     // Candidate lane:
     // - last test exists
     // - last test is marked as the last for its workerIndex
     // - last test is not a passed test from the same project (otherwise why workerIndex changed?).
+    //   This is important for testrun end, to  not try to attach tests to finished lanes.
     // - restart gap is above the minimum threshold
     let candidates = this.currentLanes.filter(
       (lane) =>
         lane.lastTest !== undefined &&
         this.params.lastTestInWorker.has(lane.lastTest) &&
-        !this.isSameProjectPassedLane(lane) &&
+        (this.params.allowAttachToPassedTest || !this.isSameProjectPassedLane(lane)) &&
         this.getRestartGap(lane) >= MIN_RESTART_GAP_MS,
     );
     // Lane consolidation: if the project is already at its per-project lane ceiling,
