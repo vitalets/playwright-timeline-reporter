@@ -2,6 +2,9 @@ import { test, getDir, runPlaywright, assertLanes } from '../_helpers/pw-run.js'
 
 const dir = getDir(import.meta);
 
+// With 3 projects (p1 → p2 → p3) and p2 limited to workers:1, the per-project worker cap is tracked
+// during parallel-index analysis so p2 tests are consolidated onto one lane. p1 uses both lanes,
+// and p3 tests appear at the end of both lanes once p2 finishes.
 test(`${dir} (all passing)`, (t) => {
   const lanes = runPlaywright(t);
 
@@ -14,6 +17,8 @@ test(`${dir} (all passing)`, (t) => {
   ]);
 });
 
+// When p2 spec1 test 1 fails (triggering a worker restart inside p2), p2 still stays on one lane
+// because its worker cap is 1. p1 tests remain correctly split across both lanes.
 test(`${dir} (one failing)`, (t) => {
   const lanes = runPlaywright(t, {
     env: { FAIL_TEST: 'p2 spec1 test 1' },
