@@ -77,9 +77,7 @@ jobs:
           node-version: ${{ steps.node-version.outputs.version }}
           cache: 'npm'
       - run: npm ci
-      - run: npm install --no-save @playwright/test@${{ matrix.playwright-version }}
-        env:
-          npm_config_min_release_age: 0
+      - run: npm install @playwright/test@${{ matrix.playwright-version }} --no-save --min-release-age=0
       - run: npx playwright install --with-deps chromium
       - run: |
           npm run test:timings
