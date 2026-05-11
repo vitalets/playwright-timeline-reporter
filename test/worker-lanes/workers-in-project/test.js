@@ -12,26 +12,26 @@ test(`${dir} (all passing)`, (t) => {
   normalizeLastTestName(lanes);
 
   assertLanes(lanes, [
-    ['p1 spec1 test 1', 'p2 spec1 test 1', 'p2 spec1 test 2', 'p3 spec1 test X'], // prettier-ignore
-    ['p1 spec1 test 2', 'p3 spec1 test X'],
+    ['p1 spec1 test 100', 'p2 spec1 test 100', 'p2 spec1 test 200', 'p3 spec1 test X'], // prettier-ignore
+    ['p1 spec1 test 200', 'p3 spec1 test X'],
   ]);
 });
 
-// When p2 spec1 test 1 fails (triggering a worker restart inside p2), p2 still stays on one lane
+// When p2 spec1 test 100 fails (triggering a worker restart inside p2), p2 still stays on one lane
 // because its worker cap is 1. p1 tests remain correctly split across both lanes.
 test(`${dir} (one failing)`, (t) => {
   const lanes = runPlaywright(t, {
-    env: { FAIL_TEST: 'p2 spec1 test 1' },
+    env: { FAIL_TEST: 'p2 spec1 test 100' },
   });
 
   assertLanes(lanes, [
-    ['p1 spec1 test 1', 'p2 spec1 test 1', 'p2 spec1 test 2'], // prettier-ignore
-    ['p1 spec1 test 2'],
+    ['p1 spec1 test 100', 'p2 spec1 test 100', 'p2 spec1 test 200'], // prettier-ignore
+    ['p1 spec1 test 200'],
   ]);
 });
 
 function normalizeLastTestName(lanes) {
   lanes.forEach(
-    (lane) => (lane[lane.length - 1] = lane[lane.length - 1].replace(/test \d/, 'test X')),
+    (lane) => (lane[lane.length - 1] = lane[lane.length - 1].replace(/test \d+/, 'test X')),
   );
 }

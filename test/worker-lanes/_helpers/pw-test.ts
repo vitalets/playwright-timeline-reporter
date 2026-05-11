@@ -6,10 +6,18 @@ import path from 'node:path';
 
 export { test };
 
-export async function testBody(testInfo: TestInfo, delay: number, error?: string) {
+/**
+ * Test body that derives delay and pass/fail from the test name.
+ * Name format: "test N" (succeeds) or "fail N" (throws), where N is the delay in ms.
+ * The optional `error` argument overrides the name-based fail/pass logic when provided.
+ */
+export async function testBody(testInfo: TestInfo, error?: string) {
+  const title = testInfo.title;
+  const delay = Number(title.match(/\d+/)?.[0] ?? 0);
   await new Promise((resolve) => setTimeout(resolve, delay));
-  if (error || process.env.FAIL_TEST?.includes(buildTestTitle(testInfo))) {
-    throw new Error(error || `error`);
+  const shouldFail = error !== undefined ? Boolean(error) : title.includes('fail');
+  if (shouldFail || process.env.FAIL_TEST?.includes(buildTestTitle(testInfo))) {
+    throw new Error(error || 'error');
   }
 }
 

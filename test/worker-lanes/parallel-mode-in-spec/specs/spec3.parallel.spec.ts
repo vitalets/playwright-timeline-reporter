@@ -7,14 +7,14 @@ if (process.env.PARALLEL_MODE_ENABLED) {
   test.describe.configure({ mode: 'parallel' });
 }
 
-test('test 1', async ({}, testInfo) => {
-  await testBody(testInfo, 400, 'error');
+test('fail 400', async ({}, testInfo) => {
+  await testBody(testInfo);
 });
 
-test('test 2', async ({}, testInfo) => {
-  await testBody(testInfo, 300);
+test('test 300', async ({}, testInfo) => {
+  await testBody(testInfo);
 });
 
-test('test 3', async ({}, testInfo) => {
-  await testBody(testInfo, 100);
+test('test 100', async ({}, testInfo) => {
+  await testBody(testInfo);
 });

@@ -8,8 +8,8 @@ const dir = getDir(import.meta);
 test(`${dir} (non fully-parallel)`, (t) => {
   const lanes = runPlaywright(t);
   assertLanes(lanes, [
-    ['spec1 test 1'], // prettier-ignore
-    ['spec2 test 1', 'spec2 test 2'],
+    ['spec1 fail 100'], // prettier-ignore
+    ['spec2 fail 300', 'spec2 fail 100'],
   ]);
 });
 
@@ -18,7 +18,7 @@ test(`${dir} (non fully-parallel)`, (t) => {
 test.skip(`${dir} (fully-parallel)`, (t) => {
   const lanes = runPlaywright(t, { flags: '--fully-parallel' });
   assertLanes(lanes, [
-    ['spec1 test 1', 'spec2 test 2'], // prettier-ignore
-    ['spec2 test 1'],
+    ['spec1 fail 100', 'spec2 fail 100'], // prettier-ignore
+    ['spec2 fail 300'],
   ]);
 });

@@ -1,9 +1,9 @@
 import { test, testBody } from '../../_helpers/pw-test.js';
 
-test('test 1', async ({}, testInfo) => {
-  await testBody(testInfo, 400, 'error');
+test('fail 400', async ({}, testInfo) => {
+  await testBody(testInfo);
 });
 
-test('test 2', async ({}, testInfo) => {
-  await testBody(testInfo, 100, 'error');
+test('fail 100', async ({}, testInfo) => {
+  await testBody(testInfo);
 });

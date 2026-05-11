@@ -9,7 +9,7 @@ const dir = getDir(import.meta);
 test(`${dir}`, (t) => {
   const lanes = runPlaywright(t);
   assertLanes(lanes, [
-    ['spec1 test 1', 'spec3 test 1', 'spec3 test 2'], // prettier-ignore
-    ['spec2 test 1', 'spec2 test 2'],
+    ['spec1 fail 100', 'spec3 fail 300', 'spec3 fail 100'], // prettier-ignore
+    ['spec2 fail 400', 'spec2 fail 100'],
   ]);
 });

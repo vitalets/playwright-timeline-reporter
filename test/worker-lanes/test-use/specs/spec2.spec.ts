@@ -5,6 +5,6 @@ import { test, testBody } from '../../_helpers/pw-test.js';
 // See: https://github.com/microsoft/playwright/issues/33316
 test.use({ screenshot: 'off' });
 
-test('test 2', async ({}, testInfo) => {
-  await testBody(testInfo, 100);
+test('test 100', async ({}, testInfo) => {
+  await testBody(testInfo);
 });
