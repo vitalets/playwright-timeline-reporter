@@ -1,7 +1,8 @@
 /**
- * Fetches stable @playwright/test versions from npm and outputs a JSON array
- * of unique major.minor versions above the given minimum, or only the latest.
- * Excludes any pre-release versions (beta, rc, alpha).
+ * Fetches @playwright/test versions from npm and outputs a JSON array
+ * of unique major.minor versions above the given minimum.
+ *
+ * The benefit compared to short inline script is auto-exclusion of 'beta' version if it is covered by stable versions.
  *
  * Examples:
  * npx tsx scripts/pw-versions.ts 1.45
