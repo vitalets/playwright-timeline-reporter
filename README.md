@@ -103,7 +103,7 @@ In the report you can do the following:
 
 ## Sharding
 
-For sharded runs, configure each shard to produce a blob report, then merge them into a single timeline.
+For sharded runs, configure each shard to produce a **blob report**, then merge them into a single timeline.
 
 **1. Run each shard with the blob reporter:**
 
@@ -184,6 +184,7 @@ Example articles:
 
 - [Playwright in Pictures: Fully Parallel Mode](https://dev.to/vitalets/playwright-in-pictures-fully-parallel-mode-3ecj)
 - [Playwright in Pictures: Why Workers Restart?](https://dev.to/vitalets/playwright-in-pictures-why-workers-restart-34bp)
+- [Playwright in Pictures: How Fixtures Work](https://dev.to/vitalets/playwright-in-pictures-how-fixtures-work-3oe3)
 
 ## Integration with Playwright HTML Reporter
 
