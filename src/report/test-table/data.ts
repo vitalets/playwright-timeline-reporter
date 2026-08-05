@@ -55,7 +55,7 @@ export function filterAndSortTestTableRows(
   );
   if (!sort) return matchingRows;
 
-  return matchingRows.toSorted((a, b) => compareRows(a, b, sort));
+  return [...matchingRows].sort((a, b) => compareRows(a, b, sort));
 }
 
 export function getNextSort(sort: TableSort | null, column: SortColumn): TableSort {
@@ -74,7 +74,12 @@ export function getTableColumns(rows: TestTableRow[]) {
 }
 
 export function getStatusCounts(rows: TestTableRow[]) {
-  return Map.groupBy(rows, (row) => row.status);
+  return rows.reduce((counts, row) => {
+    const statusRows = counts.get(row.status);
+    if (statusRows) statusRows.push(row);
+    else counts.set(row.status, [row]);
+    return counts;
+  }, new Map<string, TestTableRow[]>());
 }
 
 function formatLocation({ file, line, column }: TestTimings['testBody']['location']) {
