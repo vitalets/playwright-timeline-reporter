@@ -2,7 +2,7 @@
  * Renders the interactive timeline chart, including series, axes, brush selection, and tooltip behavior.
  */
 import { ChartData } from '../data/index.js';
-import { useCallback, useState } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 import { AxisWorkers } from './axis/workers/index.js';
 import { Brush } from './brush.js';
 import { AxisShards } from './axis/shards/index.js';
@@ -25,25 +25,34 @@ import { Toolbox } from './toolbox/index.js';
 import { useRafCallback } from './lib/use-raf-callback.js';
 import { AlignShardsProvider } from './state/align-shards.js';
 
-export function Chart({ chartData }: { chartData: ChartData }) {
+export function Chart({ chartData, testTable }: { chartData: ChartData; testTable?: ReactNode }) {
   return (
     <ReportDataProvider data={chartData}>
       <SelectedProjectProvider>
         <AlignShardsProvider>
           <FocusFilterProvider>
             <SelectedAreaProvider>
-              <Background toolbox={<Toolbox />}>
-                <LayoutProvider>
-                  <ScaleProvider>
-                    <SvgContent />
-                  </ScaleProvider>
-                </LayoutProvider>
-              </Background>
+              <ChartContents testTable={testTable} />
             </SelectedAreaProvider>
           </FocusFilterProvider>
         </AlignShardsProvider>
       </SelectedProjectProvider>
     </ReportDataProvider>
+  );
+}
+
+function ChartContents({ testTable }: { testTable?: ReactNode }) {
+  return (
+    <>
+      <Background toolbox={<Toolbox />}>
+        <LayoutProvider>
+          <ScaleProvider>
+            <SvgContent />
+          </ScaleProvider>
+        </LayoutProvider>
+      </Background>
+      {testTable}
+    </>
   );
 }
 

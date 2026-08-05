@@ -8,6 +8,7 @@
 @import './animation.css';
 @import './search-dialog.css';
 @import './toolbox.css';
+@import './test-table.css';
 
 * {
   box-sizing: border-box;

@@ -9,6 +9,7 @@ import { buildChartData } from './data/index.js';
 import { ReportErrorBoundary } from './error-boundary.js';
 import { ReportError } from './error.js';
 import { Header } from './header/index.js';
+import { TestTable } from './test-table/index.js';
 import { initTheme } from './theme-storage.js';
 import { readJson } from './utils.js';
 
@@ -45,7 +46,7 @@ function AppContent() {
       {runInfo.reporterError ? (
         <ReportError message={runInfo.reporterError} />
       ) : (
-        <Chart chartData={chartData} />
+        <Chart chartData={chartData} testTable={<TestTable timings={timingsData} />} />
       )}
     </div>
   );
