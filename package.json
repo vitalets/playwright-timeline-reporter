@@ -1,7 +1,7 @@
 {
   "name": "playwright-timeline-reporter",
   "description": "Interactive timeline report for Playwright",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitalets/playwright-timeline-reporter.git"
@@ -22,7 +22,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "prepare": "git config core.hooksPath scripts/git-hooks",
+    "prepare": "npm run build && git config core.hooksPath scripts/git-hooks",
     "tsc": "tsc",
     "lint": "eslint .",
     "prettier": "prettier --check .",
@@ -36,6 +36,7 @@
     "dev:deps": "parcel serve --no-cache src/report/with-projects-deps.tpl.html",
     "dev:shards": "parcel serve --no-cache src/report/with-shards.tpl.html",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build --no-cache src/report/index.tpl.html --dist-dir dist/report",
+    "verify:package": "node scripts/verify-package.ts",
     "test": "npm run test:e2e",
     "test:e2e": "npm run build && npx playwright test -c test/e2e/success",
     "test:timings": "npx playwright test -c test/timings",
