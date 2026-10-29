@@ -47,7 +47,7 @@
     "pw": "npm i --no-save --min-release-age=0 @playwright/test@$PW",
     "pw:versions": "node scripts/pw-versions.ts",
     "pw:install": "PLAYWRIGHT_SKIP_BROWSER_GC=1 npx playwright install chromium",
-    "deps": "npx npm-check-updates -i --format group,dep,repo --cooldown 5"
+    "deps": "npx npm-check-updates -i --interactiveSelect none --format group,dep,repo --cooldown 3"
   },
   "targets": {
     "main": false,
@@ -58,33 +58,33 @@
   },
   "dependencies": {
     "commander": "^14.0.3",
-    "os-name": "^7.0.0"
+    "os-name": "^7.0.1"
   },
   "devDependencies": {
-    "@eslint/compat": "2.0.5",
+    "@eslint/compat": "2.1.1",
     "@eslint/js": "9.39.4",
     "@parcel/optimizer-data-url": "^2.16.4",
     "@parcel/transformer-inline-string": "^2.16.4",
     "@playwright/test": "1.59.1",
     "@types/d3-scale": "^4.0.9",
     "@types/node": "24.12.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "buffer": "^6.0.3",
     "cmdk": "^1.1.1",
     "d3-scale": "^4.0.2",
     "eslint": "9.39.4",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-visual-complexity": "0.1.4",
-    "globals": "17.5.0",
-    "lint-staged": "16.4.0",
+    "globals": "17.13.0",
+    "lint-staged": "17.6.0",
     "parcel": "^2.16.4",
-    "prettier": "^3.8.3",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "prettier": "^3.9.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "8.59.0",
-    "yaml": "^2.8.3"
+    "typescript-eslint": "8.72.0",
+    "yaml": "^2.9.1"
   },
   "prettier": {
     "printWidth": 100,
