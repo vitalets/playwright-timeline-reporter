@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added Markdown reports with Mermaid worker timelines and GitHub Actions summaries,
+  available through `playwright-timeline-reporter/markdown` or the `markdown` option.
+
 ## [1.1.1] - 2026-05-01
 
 - Handle `test.use()` invocation, that triggers worker restart.

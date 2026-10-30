@@ -9,6 +9,10 @@ export type TimelineReporterOptions = {
    */
   outputFile?: string;
   /**
+   * Also generate Markdown: true for the default path, or a config-relative output file path.
+   */
+  markdown?: boolean | string;
+  /**
    * Path to a custom prompt template file. The file must include the `{data}` placeholder exactly once.
    */
   promptTemplateFile?: string;

@@ -21,20 +21,9 @@ type BlobMetadata = Record<string, unknown> & {
 type ExtractedReportEvents = {
   metadata: BlobMetadata;
   config: FullConfig;
-  firstTestResult: TestResult;
+  testResultIds: string[];
   fullResult: FullResult;
 };
-
-function createPwMergeReportsCommand() {
-  // Mirror the Playwright CLI shape for `merge-reports [dir]` so commander can
-  // reliably distinguish the positional reports directory from known options.
-  // See: https://github.com/microsoft/playwright/blob/main/packages/playwright/src/program.ts#L128
-  return new Command()
-    .exitOverride()
-    .option('-c, --config <file>')
-    .option('--reporter <reporter>')
-    .argument('[dir]');
-}
 
 export class MergeReports {
   public reports: Record<string /* report id */, MergeReportInfo> = {};
@@ -54,12 +43,14 @@ export class MergeReports {
   }
 
   resolveMergeReportId(result: TestResult) {
+    if (result.status === 'skipped' || result.workerIndex < 0) return;
+    if (this.error) return;
     const testResultId = getTestResultId(result);
-    if (!testResultId) {
-      // todo: set error or warning?
-      return;
+    const reportId = this.testResultIdToReportId[testResultId];
+    if (!reportId) {
+      this.setError('Report identity unavailable for an executed test result.');
     }
-    return this.testResultIdToReportId[testResultId];
+    return reportId;
   }
 
   private processReportFiles(argv: string[]) {
@@ -90,17 +81,26 @@ export class MergeReports {
       return;
     }
     const reportId = (Object.keys(this.reports).length + 1).toString();
-    const testResultId = getTestResultId(events.firstTestResult);
-    this.testResultIdToReportId[testResultId] = reportId;
+    this.registerResultIds(events.testResultIds, reportId);
     this.reports[reportId] = {
       reportId,
       startTime: getResultStartTime(events.fullResult),
       duration: events.fullResult.duration,
       shardIndex: events.metadata.shard?.current,
+      shardTotal: events.metadata.shard?.total,
       userAgent: events.metadata.userAgent,
       fullyParallel: events.config.fullyParallel,
       status: events.fullResult.status,
     };
+  }
+
+  private registerResultIds(resultIds: string[], reportId: string) {
+    for (const id of resultIds) {
+      if (!id || this.testResultIdToReportId[id]) {
+        this.setError('Missing or duplicate blob result IDs; report identity is ambiguous.');
+      }
+      this.testResultIdToReportId[id] = reportId;
+    }
   }
 
   private extractReportsDirFromCli(argv: string[], cmdIndex: number) {
@@ -126,15 +126,25 @@ export class MergeReports {
   }
 }
 
+function createPwMergeReportsCommand() {
+  // Mirror Playwright's merge CLI to distinguish the directory from known options.
+  return new Command()
+    .exitOverride()
+    .option('-c, --config <file>')
+    .option('--reporter <reporter>')
+    .argument('[dir]');
+}
+
 function getReportFiles(reportDir: string) {
   return fs
     .readdirSync(reportDir)
     .filter((entry) => entry.endsWith('.jsonl'))
+    .sort()
     .map((entry) => path.join(reportDir, entry));
 }
 
 function extractReportEvents(filePath: string) {
-  const state: Partial<ExtractedReportEvents> = {};
+  const state: Partial<ExtractedReportEvents> = { testResultIds: [] };
   const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
 
   for (const line of lines) {
@@ -161,8 +171,8 @@ function handleEvent(state: Partial<ExtractedReportEvents>, event: JsonLineEvent
     state.config = event.params.config as FullConfig;
   }
 
-  if (event.method === 'onTestEnd' && event.params?.result && !state.firstTestResult) {
-    state.firstTestResult = event.params.result as TestResult;
+  if (event.method === 'onTestEnd' && event.params?.result) {
+    state.testResultIds!.push(getTestResultId(event.params.result as TestResult));
   }
 
   if (event.method === 'onEnd' && event.params?.result) {
@@ -173,9 +183,9 @@ function handleEvent(state: Partial<ExtractedReportEvents>, event: JsonLineEvent
 function getCompleteReportEvents(
   state: Partial<ExtractedReportEvents>,
 ): ExtractedReportEvents | undefined {
-  const { metadata, config, firstTestResult, fullResult } = state;
-  if (!metadata || !config || !firstTestResult || !fullResult) return;
-  return { metadata, config, firstTestResult, fullResult };
+  const { metadata, config, testResultIds, fullResult } = state;
+  if (!metadata || !config || !testResultIds || !fullResult) return;
+  return { metadata, config, testResultIds, fullResult };
 }
 
 function getResultStartTime(fullResult: FullResult) {

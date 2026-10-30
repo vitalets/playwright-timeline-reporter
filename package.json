@@ -11,6 +11,10 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
+    "./markdown": {
+      "types": "./dist/markdown/index.d.ts",
+      "default": "./dist/markdown/index.js"
+    },
     "./package.json": "./package.json"
   },
   "engines": {
@@ -37,7 +41,8 @@
     "dev:shards": "parcel serve --no-cache src/report/with-shards.tpl.html",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && parcel build --no-cache src/report/index.tpl.html --dist-dir dist/report",
     "test": "npm run test:e2e",
-    "test:e2e": "npm run build && npx playwright test -c test/e2e/success",
+    "test:e2e": "npm run build && node --test test/e2e/*/run.js",
+    "test:e2e:markdown": "node --test test/e2e/markdown-option/run.js test/e2e/markdown-report/run.js test/e2e/markdown-merge/run.js",
     "test:timings": "npx playwright test -c test/timings",
     "test:merge": "npx playwright test -c test/merge-reports",
     "test:lanes": "npm run build && node test/worker-lanes/run.js",

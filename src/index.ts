@@ -10,6 +10,7 @@ import type {
   TestResult,
   FullConfig,
   FullResult,
+  Suite,
 } from '@playwright/test/reporter';
 import { getRunInfo, RunInfo } from './run-info.js';
 import { JsonStream } from './utils/json-stream.js';
@@ -21,6 +22,7 @@ import {
 import { MergeReports } from './merge-reports.js';
 import { TestTimingsBuilder } from './test-timings/index.js';
 import { TestTimings } from './test-timings/types.js';
+import { MarkdownReporter } from './markdown/reporter.js';
 
 export type { TimelineReporterOptions };
 
@@ -35,47 +37,71 @@ export default class TimelineReporter implements Reporter {
   protected stream?: JsonStream;
   protected mergeReports = new MergeReports();
   protected currentMergeReportId?: string;
+  protected htmlEnabled = true;
+  private isMerging = process.argv.includes('merge-reports');
+  private markdownReporter?: MarkdownReporter;
 
   constructor(options?: TimelineReporterOptions) {
     this.options = resolveOptions(options);
+    if (this.options.markdown) {
+      this.markdownReporter = new MarkdownReporter(this.options);
+    }
   }
 
   printsToStdio() {
     return false;
   }
 
-  onBegin(config: FullConfig) {
+  onBegin(config: FullConfig, suite: Suite) {
     this.config = config;
     this.configDir = config.configFile ? path.dirname(config.configFile) : process.cwd();
     this.mergeReports.tryProcessReportFiles();
-    this.openStream();
+    if (this.htmlEnabled) this.openStream();
+    this.markdownReporter?.onBegin(
+      config,
+      suite,
+      this.isMerging ? this.mergeReports.reports : undefined,
+    );
   }
 
   onTestEnd(test: TestCase, result: TestResult) {
     if (this.mergeReports.error) return;
     if (result.status === 'skipped') return;
+    const mergeReportId = this.resolveMergeReportId(result);
+    if (this.mergeReports.error) return;
+    this.markdownReporter?.onTestEnd(test, result, mergeReportId);
+    if (!this.htmlEnabled) return;
 
     const data = new TestTimingsBuilder(test, result, {
       configDir: this.configDir,
       pwVersion: this.config.version,
     }).build();
 
-    const mergeReportId = this.mergeReports.resolveMergeReportId(result);
-    if (mergeReportId !== undefined) this.currentMergeReportId = mergeReportId;
-    data.mergeReportId = this.currentMergeReportId;
+    data.mergeReportId = mergeReportId;
 
     this.writeStream(data);
   }
 
   async onEnd(result: FullResult) {
-    const runInfo = getRunInfo(
-      result,
-      this.config!,
-      this.mergeReports.reports,
-      this.mergeReports.error,
-      this.options.debug,
-    );
-    await this.closeStream(runInfo);
+    if (this.htmlEnabled) {
+      const runInfo = getRunInfo(
+        result,
+        this.config!,
+        this.mergeReports.reports,
+        this.mergeReports.error,
+        this.options.debug,
+      );
+      await this.closeStream(runInfo);
+    }
+    this.markdownReporter?.onEnd(this.mergeReports.error);
+  }
+
+  private resolveMergeReportId(result: TestResult) {
+    if (!this.isMerging) return;
+    const reportId = this.mergeReports.resolveMergeReportId(result);
+    if (reportId !== undefined) this.currentMergeReportId = reportId;
+    // Results without a worker have no execution identity; retain their existing HTML attribution.
+    return result.workerIndex < 0 ? this.currentMergeReportId : reportId;
   }
 
   private openStream() {

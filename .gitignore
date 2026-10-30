@@ -14,3 +14,4 @@ src/report/with-*.tpl.html
 /todo.txt
 
 test/**/out
+test/e2e/*/reports/

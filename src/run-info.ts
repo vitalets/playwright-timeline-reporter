@@ -26,6 +26,7 @@ export type MergeReportInfo = {
   duration: number;
   status: FullResult['status'];
   shardIndex?: number; // shard index is optional, e.g. full run on win/linux
+  shardTotal?: number;
   fullyParallel?: boolean;
   userAgent?: string;
   tag?: string;
