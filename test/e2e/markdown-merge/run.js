@@ -31,7 +31,7 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
     ),
-    ['Shard 1', 'Worker 1', 'Shard 2', 'Worker 1'],
+    ['SHARD 1', 'Worker 1', 'SHARD 2', 'Worker 1'],
   );
   const totals = [...markdown.matchAll(/Total :(s\d+total), 2000-01-01 00:00:00.000, (\d+)ms/g)];
   assert.equal(totals.length, 2);
@@ -112,7 +112,7 @@ test('worker numbering restarts at one in each shard while preserving totals and
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
     ),
-    ['Shard 1', 'Worker 1', 'Worker 2', 'Shard 2', 'Worker 1', 'Worker 2'],
+    ['SHARD 1', 'Worker 1', 'Worker 2', 'SHARD 2', 'Worker 1', 'Worker 2'],
   );
   const sections = [...markdown.matchAll(/section (.+)/g)].map((match) => match[1]);
   assert.equal(new Set(sections).size, sections.length);
@@ -125,7 +125,7 @@ test('worker numbering restarts at one in each shard while preserving totals and
 test('a standalone shard and merged reports without shard metadata keep their identities', () => {
   const project = { project: () => ({ name: 'project' }) };
   for (const [config, reports, id, labels] of [
-    [{ shard: { current: 3, total: 4 } }, undefined, undefined, ['Shard 3', 'Worker 1']],
+    [{ shard: { current: 3, total: 4 } }, undefined, undefined, ['SHARD 3', 'Worker 1']],
     [{}, { 7: { reportId: '7' } }, '7', ['Report 7', 'Worker 1']],
   ]) {
     const data = new MarkdownReporterData(config, { suites: [project] }, reports);

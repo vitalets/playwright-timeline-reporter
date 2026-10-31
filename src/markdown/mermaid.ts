@@ -36,7 +36,7 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
     if (!shard.workers.length) return;
     const prefix = `s${shardIndex}`;
     const label =
-      shard.shardIndex === undefined ? `Report ${shard.id}` : `Shard ${shard.shardIndex}`;
+      shard.shardIndex === undefined ? `Report ${shard.id}` : `SHARD ${shard.shardIndex}`;
     if (shard.grouped) {
       lines.push(`    section ${label}`);
       lines.push(`    Total :${prefix}total, ${formatClock(0)}, ${shard.span}ms`);
