@@ -19,3 +19,8 @@
 - When suppressing ESLint for a single line, use the `// eslint-disable-next-line ...` form, not `// eslint-disable-line ...`.
 
 - After any change to TypeScript files, run `npm run tsc`.
+
+## Documentation
+
+- Keep README.md clear, concise, and easy to read. Do not document every change in it; update it only when users need new or corrected information to understand, install, configure, or use the project.
+- Avoid documenting obvious or self-explanatory behavior; include details only when they add useful information for users.

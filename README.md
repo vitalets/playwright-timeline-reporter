@@ -302,34 +302,6 @@ written. Existing Summary content is never overwritten. If the resolved Summary
 and output paths are identical, a single append replaces the normal overwrite.
 Use distinct paths to retain a separate full local copy.
 
-### Reading the diagram
-
-The report contains a small heading, total time, and a Mermaid worker timeline.
-There is no table or explanatory footer. Indented rows are labeled Worker 0, Worker 1,
-and so on, with unique display numbers across shards and projects.
-
-Green blocks combine consecutive successful tests in the same worker process,
-including gaps between them. Each failed, timed-out, or interrupted attempt gets a
-separate red block. Retries retain their own colors, and restarts start new blocks.
-Skipped results and results without an actual worker are excluded. Zero-duration
-executions have no separate visible block.
-
-Each shard starts at 00:00. Total time is the longest observed test window
-across shards, excluding setup before the first attempt and teardown after
-the last. Worker rows represent project-local parallel slots; separate reports and
-projects never combine, even when their slot indexes match. These are activity
-windows rather than exact process lifetimes or CPU usage.
-
-Missing report identity produces an omission message instead of a chart. This relies
-on internal Playwright blob result IDs, so compatibility checks matter when upgrading.
-The chart is also omitted for windows of 24 hours or more; total time is retained.
-If the GitHub step summary has insufficient space for the chart, only the heading,
-total time, and a short omission notice are appended. A full summary is left unchanged.
-The local file retains the complete report.
-
-GitHub controls Mermaid rendering and zoom. The chart reserves 190 pixels on the
-right for its controls; narrow containers may still require scrolling.
-
 ### GitHub Actions: one run
 
 Commit a config with the Markdown reporter and use the normal test command:
