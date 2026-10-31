@@ -25,8 +25,16 @@ export type WorkerTiming = {
 
 export type MarkdownData = {
   span: number;
-  workers: WorkerTiming[][];
+  shards: ShardTiming[];
   error?: string;
+};
+
+export type ShardTiming = {
+  id: string;
+  shardIndex?: number;
+  grouped: boolean;
+  span: number;
+  workers: WorkerTiming[][];
 };
 
 export class MarkdownReporterData {
@@ -79,11 +87,16 @@ export class MarkdownReporterData {
 
   build(mergeError?: string): MarkdownData {
     const error = mergeError ?? this.error;
-    if (error) return { span: 0, workers: [], error };
-    const timings = [...this.shards.values()].sort(compareShards).map(getWorkerTimings);
+    if (error) return { span: 0, shards: [], error };
+    const timings = [...this.shards.values()].sort(compareShards).map((shard) => ({
+      ...getWorkerTimings(shard),
+      id: shard.id,
+      shardIndex: shard.shardIndex,
+      grouped: this.isMerging || shard.shardIndex !== undefined,
+    }));
     return {
       span: timings.reduce((max, timing) => Math.max(max, timing.span), 0),
-      workers: timings.flatMap((timing) => timing.workers),
+      shards: timings,
     };
   }
 

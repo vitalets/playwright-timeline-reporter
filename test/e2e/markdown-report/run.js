@@ -18,7 +18,7 @@ test('worker report combines successes and keeps failed retries separate without
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 4);
   assert.equal((markdown.match(/ :crit,/g) ?? []).length, 3);
   assert.match(markdown, /^### Playwright timeline report\n\nTotal time: \*\*\d+ ms\*\*/);
-  assert.match(markdown, /section \u00a0\u00a0Worker 0/);
+  assert.match(markdown, /section \u00a0\u00a0Worker 1/);
   assert.match(markdown, /```\n$/);
   assert.doesNotMatch(markdown, /\|.*\||Each shard starts|Worker.*\//);
   const colors = [...markdown.matchAll(/ :(done|crit),/g)].map((match) => match[1]);

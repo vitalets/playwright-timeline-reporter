@@ -1,5 +1,5 @@
 /** Render worker activity as a Mermaid Gantt chart. */
-import type { WorkerTiming } from './reporter-data.js';
+import type { ShardTiming, WorkerTiming } from './reporter-data.js';
 
 const CONFIG = `---
 displayMode: compact
@@ -10,6 +10,8 @@ config:
     doneTaskBorderColor: "#238636"
     critBkgColor: "#cf222e"
     critBorderColor: "#a40e26"
+    taskBkgColor: "#fff5df"
+    taskBorderColor: "#efdfb9"
   gantt:
     leftPadding: 140
     rightPadding: 190
@@ -22,17 +24,29 @@ gantt
     dateFormat YYYY-MM-DD HH:mm:ss.SSS
     todayMarker off`;
 
-export function renderMermaid(workers: WorkerTiming[][], span: number) {
-  if (!workers.length) return 'No worker activity to plot.\n';
+export function renderMermaid(shards: ShardTiming[], span: number) {
+  if (!shards.some((shard) => shard.workers.length)) return 'No worker activity to plot.\n';
   const lines = [
     '```mermaid',
     CONFIG,
     `    axisFormat ${getAxisFormat(span)}`,
     `    tickInterval ${getTickInterval(span)}`,
   ];
-  workers.forEach((blocks, workerIndex) => {
-    lines.push(`    section \u00a0\u00a0Worker ${workerIndex}`);
-    lines.push(...renderBlocks(blocks, `w${workerIndex}`));
+  shards.forEach((shard, shardIndex) => {
+    if (!shard.workers.length) return;
+    const prefix = `s${shardIndex}`;
+    const label =
+      shard.shardIndex === undefined ? `Report ${shard.id}` : `Shard ${shard.shardIndex}`;
+    if (shard.grouped) {
+      lines.push(`    section ${label}`);
+      lines.push(`    Total :${prefix}total, ${formatClock(0)}, ${shard.span}ms`);
+    }
+    shard.workers.forEach((blocks, workerIndex) => {
+      // Mermaid groups identical section names, so distinguish shards invisibly.
+      const sectionSuffix = '\u200b'.repeat(shardIndex);
+      lines.push(`    section \u00a0\u00a0Worker ${workerIndex + 1}${sectionSuffix}`);
+      lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`));
+    });
   });
   return lines.concat('```', '').join('\n');
 }
