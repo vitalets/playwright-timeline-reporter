@@ -133,6 +133,28 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 
 > For more details on sharding see the [Playwright sharding docs](https://playwright.dev/docs/test-sharding).
 
+## GitHub Summary report
+
+If you run tests on GitHub, you can get a compact worker timeline report directly in your workflow run summary:
+
+<!-- Add a screenshot  -->
+
+To enable it, set the `markdown` option:
+```ts
+reporter: [['playwright-timeline-reporter', { markdown: true }]],
+```
+
+Or add `--reporter=playwright-timeline-reporter/markdown` to the test run command:
+
+```yaml
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # ...
+      - run: npx playwright test --reporter=playwright-timeline-reporter/markdown
+```
+
 ## Options
 
 #### `outputFile`
@@ -142,6 +164,16 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 - **Env var:** `PLAYWRIGHT_TIMELINE_OUTPUT_FILE`
 
 Path for the generated report file, relative to config dir.
+
+#### `markdown`
+
+- **Type:** `boolean | string`
+- **Default:** `false` (`true` for the `/markdown` entry point)
+
+Enables the Markdown timeline report. Set `true` to write `./timeline-report/index.md`,
+a string to specify a path relative to config dir, or `false` to disable it.
+In GitHub Actions, the report is also automatically appended to the workflow run
+summary. See [GitHub Summary report](#github-summary-report).
 
 #### `promptTemplateFile`
 

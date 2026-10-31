@@ -1,6 +1,9 @@
 # Playwright Timeline Reporter – Example
 
-This example demonstrates how to generate the timeline report from a single (non-sharded) Playwright run that exercises a single `authenticate` fixture (defined in `tests/fixtures.ts`) plus five spec files across three workers. The tests intentionally avoid real network/page usage; instead they rely on the exported `delay()` helper to simulate work and occasionally throw `Error` objects to emulate failures. This keeps the scenario fully offline while still producing a rich timeline that includes both passing and failing segments.
+This example generates HTML and Markdown timeline reports from a Playwright run
+with two projects and three workers. The tests use Chromium, visit playwright.dev,
+and add simulated delays to hooks and fixtures. Some tests and fixtures deliberately
+fail to demonstrate failures and worker restarts. Internet access is required.
 
 ## Steps
 
@@ -8,6 +11,7 @@ This example demonstrates how to generate the timeline report from a single (non
 
 ```sh
 npm install
+npx playwright install chromium
 ```
 
 2. Build the reporter so Playwright can import the compiled output:
@@ -24,4 +28,16 @@ npm install
 npm run test
 ```
 
-Open `example/timeline-report/index.html` in a browser to explore worker utilization, hooks, and fixture durations from that run.
+Open `timeline-report/index.html` from the example folder in a browser to explore
+worker utilization, hooks, and fixture durations. The Markdown report is saved to
+`timeline-report/index.md`.
+
+## GitHub Actions example
+
+The [example workflow](../.github/workflows/example.yml)
+builds the local reporter and runs these tests. The reporter automatically appends
+the Markdown timeline to the job summary. The workflow uploads the reports as the
+`example-timeline-report` artifact, including when tests fail.
+
+[View successful example runs](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/example.yml?query=branch%3Amain+is%3Asuccess).
+You can also start a run manually from the workflow's Actions page.
