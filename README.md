@@ -139,6 +139,12 @@ If you run tests on GitHub, you can get a compact worker timeline report directl
 
 <!-- Add a screenshot  -->
 
+See the [example workflow](.github/workflows/example.yml) and
+[sharding example workflow](.github/workflows/example-sharding.yml).
+Their demo tests intentionally fail, so the test steps use `continue-on-error`
+to keep the workflows green while generating the GitHub summary despite those
+failures. A successful example workflow does not mean all demo tests passed.
+
 To enable it, set the `markdown` option:
 ```ts
 reporter: [['playwright-timeline-reporter', { markdown: true }]],

@@ -36,24 +36,16 @@ jobs:
       - run: npx playwright install --with-deps chromium
 
       - name: Run example shard 1
+        # Keep the workflow green despite intentional test failures.
+        continue-on-error: true
         working-directory: example
         run: npx playwright test --shard=1/2 --reporter=blob
 
       - name: Run example shard 2
-        if: ${{ !cancelled() }}
+        continue-on-error: true
         working-directory: example
         run: npx playwright test --shard=2/2 --reporter=blob
 
       - name: Merge example reports
-        if: ${{ !cancelled() }}
         working-directory: example
         run: npx playwright merge-reports -c playwright.config.ts ./blob-report
-
-      - name: Upload example reports
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: example-sharding-timeline-report
-          path: example/timeline-report/
-          if-no-files-found: error
-          retention-days: 30

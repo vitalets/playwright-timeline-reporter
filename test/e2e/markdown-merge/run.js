@@ -24,7 +24,7 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
   merge(reportDir);
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
-  assert.match(markdown, /Total time: \d+ ms/);
+  assert.match(markdown, /Total time: \*\*\d+ ms\*\*/);
   assert.deepEqual(
     [...markdown.matchAll(/section \u00a0\u00a0Worker (\d+)/g)].map((match) => match[1]),
     ['0', '1'],

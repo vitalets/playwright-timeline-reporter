@@ -36,8 +36,15 @@ worker utilization, hooks, and fixture durations. The Markdown report is saved t
 
 The [example workflow](../.github/workflows/example.yml)
 builds the local reporter and runs these tests. The reporter automatically appends
-the Markdown timeline to the job summary. The workflow uploads the reports as the
-`example-timeline-report` artifact, including when tests fail.
+the Markdown timeline to the job summary.
+
+The [sharding workflow](../.github/workflows/example-sharding.yml) runs two shards
+in the same job, then merges their blob reports to generate a single GitHub summary.
+
+Both workflows use `continue-on-error` on the test steps because the demo includes
+intentional failures. GitHub summaries are generated despite those failures.
+A successful example workflow does not mean all demo tests passed. Setup, build,
+and merge errors still fail the workflow.
 
 [View successful example runs](https://github.com/vitalets/playwright-timeline-reporter/actions/workflows/example.yml?query=branch%3Amain+is%3Asuccess).
 You can also start a run manually from the workflow's Actions page.
