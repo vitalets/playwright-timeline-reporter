@@ -13,14 +13,7 @@
 
 </div>
 
-**Playwright Timeline Reporter** renders your [Playwright](https://playwright.dev/) tests as an interactive timeline. You can use it to optimize your test run performance:
-
-- identify slow tests
-- detect costly or repeated hooks and fixtures
-- evaluate worker utilization
-- get ready-to-use prompt for AI analysis
-
-Plug it into any Playwright project and get a self-contained HTML report.
+**Playwright Timeline Reporter** renders your [Playwright](https://playwright.dev/) tests as an interactive timeline and helps you optimize test run performance. Plug it into any Playwright project and get a self-contained HTML report.
 
 ## Live Demo
 
@@ -32,7 +25,17 @@ Plug it into any Playwright project and get a self-contained HTML report.
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
-> Also check out the **sharded** report [demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+> Also check out the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+
+## Features
+
+- **Span isolation:** click a test, hook, or fixture to focus on it.
+- **Worker restart markers:** inspect why workers restarted.
+- **Project filtering:** isolate project-specific bottlenecks.
+- **Worker and shard filtering:** click a label to focus on its timeline.
+- **Region zoom:** select a region for deeper investigation.
+- **Search:** find files, tests, tags, or error messages.
+- **AI analysis:** copy a ready-to-use prompt into any AI chat.
 
 ## Installation
 
@@ -56,7 +59,7 @@ pnpm add --save-dev playwright-timeline-reporter
 yarn add --dev playwright-timeline-reporter
 ```
 
-## Configuration
+## Usage
 
 Add the reporter to your `playwright.config.ts`:
 
@@ -70,36 +73,9 @@ export default defineConfig({
 });
 ```
 
-Additionally, you can provide [options](#options):
-
-```ts
-import { defineConfig } from '@playwright/test';
-
-export default defineConfig({
-  reporter: [
-    ['playwright-timeline-reporter', { /* reporter options */ }],
-  ],
-});
-```
-
-## Usage
-
 Run your tests and open `./timeline-report/index.html` in any browser.
 
-In the report you can do the following:
-
-- **Review the timeline** to spot the slowest spans.
-- **Hover any span** to inspect its type, details, and source location.
-- **Click spans** to isolate a specific test, hook, or fixture.
-- **Inspect restart markers** to understand worker restart reasons.
-- **Switch projects** to isolate project-specific bottlenecks.
-- **Focus on a worker or shard** by clicking its label.
-- **Select a region** to zoom in for deeper investigation.
-- **Search** for files, tests, tags, or error messages.
-- **Copy the AI prompt** and paste it into any AI chat for analysis.
-
-> [!NOTE]
-> **Your input is appreciated:** you can help improve the reporter by upvoting these Playwright issues: [#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175).
+See [Options](#options) for customization.
 
 ## Sharding
 
@@ -135,31 +111,27 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 
 ## GitHub Summary report
 
-If you run tests on GitHub, you can get a compact worker timeline report directly in your workflow run summary:
+In GitHub Actions, you can add a compact worker timeline to your workflow run summary.
+Enable Markdown alongside the HTML report with the `markdown` option:
 
-<!-- Add a screenshot  -->
-
-See the [example workflow](.github/workflows/example.yml) and
-[sharding example workflow](.github/workflows/example-sharding.yml).
-Their demo tests intentionally fail, so the test steps use `continue-on-error`
-to keep the workflows green while generating the GitHub summary despite those
-failures. A successful example workflow does not mean all demo tests passed.
-
-To enable it, set the `markdown` option:
 ```ts
 reporter: [['playwright-timeline-reporter', { markdown: true }]],
 ```
 
-Or add `--reporter=playwright-timeline-reporter/markdown` to the test run command:
+To generate only Markdown, use the `/markdown` entry point:
 
-```yaml
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      # ...
-      - run: npx playwright test --reporter=playwright-timeline-reporter/markdown
+```sh
+npx playwright test --reporter=playwright-timeline-reporter/markdown
 ```
+
+For [sharded runs](#sharding), use it when merging the blob reports:
+
+```sh
+npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./all-blob-reports
+```
+
+See the [example workflow](.github/workflows/example.yml) and
+[sharding example workflow](.github/workflows/example-sharding.yml).
 
 ## Options
 
@@ -252,7 +224,7 @@ The reporter embeds all collected data directly into the generated HTML file. It
 
 ## Limitations
 
-Playwright's API does not provide a reliable way to reconstruct worker lanes exactly as they were executed ([#40175](https://github.com/microsoft/playwright/issues/40175)). This reporter does its best to approximate the original worker distribution, but in some cases the lane assignment may be not 100% accurate.
+The reporter works within the limits of Playwright's API. In particular, worker lanes are approximated and may not exactly match the original execution. Related Playwright requests ([#38350](https://github.com/microsoft/playwright/issues/38350), [#38962](https://github.com/microsoft/playwright/issues/38962), [#40175](https://github.com/microsoft/playwright/issues/40175)) were closed as not planned.
 
 If you notice a bug or have any feedback, feel free to [open an issue](https://github.com/vitalets/playwright-timeline-reporter/issues).
 
@@ -266,188 +238,3 @@ If you notice a bug or have any feedback, feel free to [open an issue](https://g
 This project is licensed under the [MIT License](https://github.com/vitalets/playwright-timeline-reporter/blob/main/LICENSE).
 
 The generated report includes attribution links to this repository and the sponsor page. You are welcome to use and modify the tool freely — please keep those links intact in the report output.
-
-## Markdown reporter
-
-Use the separate entry point to generate a compact Mermaid Gantt in Markdown:
-
-```ts
-import { defineConfig } from '@playwright/test';
-import type { MarkdownReporterOptions } from 'playwright-timeline-reporter/markdown';
-
-const markdownOptions: MarkdownReporterOptions = {
-  markdown: './reports/timeline.md', // Optional; default: timeline-report/index.md
-};
-
-export default defineConfig({
-  reporter: [
-    ['list'],
-    ['playwright-timeline-reporter/markdown', markdownOptions],
-  ],
-});
-```
-
-The Markdown path is always set with `markdown`, on either entry point. Use `true`
-for the default path, a string for a custom path, or `false` to disable it.
-The `/markdown` entry point enables Markdown by default; the main entry point does not.
-`outputFile` configures HTML only. Relative paths resolve from the Playwright config
-folder, or cwd when no config exists. Parent directories are created, and each run
-replaces the local Markdown file. The Markdown reporter does not create HTML or read
-`PLAYWRIGHT_TIMELINE_OUTPUT_FILE`. Its runtime does not depend on Mermaid or a browser.
-
-When `GITHUB_STEP_SUMMARY` is nonempty, the reporter also appends the report there,
-separated from existing content by blank lines. No token, PR comment, custom Action,
-or separate `cat` command is needed. Without this variable, only the local file is
-written. Existing Summary content is never overwritten. If the resolved Summary
-and output paths are identical, a single append replaces the normal overwrite.
-Use distinct paths to retain a separate full local copy.
-
-### GitHub Actions: one run
-
-Commit a config with the Markdown reporter and use the normal test command:
-
-```yaml
-name: Playwright timeline
-on: [push, workflow_dispatch]
-permissions:
-  contents: read
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
-```
-
-These checkout/setup-node major versions follow this repository's current CI.
-Your lockfile must include a package version with the `/markdown` entry point.
-For testing an unreleased implementation, first build and install an `npm pack`
-tarball; version 1.1.1 from the registry does not contain this entry point.
-
-### GitHub Actions: sharded run
-
-Use standard Playwright blob reports and `merge-reports`:
-
-```yaml
-name: Playwright timeline
-on: [push, workflow_dispatch]
-permissions:
-  contents: read
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npx playwright test --shard=${{ matrix.shard }}/2 --reporter=blob
-      - uses: actions/upload-artifact@v7
-        if: ${{ !cancelled() }}
-        with:
-          name: blob-report-${{ matrix.shard }}
-          path: blob-report
-          retention-days: 1
-  timeline:
-    needs: test
-    if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: blob-report-*
-          path: all-blob-reports
-          merge-multiple: true
-      - run: >
-          npx playwright merge-reports
-          --reporter=playwright-timeline-reporter/markdown
-          ./all-blob-reports
-```
-
-Browser installation is unnecessary in the merge job. The Summary appears in that
-job. Failed tests remain visible in the shard jobs; successful report generation
-does not mean the tests passed. `--reporter=blob` intentionally overrides config
-reporters so each shard does not generate its own Summary. No custom merge script
-or JSON transport is required.
-
-### HTML and Markdown together
-
-Enable both formats with a single reporter entry:
-
-```ts
-export default defineConfig({
-  reporter: [['playwright-timeline-reporter', { markdown: true }]],
-});
-```
-
-Use a string to customize the Markdown path independently:
-
-```ts
-export default defineConfig({
-  reporter: [['playwright-timeline-reporter', {
-    outputFile: './reports/timeline.html',
-    markdown: './reports/timeline.md',
-  }]],
-});
-```
-
-The main entry point always generates HTML; `markdown` defaults to `false`.
-The `/markdown` entry point generates only Markdown. You can also configure the
-two entry points separately:
-
-```ts
-// playwright.merge.config.ts
-import { defineConfig } from '@playwright/test';
-
-export default defineConfig({
-  reporter: [
-    ['playwright-timeline-reporter'],
-    ['playwright-timeline-reporter/markdown'],
-  ],
-});
-```
-
-```sh
-npx playwright merge-reports --config=playwright.merge.config.ts ./all-blob-reports
-```
-
-The defaults create `timeline-report/index.html` and `timeline-report/index.md`
-independently. HTML is not published automatically. You can upload the directory
-with `actions/upload-artifact` as an additional workflow step.
-
-### Summary size and write failures
-
-GitHub limits one step's Summary to 1 MiB. The reporter uses a conservative **900 KiB
-budget**, including the existing file's UTF-8 bytes and separators. If the full
-report does not fit, it keeps the heading and total time with a short omission notice.
-If that does not fit, it warns and leaves the existing Summary unchanged. Mermaid is never
-truncated mid-block. With distinct output and Summary paths, the full local file
-is preserved independently of this budget.
-
-Failure to append the additional GitHub channel emits a warning and does not change
-test results. Primary output errors propagate through Playwright's reporter error
-handling, as with the HTML reporter. Writes assume sequential use within a step;
-concurrent append from multiple processes is not coordinated.
-
-The visual reference is the [fixed prototype at commit cc46b114](https://github.com/vitalets/playwright-demos/tree/cc46b1148fd04ca58e033f59215a05a50d23181a/github-summary-report).
-Its GitHub screenshots and workflow results describe the prototype, not validation
-of this package implementation.
