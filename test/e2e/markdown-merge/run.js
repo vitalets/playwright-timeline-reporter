@@ -122,6 +122,41 @@ test('worker numbering restarts at one in each shard while preserving totals and
   assert.match(markdown, /:done, s1w0t0, 2000-01-01 00:00:00.000, 100ms/);
 });
 
+test('projects and restarted workers share three parallel slots within each report', () => {
+  const projects = ['first', 'second'].map((name) => ({ project: () => ({ name }) }));
+  for (const reports of [undefined, { 1: { reportId: '1', shardIndex: 1 } }]) {
+    const data = new MarkdownReporterData({}, { suites: projects }, reports);
+    for (let phase = 0; phase < 3; phase++) {
+      for (let slot = 0; slot < 3; slot++) {
+        data.addTestResult(
+          { parent: projects[Math.min(phase, 1)] },
+          {
+            status: phase === 1 ? 'failed' : 'passed',
+            startTime: new Date(10000 + phase * 1000 + slot * 10),
+            duration: 100,
+            workerIndex: phase * 3 + slot,
+            parallelIndex: slot,
+          },
+          reports ? '1' : undefined,
+        );
+      }
+    }
+    const result = data.build();
+    assert.equal(result.shards[0].workers.length, 3);
+    for (const [slot, blocks] of result.shards[0].workers.entries()) {
+      assert.deepEqual(blocks, [
+        { start: slot * 10, duration: 100, status: 'passed' },
+        { start: 1000 + slot * 10, duration: 100, status: 'failed' },
+        { start: 2000 + slot * 10, duration: 100, status: 'passed' },
+      ]);
+    }
+    assert.deepEqual(
+      [...renderMarkdown(result).matchAll(/section\s+Worker (\d+)/g)].map((match) => match[1]),
+      ['1', '2', '3'],
+    );
+  }
+});
+
 test('a standalone shard and merged reports without shard metadata keep their identities', () => {
   const project = { project: () => ({ name: 'project' }) };
   for (const [config, reports, id, labels] of [

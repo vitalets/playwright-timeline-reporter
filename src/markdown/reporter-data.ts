@@ -141,10 +141,11 @@ function getWorkerTimings(shard: Shard) {
   );
   const start = blocks[0]?.start ?? 0;
   const end = blocks.reduce((max, block) => Math.max(max, block.end), start);
-  const slots = new Map<string, WorkerTiming[]>();
+  const slots = new Map<number, WorkerTiming[]>();
   for (const block of blocks) {
     if (block.end <= block.start) continue;
-    const key = `${block.projectIndex}:${block.parallelIndex}`;
+    // Projects and restarted worker processes reuse the same parallel slots.
+    const key = block.parallelIndex;
     const slot = slots.get(key) ?? [];
     slot.push({
       start: block.start - start,
