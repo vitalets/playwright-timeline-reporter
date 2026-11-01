@@ -72,7 +72,7 @@ test('GitHub summary retains total time when the chart does not fit', (t) => {
 
   assert.ok(summary.startsWith(prefix + '\n\n'));
   assert.match(summary, /Diagram omitted: GitHub step summary size budget exceeded/);
-  assert.match(summary, /Total time: \*\*[\d.]+(?:ms|s)\*\*/);
+  assert.match(summary, /Total test time: \*\*[\d.]+(?:ms|s)\*\*/);
   assert.doesNotMatch(summary, /```mermaid/);
   assert.ok(Buffer.byteLength(summary) <= SUMMARY_BUDGET);
   assert.match(markdown, /```mermaid/);
@@ -109,7 +109,7 @@ function assertMarkdown(file) {
   const markdown = fs.readFileSync(file, 'utf8');
   assert.match(
     markdown,
-    /^### Playwright timeline report\n\nTotal time: \*\*[\d.]+(?:ms|s)\*\*\n\n#### Test distribution by worker\n\n```mermaid/,
+    /^### Playwright timeline report\n\nTotal test time: \*\*[\d.]+(?:ms|s)\*\*\n\n#### Test distribution by worker\n\n```mermaid/,
   );
   assert.match(markdown, /```\n$/);
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 1);

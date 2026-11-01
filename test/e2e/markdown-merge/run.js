@@ -27,7 +27,7 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
   merge(reportDir);
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
-  assert.match(markdown, /Total time: \*\*[\d.]+(?:ms|s)\*\*/);
+  assert.match(markdown, /Total test time: \*\*[\d.]+(?:ms|s)\*\*/);
   assert.match(markdown, /#### Test distribution by shard and worker\n/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
@@ -112,7 +112,7 @@ test('worker numbering restarts at one in each shard while preserving totals and
     );
   }
   const markdown = renderMarkdown(data.build());
-  assert.match(markdown, /Total time: \*\*10.7s\*\*/);
+  assert.match(markdown, /Total test time: \*\*10.7s\*\*/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
