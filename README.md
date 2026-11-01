@@ -112,6 +112,11 @@ Open `./timeline-report/index.html` to see the unified timeline across all shard
 ## GitHub Summary report
 
 In GitHub Actions, you can add a compact worker timeline to your workflow run summary.
+
+<p align="center">
+  <img src="https://vitalets.github.io/playwright-timeline-reporter/github-summary.png" width="1024" alt="GitHub Actions summary showing total run time and test distribution by shard and worker">
+</p>
+
 Enable Markdown alongside the HTML report with the `markdown` option:
 
 ```ts
