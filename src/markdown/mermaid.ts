@@ -6,8 +6,9 @@ const CONFIG = `---
 displayMode: compact
 config:
   theme: base
-  themeCSS: '#runBounds, #runBounds-text { visibility: hidden; }'
   themeVariables:
+    activeTaskBkgColor: "#ddf4ff"
+    activeTaskBorderColor: "#80ccff"
     doneTaskBkgColor: "#2da44e"
     doneTaskBorderColor: "#238636"
     critBkgColor: "#cf222e"
@@ -27,7 +28,6 @@ gantt
     todayMarker off`;
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
-  if (!shards.some((shard) => shard.workers.length)) return 'No worker activity to plot.\n';
   const title = shards.some((shard) => shard.grouped)
     ? 'Test distribution by shard and worker'
     : 'Test distribution by worker';
@@ -36,6 +36,8 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
     CONFIG,
     `    title ${title}`,
     `    axisFormat ${getAxisFormat(span)}`,
+    '    section TOTAL TIME',
+    `    ${formatDuration(span)} :active, runTotal, ${formatClock(0)}, ${span}ms`,
   ];
   shards.forEach((shard, shardIndex) => {
     const prefix = `s${shardIndex}`;
@@ -54,10 +56,6 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
       lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
     });
   });
-  // Anchor the ungrouped chart to the run boundaries without adding a visible bar.
-  if (!shards.some((shard) => shard.grouped)) {
-    lines.push(`    \u200b :runBounds, ${formatClock(0)}, ${span}ms`);
-  }
   return lines.concat('```', '').join('\n');
 }
 

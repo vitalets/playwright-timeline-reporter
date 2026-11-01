@@ -27,13 +27,14 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
   merge(reportDir);
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
-  assert.match(markdown, /Total test time: \*\*[\d.]+(?:ms|s)\*\*/);
+  assert.match(markdown, /section TOTAL TIME\n    [\d.]+(?:ms|s) :active, runTotal,/);
+  assert.doesNotMatch(markdown, /Total test time:|runStart|runEnd/);
   assert.match(markdown, /    title Test distribution by shard and worker\n/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
     ),
-    ['SHARD 1', 'Worker 1', 'SHARD 2', 'Worker 1'],
+    ['TOTAL TIME', 'SHARD 1', 'Worker 1', 'SHARD 2', 'Worker 1'],
   );
   const totals = [
     ...markdown.matchAll(/[\d.]+(?:ms|s) :(s\d+total), (2000-01-01 [\d:.]+), ([\d.]+)ms/g),
@@ -119,13 +120,13 @@ test('worker numbering restarts at one in each shard while preserving totals and
     );
   }
   const markdown = renderMarkdown(data.build({ startTime: new Date(9000), duration: 13000 }));
-  assert.match(markdown, /Total test time: \*\*13s\*\*/);
+  assert.match(markdown, /13s :active, runTotal, 2000-01-01 00:00:00.000, 13000ms/);
   assert.doesNotMatch(markdown, /:vert,|chartEnd/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
     ),
-    ['SHARD 1', 'Worker 1', 'Worker 2', 'SHARD 2', 'Worker 1', 'Worker 2'],
+    ['TOTAL TIME', 'SHARD 1', 'Worker 1', 'Worker 2', 'SHARD 2', 'Worker 1', 'Worker 2'],
   );
   const sections = [...markdown.matchAll(/section (.+)/g)].map((match) => match[1]);
   assert.equal(new Set(sections).size, sections.length);
@@ -194,7 +195,7 @@ test('a standalone shard and merged reports without shard metadata keep their id
           /section (.+)/g,
         ),
       ].map((match) => match[1].trim()),
-      labels,
+      ['TOTAL TIME', ...labels],
     );
   }
 });
@@ -217,8 +218,15 @@ test('standalone run boundaries include startup and teardown around worker activ
   assert.equal(result.shards[0].span, 4000);
   assert.equal(result.shards[0].workers[0][0].start, 2000);
   const markdown = renderMarkdown(result);
-  assert.match(markdown, /Total test time: \*\*4s\*\*/);
-  assert.match(markdown, /:runBounds, 2000-01-01 00:00:00.000, 4000ms/);
+  assert.match(
+    markdown,
+    /section TOTAL TIME\n    4s :active, runTotal, 2000-01-01 00:00:00.000, 4000ms/,
+  );
+  assert.doesNotMatch(markdown, /Total test time:|runStart|runEnd|runBounds|themeCSS/);
+  assert.deepEqual(
+    [...markdown.matchAll(/section (.+)/g)].map((match) => match[1].trim()),
+    ['TOTAL TIME', 'Worker 1'],
+  );
   assert.match(markdown, /:done, s0w0t0, 2000-01-01 00:00:02.000, 500ms/);
 });
 

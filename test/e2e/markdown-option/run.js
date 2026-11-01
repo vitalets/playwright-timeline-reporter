@@ -66,13 +66,13 @@ test('sharing the report and GitHub summary path preserves content and appends o
   assert.match(summary, /```mermaid/);
 });
 
-test('GitHub summary retains total time when the chart does not fit', (t) => {
+test('GitHub summary explains when the chart does not fit', (t) => {
   const prefix = 'x'.repeat(SUMMARY_BUDGET - 200);
   const { summary, markdown } = runWithSummary(t, prefix);
 
   assert.ok(summary.startsWith(prefix + '\n\n'));
   assert.match(summary, /Diagram omitted: GitHub step summary size budget exceeded/);
-  assert.match(summary, /Total test time: \*\*[\d.]+(?:ms|s)\*\*/);
+  assert.doesNotMatch(summary, /Total test time:/);
   assert.doesNotMatch(summary, /```mermaid/);
   assert.ok(Buffer.byteLength(summary) <= SUMMARY_BUDGET);
   assert.match(markdown, /```mermaid/);
@@ -107,10 +107,7 @@ function runWithSummary(t, prefix) {
 
 function assertMarkdown(file) {
   const markdown = fs.readFileSync(file, 'utf8');
-  assert.match(
-    markdown,
-    /^### Playwright timeline report\n\nTotal test time: \*\*[\d.]+(?:ms|s)\*\*\n\n```mermaid/,
-  );
+  assert.match(markdown, /^### Playwright timeline report\n\n```mermaid/);
   assert.match(markdown, /```\n$/);
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 1);
 }
