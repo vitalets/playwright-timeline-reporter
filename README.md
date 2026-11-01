@@ -133,6 +133,13 @@ npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./
 See the [example workflow](.github/workflows/example.yml) and
 [sharding example workflow](.github/workflows/example-sharding.yml).
 
+To omit the GitHub summary report while keeping the Markdown file, clear
+`GITHUB_STEP_SUMMARY` for the command:
+
+```sh
+GITHUB_STEP_SUMMARY='' npx playwright test
+```
+
 ## Options
 
 #### `outputFile`
