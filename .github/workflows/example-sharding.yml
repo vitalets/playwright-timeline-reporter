@@ -23,8 +23,10 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-24.04
-    env:
-      PWTEST_BLOB_DO_NOT_REMOVE: '1'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -35,16 +37,39 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
 
-      - name: Run example shard 1
+      - name: Run example shard ${{ matrix.shard }}
         # Keep the workflow green despite intentional test failures.
         continue-on-error: true
         working-directory: example
-        run: npx playwright test --shard=1/2 --reporter=blob
+        run: npx playwright test --shard=${{ matrix.shard }}/2 --reporter=blob
 
-      - name: Run example shard 2
-        continue-on-error: true
-        working-directory: example
-        run: npx playwright test --shard=2/2 --reporter=blob
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: example/blob-report
+          retention-days: 1
+          if-no-files-found: error
+
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v8
+        with:
+          pattern: blob-report-*
+          path: example/blob-report
+          merge-multiple: true
 
       - name: Merge example reports
         working-directory: example

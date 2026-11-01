@@ -27,7 +27,7 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
   merge(reportDir);
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
-  assert.match(markdown, /Total test time: \*\*~?[\d.]+(?:ms|s)\*\*/);
+  assert.match(markdown, /Total test time: \*\*[\d.]+(?:ms|s)\*\*/);
   assert.match(markdown, /    title Test distribution by shard and worker\n/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
@@ -112,8 +112,8 @@ test('worker numbering restarts at one in each shard while preserving totals and
     );
   }
   const markdown = renderMarkdown(data.build());
-  assert.match(markdown, /Total test time: \*\*~11s\*\*/);
-  assert.match(markdown, /:vert, chartEnd, 2000-01-01 00:00:10.700, 0ms/);
+  assert.match(markdown, /Total test time: \*\*11s\*\*/);
+  assert.doesNotMatch(markdown, /:vert,|chartEnd/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
@@ -193,16 +193,16 @@ test('durations use readable units at second, minute, and hour boundaries', () =
     [0, '0ms'],
     [999, '999ms'],
     [1000, '1s'],
-    [14435, '~14s'],
-    [33511, '~34s'],
-    [59999, '~1m'],
+    [14435, '14s'],
+    [33511, '34s'],
+    [59999, '1m'],
     [60000, '1m'],
-    [74435, '~1m 14s'],
-    [3599999, '~1h'],
+    [74435, '1m 14s'],
+    [3599999, '1h'],
     [3600000, '1h'],
-    [3674435, '~1h 1m'],
+    [3674435, '1h 1m'],
     [3660000, '1h 1m'],
-    [7199999, '~2h'],
+    [7199999, '2h'],
   ]) {
     assert.equal(formatDuration(ms), expected);
   }

@@ -2,8 +2,7 @@
 export function formatDuration(ms: number) {
   const precision = ms < 1000 ? 1 : ms < 3600000 ? 1000 : 60000;
   const rounded = Math.round(ms / precision) * precision;
-  const prefix = rounded === ms ? '' : '~';
-  return prefix + formatUnits(rounded);
+  return formatUnits(rounded);
 }
 
 function formatUnits(ms: number) {

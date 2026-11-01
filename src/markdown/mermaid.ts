@@ -54,7 +54,6 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
       lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
     });
   });
-  lines.push(`    \u200b :vert, chartEnd, ${formatClock(span)}, 0ms`);
   return lines.concat('```', '').join('\n');
 }
 
