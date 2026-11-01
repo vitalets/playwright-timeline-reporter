@@ -4,12 +4,20 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import TimelineReporter from '../../../dist/index.js';
+import TimelineReporter, { type TimelineReporterOptions } from '../../../dist/index.js';
+import { DataCollector } from '../../../dist/data-collector.js';
 import { buildChartData, type ChartData } from '../../../src/report/data/index.js';
 import type { RunInfo } from '../../../src/run-info.js';
 import type { TestTimings } from '../../../src/test-timings/types.js';
 
 export default class WorkerLanesReporter extends TimelineReporter {
+  constructor(options?: TimelineReporterOptions) {
+    super(options);
+    this.dataCollector = new WorkerLanesDataCollector(this.mergeReports, this.options);
+  }
+}
+
+class WorkerLanesDataCollector extends DataCollector {
   testTimings: TestTimings[] = [];
 
   override writeStream(data: TestTimings) {

@@ -5,9 +5,8 @@ import type { MarkdownReporterOptions } from './options.js';
 export type { MarkdownReporterOptions } from './options.js';
 
 export default class MarkdownReporter extends TimelineReporter {
-  protected htmlEnabled = false;
-
   constructor(options: MarkdownReporterOptions = {}) {
     super({ markdown: options.markdown ?? true });
+    this.dataCollector = undefined;
   }
 }

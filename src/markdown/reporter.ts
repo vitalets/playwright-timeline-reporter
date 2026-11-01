@@ -9,7 +9,7 @@ import type {
   TestResult,
 } from '@playwright/test/reporter';
 import { MarkdownReporterData } from './reporter-data.js';
-import type { MergeReportInfo } from '../run-info.js';
+import type { MergeReports } from '../merge-reports.js';
 import { resolveMarkdownOutputFile, type MarkdownReporterOptions } from './options.js';
 import { renderMarkdown } from './render.js';
 import { appendGitHubSummary } from './github-summary.js';
@@ -18,19 +18,26 @@ export class MarkdownReporter {
   private data!: MarkdownReporterData;
   private outputFile = '';
 
-  constructor(private options: MarkdownReporterOptions) {}
+  constructor(
+    private mergeReports: MergeReports,
+    private options: MarkdownReporterOptions,
+  ) {}
 
-  onBegin(config: FullConfig, suite: Suite, mergeReports?: Record<string, MergeReportInfo>) {
+  onBegin(config: FullConfig, suite: Suite, isMerging: boolean) {
     this.outputFile = resolveMarkdownOutputFile(config, this.options);
-    this.data = new MarkdownReporterData(config, suite, mergeReports);
+    this.data = new MarkdownReporterData(
+      config,
+      suite,
+      isMerging ? this.mergeReports.reports : undefined,
+    );
   }
 
   onTestEnd(test: TestCase, result: TestResult, mergeReportId?: string) {
     this.data.addTestResult(test, result, mergeReportId);
   }
 
-  onEnd(result: FullResult, mergeError?: string) {
-    const markdown = renderMarkdown(this.data.build(result, mergeError));
+  onEnd(result: FullResult) {
+    const markdown = renderMarkdown(this.data.build(result, this.mergeReports.error));
     this.saveFile(markdown);
     appendGitHubSummary(markdown);
   }
