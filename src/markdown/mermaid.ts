@@ -26,12 +26,7 @@ gantt
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
   if (!shards.some((shard) => shard.workers.length)) return 'No worker activity to plot.\n';
-  const lines = [
-    '```mermaid',
-    CONFIG,
-    `    axisFormat ${getAxisFormat(span)}`,
-    `    tickInterval ${getTickInterval(span)}`,
-  ];
+  const lines = ['```mermaid', CONFIG, `    axisFormat ${getAxisFormat(span)}`];
   shards.forEach((shard, shardIndex) => {
     if (!shard.workers.length) return;
     const prefix = `s${shardIndex}`;
@@ -53,14 +48,6 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
 
 function getAxisFormat(span: number) {
   return span >= 3600000 ? '%H:%M' : '%M:%S';
-}
-
-function getTickInterval(span: number) {
-  if (span < 15000) return '1second';
-  if (span < 120000) return '10second';
-  if (span < 1200000) return '1minute';
-  if (span < 7200000) return '10minute';
-  return '1hour';
 }
 
 function renderBlocks(blocks: WorkerTiming[], prefix: string) {
