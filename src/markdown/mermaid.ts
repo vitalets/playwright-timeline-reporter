@@ -6,6 +6,7 @@ const CONFIG = `---
 displayMode: compact
 config:
   theme: base
+  themeCSS: '#runBounds, #runBounds-text { visibility: hidden; }'
   themeVariables:
     doneTaskBkgColor: "#2da44e"
     doneTaskBorderColor: "#238636"
@@ -37,7 +38,6 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
     `    axisFormat ${getAxisFormat(span)}`,
   ];
   shards.forEach((shard, shardIndex) => {
-    if (!shard.workers.length) return;
     const prefix = `s${shardIndex}`;
     const label =
       shard.shardIndex === undefined ? `Report ${shard.id}` : `SHARD ${shard.shardIndex}`;
@@ -54,6 +54,10 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
       lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
     });
   });
+  // Anchor the ungrouped chart to the run boundaries without adding a visible bar.
+  if (!shards.some((shard) => shard.grouped)) {
+    lines.push(`    \u200b :runBounds, ${formatClock(0)}, ${span}ms`);
+  }
   return lines.concat('```', '').join('\n');
 }
 

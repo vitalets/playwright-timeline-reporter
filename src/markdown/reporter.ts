@@ -1,7 +1,13 @@
 /** Collect worker activity and save the Markdown timeline at the end of a run. */
 import fs from 'node:fs';
 import path from 'node:path';
-import type { FullConfig, Suite, TestCase, TestResult } from '@playwright/test/reporter';
+import type {
+  FullConfig,
+  FullResult,
+  Suite,
+  TestCase,
+  TestResult,
+} from '@playwright/test/reporter';
 import { MarkdownReporterData } from './reporter-data.js';
 import type { MergeReportInfo } from '../run-info.js';
 import { resolveMarkdownOutputFile, type MarkdownReporterOptions } from './options.js';
@@ -23,8 +29,8 @@ export class MarkdownReporter {
     this.data.addTestResult(test, result, mergeReportId);
   }
 
-  onEnd(mergeError?: string) {
-    const markdown = renderMarkdown(this.data.build(mergeError));
+  onEnd(result: FullResult, mergeError?: string) {
+    const markdown = renderMarkdown(this.data.build(result, mergeError));
     this.saveFile(markdown);
     appendGitHubSummary(markdown);
   }

@@ -16,7 +16,7 @@ export default class Reporter extends MarkdownReporter {
     super.onTestEnd(test, result, process.env.INTERNAL_REPORT_ID || undefined);
   }
 
-  onEnd() {
-    super.onEnd();
+  onEnd(result) {
+    super.onEnd(result);
   }
 }

@@ -1,5 +1,11 @@
 /** Collect worker activity and prepare ordered, normalized timings for Markdown rendering. */
-import type { FullConfig, Suite, TestCase, TestResult } from '@playwright/test/reporter';
+import type {
+  FullConfig,
+  FullResult,
+  Suite,
+  TestCase,
+  TestResult,
+} from '@playwright/test/reporter';
 import type { MergeReportInfo } from '../run-info.js';
 
 type WorkerBlock = {
@@ -14,6 +20,8 @@ type WorkerBlock = {
 type Shard = {
   id: string;
   shardIndex?: number;
+  startTime?: number;
+  duration?: number;
   blocks: WorkerBlock[];
 };
 
@@ -53,6 +61,8 @@ export class MarkdownReporterData {
       ? Object.values(mergeReports).map((report) => ({
           id: report.reportId,
           shardIndex: report.shardIndex,
+          startTime: report.startTime,
+          duration: report.duration,
         }))
       : [
           {
@@ -86,11 +96,11 @@ export class MarkdownReporterData {
     });
   }
 
-  build(mergeError?: string): MarkdownData {
+  build(result: FullResult, mergeError?: string): MarkdownData {
     const error = mergeError ?? this.error;
     if (error) return { span: 0, shards: [], error };
     const timings = [...this.shards.values()].sort(compareShards).map((shard) => ({
-      ...getWorkerTimings(shard),
+      ...getWorkerTimings(shard, result),
       id: shard.id,
       shardIndex: shard.shardIndex,
       grouped: this.isMerging || shard.shardIndex !== undefined,
@@ -120,10 +130,9 @@ export class MarkdownReporterData {
 }
 
 function normalizeShardStarts(timings: ShardTiming[]) {
-  const active = timings.filter((timing) => timing.workers.length);
-  const start = active.length ? Math.min(...active.map((timing) => timing.start)) : 0;
+  const start = timings.length ? Math.min(...timings.map((timing) => timing.start)) : 0;
   for (const timing of timings) {
-    timing.start = timing.workers.length ? timing.start - start : 0;
+    timing.start -= start;
   }
 }
 
@@ -145,12 +154,11 @@ function compareShards(a: Shard, b: Shard) {
   return (a.shardIndex ?? 0) - (b.shardIndex ?? 0) || Number(a.id) - Number(b.id);
 }
 
-function getWorkerTimings(shard: Shard) {
+function getWorkerTimings(shard: Shard, result: FullResult) {
   const blocks = [...shard.blocks].sort(
     (a, b) => a.start - b.start || a.workerIndex - b.workerIndex,
   );
-  const start = blocks[0]?.start ?? 0;
-  const end = blocks.reduce((max, block) => Math.max(max, block.end), start);
+  const { start, span } = getRunBoundaries(shard, result);
   const slots = new Map<number, WorkerTiming[]>();
   for (const block of blocks) {
     if (block.end <= block.start) continue;
@@ -164,5 +172,12 @@ function getWorkerTimings(shard: Shard) {
     });
     slots.set(key, slot);
   }
-  return { start, span: end - start, workers: [...slots.values()] };
+  return { start, span, workers: [...slots.values()] };
+}
+
+function getRunBoundaries(shard: Shard, result: FullResult) {
+  return {
+    start: shard.startTime ?? result.startTime.getTime(),
+    span: shard.duration ?? result.duration,
+  };
 }

@@ -93,7 +93,7 @@ export default class TimelineReporter implements Reporter {
       );
       await this.closeStream(runInfo);
     }
-    this.markdownReporter?.onEnd(this.mergeReports.error);
+    this.markdownReporter?.onEnd(result, this.mergeReports.error);
   }
 
   private resolveMergeReportId(result: TestResult) {

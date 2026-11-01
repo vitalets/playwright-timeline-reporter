@@ -36,21 +36,28 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
     ['SHARD 1', 'Worker 1', 'SHARD 2', 'Worker 1'],
   );
   const totals = [
-    ...markdown.matchAll(/[\d.]+(?:ms|s) :(s\d+total), (2000-01-01 [\d:.]+), (\d+)ms/g),
+    ...markdown.matchAll(/[\d.]+(?:ms|s) :(s\d+total), (2000-01-01 [\d:.]+), ([\d.]+)ms/g),
   ];
   assert.equal(totals.length, 2);
   assert.notEqual(totals[0][2], totals[1][2]);
   const durations = [...markdown.matchAll(/ :done, s\d+w0t0, (2000-01-01 [\d:.]+), (\d+)ms/g)];
-  assert.deepEqual(
-    totals.map((match) => match.slice(2)),
-    durations.map((match) => match.slice(1)),
-  );
+  for (const [index, total] of totals.entries()) {
+    assert.ok(total[2] < durations[index][1]);
+    assert.ok(Number(total[3]) > Number(durations[index][2]));
+  }
   const ids = [...markdown.matchAll(/ :(?:done, |crit, )?(s\w+),/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 2);
   assert.match(markdown, /```\n$/);
   const html = fs.readFileSync(path.join(reportDir, 'index.html'), 'utf8');
   const attempts = readHtmlData(html, 'timeline-data');
+  const reports = Object.values(readHtmlData(html, 'run-info').mergeReports).sort(
+    (a, b) => a.shardIndex - b.shardIndex,
+  );
+  assert.deepEqual(
+    totals.map((match) => Number(match[3])),
+    reports.map((report) => report.duration),
+  );
   assert.equal(attempts.length, 4);
   assert.deepEqual(attempts.map((attempt) => attempt.mergeReportId).sort(), ['1', '1', '2', '2']);
   assert.equal(readHtmlData(html, 'run-info').reporterError, undefined);
@@ -89,8 +96,8 @@ test('worker numbering restarts at one in each shard while preserving totals and
     {},
     { suites: [project] },
     {
-      1: { reportId: '1', shardIndex: 2 },
-      2: { reportId: '2', shardIndex: 1 },
+      1: { reportId: '1', shardIndex: 2, startTime: 9000, duration: 2000 },
+      2: { reportId: '2', shardIndex: 1, startTime: 18000, duration: 4000 },
     },
   );
   for (const [id, start, duration, slot] of [
@@ -111,8 +118,8 @@ test('worker numbering restarts at one in each shard while preserving totals and
       id,
     );
   }
-  const markdown = renderMarkdown(data.build());
-  assert.match(markdown, /Total test time: \*\*11s\*\*/);
+  const markdown = renderMarkdown(data.build({ startTime: new Date(9000), duration: 13000 }));
+  assert.match(markdown, /Total test time: \*\*13s\*\*/);
   assert.doesNotMatch(markdown, /:vert,|chartEnd/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
@@ -122,10 +129,10 @@ test('worker numbering restarts at one in each shard while preserving totals and
   );
   const sections = [...markdown.matchAll(/section (.+)/g)].map((match) => match[1]);
   assert.equal(new Set(sections).size, sections.length);
-  assert.match(markdown, /700ms :s0total, 2000-01-01 00:00:10.000, 700ms/);
-  assert.match(markdown, /100ms :s1total, 2000-01-01 00:00:00.000, 100ms/);
-  assert.match(markdown, /:done, s0w1t0, 2000-01-01 00:00:10.200, 500ms/);
-  assert.match(markdown, /:done, s1w0t0, 2000-01-01 00:00:00.000, 100ms/);
+  assert.match(markdown, /4s :s0total, 2000-01-01 00:00:09.000, 4000ms/);
+  assert.match(markdown, /2s :s1total, 2000-01-01 00:00:00.000, 2000ms/);
+  assert.match(markdown, /:done, s0w1t0, 2000-01-01 00:00:11.200, 500ms/);
+  assert.match(markdown, /:done, s1w0t0, 2000-01-01 00:00:01.000, 100ms/);
 });
 
 test('projects and restarted workers share three parallel slots within each report', () => {
@@ -147,7 +154,7 @@ test('projects and restarted workers share three parallel slots within each repo
         );
       }
     }
-    const result = data.build();
+    const result = data.build({ startTime: new Date(10000), duration: 2200 });
     assert.equal(result.shards[0].workers.length, 3);
     for (const [slot, blocks] of result.shards[0].workers.entries()) {
       assert.deepEqual(blocks, [
@@ -182,10 +189,65 @@ test('a standalone shard and merged reports without shard metadata keep their id
       id,
     );
     assert.deepEqual(
-      [...renderMarkdown(data.build()).matchAll(/section (.+)/g)].map((match) => match[1].trim()),
+      [
+        ...renderMarkdown(data.build({ startTime: new Date(9000), duration: 2000 })).matchAll(
+          /section (.+)/g,
+        ),
+      ].map((match) => match[1].trim()),
       labels,
     );
   }
+});
+
+test('standalone run boundaries include startup and teardown around worker activity', () => {
+  const project = { project: () => ({ name: 'project' }) };
+  const data = new MarkdownReporterData({}, { suites: [project] });
+  data.addTestResult(
+    { parent: project },
+    {
+      status: 'passed',
+      startTime: new Date(12000),
+      duration: 500,
+      workerIndex: 0,
+      parallelIndex: 0,
+    },
+  );
+  const result = data.build({ startTime: new Date(10000), duration: 4000 });
+  assert.equal(result.span, 4000);
+  assert.equal(result.shards[0].span, 4000);
+  assert.equal(result.shards[0].workers[0][0].start, 2000);
+  const markdown = renderMarkdown(result);
+  assert.match(markdown, /Total test time: \*\*4s\*\*/);
+  assert.match(markdown, /:runBounds, 2000-01-01 00:00:00.000, 4000ms/);
+  assert.match(markdown, /:done, s0w0t0, 2000-01-01 00:00:02.000, 500ms/);
+});
+
+test('empty shards retain their run boundaries alongside active shards', () => {
+  const project = { project: () => ({ name: 'project' }) };
+  const data = new MarkdownReporterData(
+    {},
+    { suites: [project] },
+    {
+      1: { reportId: '1', shardIndex: 1, startTime: 10000, duration: 6000 },
+      2: { reportId: '2', shardIndex: 2, startTime: 12000, duration: 2000 },
+    },
+  );
+  data.addTestResult(
+    { parent: project },
+    {
+      status: 'passed',
+      startTime: new Date(12500),
+      duration: 500,
+      workerIndex: 0,
+      parallelIndex: 0,
+    },
+    '2',
+  );
+  const result = data.build({ startTime: new Date(10000), duration: 6000 });
+  assert.equal(result.span, 6000);
+  const markdown = renderMarkdown(result);
+  assert.match(markdown, /6s :s0total, 2000-01-01 00:00:00.000, 6000ms/);
+  assert.match(markdown, /2s :s1total, 2000-01-01 00:00:02.000, 2000ms/);
 });
 
 test('durations use readable units at second, minute, and hour boundaries', () => {
