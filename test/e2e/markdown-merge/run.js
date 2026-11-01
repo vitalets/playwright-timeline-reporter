@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { cleanupReports, getReportDir } from '../_helpers/playwright.js';
 import { MarkdownReporterData } from '../../../dist/markdown/reporter-data.js';
 import { renderMarkdown } from '../../../dist/markdown/render.js';
+import { formatDuration } from '../../../dist/markdown/format-duration.js';
 
 const configDir = fileURLToPath(new URL('./', import.meta.url));
 const cli = fileURLToPath(new URL('../../../node_modules/playwright/cli.js', import.meta.url));
@@ -26,19 +27,23 @@ test('merging preserves separate shards and HTML attempt identities', (t) => {
   merge(reportDir);
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
-  assert.match(markdown, /Total time: \*\*\d+ ms\*\*/);
+  assert.match(markdown, /Total time: \*\*[\d.]+(?:ms|s)\*\*/);
+  assert.match(markdown, /#### Test distribution by shard and worker\n/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
     ),
     ['SHARD 1', 'Worker 1', 'SHARD 2', 'Worker 1'],
   );
-  const totals = [...markdown.matchAll(/Total :(s\d+total), 2000-01-01 00:00:00.000, (\d+)ms/g)];
+  const totals = [
+    ...markdown.matchAll(/[\d.]+(?:ms|s) :(s\d+total), (2000-01-01 [\d:.]+), (\d+)ms/g),
+  ];
   assert.equal(totals.length, 2);
-  const durations = [...markdown.matchAll(/ :done, s\d+w0t0, 2000-01-01 00:00:00.000, (\d+)ms/g)];
+  assert.notEqual(totals[0][2], totals[1][2]);
+  const durations = [...markdown.matchAll(/ :done, s\d+w0t0, (2000-01-01 [\d:.]+), (\d+)ms/g)];
   assert.deepEqual(
-    totals.map((match) => match[2]),
-    durations.map((match) => match[1]),
+    totals.map((match) => match.slice(2)),
+    durations.map((match) => match.slice(1)),
   );
   const ids = [...markdown.matchAll(/ :(?:done, |crit, )?(s\w+),/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length);
@@ -107,7 +112,7 @@ test('worker numbering restarts at one in each shard while preserving totals and
     );
   }
   const markdown = renderMarkdown(data.build());
-  assert.match(markdown, /Total time: \*\*700 ms\*\*/);
+  assert.match(markdown, /Total time: \*\*10.7s\*\*/);
   assert.deepEqual(
     [...markdown.matchAll(/section (.+)/g)].map((match) =>
       match[1].replaceAll('\u200b', '').trim(),
@@ -116,9 +121,9 @@ test('worker numbering restarts at one in each shard while preserving totals and
   );
   const sections = [...markdown.matchAll(/section (.+)/g)].map((match) => match[1]);
   assert.equal(new Set(sections).size, sections.length);
-  assert.match(markdown, /Total :s0total, 2000-01-01 00:00:00.000, 700ms/);
-  assert.match(markdown, /Total :s1total, 2000-01-01 00:00:00.000, 100ms/);
-  assert.match(markdown, /:done, s0w1t0, 2000-01-01 00:00:00.200, 500ms/);
+  assert.match(markdown, /700ms :s0total, 2000-01-01 00:00:10.000, 700ms/);
+  assert.match(markdown, /100ms :s1total, 2000-01-01 00:00:00.000, 100ms/);
+  assert.match(markdown, /:done, s0w1t0, 2000-01-01 00:00:10.200, 500ms/);
   assert.match(markdown, /:done, s1w0t0, 2000-01-01 00:00:00.000, 100ms/);
 });
 
@@ -179,6 +184,21 @@ test('a standalone shard and merged reports without shard metadata keep their id
       [...renderMarkdown(data.build()).matchAll(/section (.+)/g)].map((match) => match[1].trim()),
       labels,
     );
+  }
+});
+
+test('durations use readable units at second, minute, and hour boundaries', () => {
+  for (const [ms, expected] of [
+    [0, '0ms'],
+    [999, '999ms'],
+    [1000, '1s'],
+    [14435, '14.435s'],
+    [60000, '1m'],
+    [74435, '1m 14.435s'],
+    [3600000, '1h'],
+    [3674435, '1h 1m 14.435s'],
+  ]) {
+    assert.equal(formatDuration(ms), expected);
   }
 });
 

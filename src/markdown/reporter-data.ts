@@ -33,6 +33,7 @@ export type ShardTiming = {
   id: string;
   shardIndex?: number;
   grouped: boolean;
+  start: number;
   span: number;
   workers: WorkerTiming[][];
 };
@@ -94,8 +95,9 @@ export class MarkdownReporterData {
       shardIndex: shard.shardIndex,
       grouped: this.isMerging || shard.shardIndex !== undefined,
     }));
+    normalizeShardStarts(timings);
     return {
-      span: timings.reduce((max, timing) => Math.max(max, timing.span), 0),
+      span: timings.reduce((max, timing) => Math.max(max, timing.start + timing.span), 0),
       shards: timings,
     };
   }
@@ -114,6 +116,14 @@ export class MarkdownReporterData {
     }
     shard.blocks.push(block);
     this.lastWorkerBlocks.set(key, block);
+  }
+}
+
+function normalizeShardStarts(timings: ShardTiming[]) {
+  const active = timings.filter((timing) => timing.workers.length);
+  const start = active.length ? Math.min(...active.map((timing) => timing.start)) : 0;
+  for (const timing of timings) {
+    timing.start = timing.workers.length ? timing.start - start : 0;
   }
 }
 
@@ -154,5 +164,5 @@ function getWorkerTimings(shard: Shard) {
     });
     slots.set(key, slot);
   }
-  return { span: end - start, workers: [...slots.values()] };
+  return { start, span: end - start, workers: [...slots.values()] };
 }

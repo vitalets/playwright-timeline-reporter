@@ -1,5 +1,6 @@
 /** Render worker activity as a Mermaid Gantt chart. */
 import type { ShardTiming, WorkerTiming } from './reporter-data.js';
+import { formatDuration } from './format-duration.js';
 
 const CONFIG = `---
 displayMode: compact
@@ -34,13 +35,15 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
       shard.shardIndex === undefined ? `Report ${shard.id}` : `SHARD ${shard.shardIndex}`;
     if (shard.grouped) {
       lines.push(`    section ${label}`);
-      lines.push(`    Total :${prefix}total, ${formatClock(0)}, ${shard.span}ms`);
+      lines.push(
+        `    ${formatDuration(shard.span)} :${prefix}total, ${formatClock(shard.start)}, ${shard.span}ms`,
+      );
     }
     shard.workers.forEach((blocks, workerIndex) => {
       // Mermaid groups identical section names, so distinguish shards invisibly.
       const sectionSuffix = '\u200b'.repeat(shardIndex);
       lines.push(`    section \u00a0\u00a0Worker ${workerIndex + 1}${sectionSuffix}`);
-      lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`));
+      lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
     });
   });
   return lines.concat('```', '').join('\n');
@@ -50,10 +53,10 @@ function getAxisFormat(span: number) {
   return span >= 3600000 ? '%H:%M' : '%M:%S';
 }
 
-function renderBlocks(blocks: WorkerTiming[], prefix: string) {
+function renderBlocks(blocks: WorkerTiming[], prefix: string, offset: number) {
   return blocks.map((block, index) => {
     const style = block.status === 'passed' ? 'done' : 'crit';
-    const timing = `${formatClock(block.start)}, ${block.duration}ms`;
+    const timing = `${formatClock(offset + block.start)}, ${block.duration}ms`;
     return `    \u200b :${style}, ${prefix}t${index}, ${timing}`;
   });
 }
