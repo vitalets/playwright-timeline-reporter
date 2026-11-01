@@ -27,7 +27,15 @@ gantt
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
   if (!shards.some((shard) => shard.workers.length)) return 'No worker activity to plot.\n';
-  const lines = ['```mermaid', CONFIG, `    axisFormat ${getAxisFormat(span)}`];
+  const title = shards.some((shard) => shard.grouped)
+    ? 'Test distribution by shard and worker'
+    : 'Test distribution by worker';
+  const lines = [
+    '```mermaid',
+    CONFIG,
+    `    title ${title}`,
+    `    axisFormat ${getAxisFormat(span)}`,
+  ];
   shards.forEach((shard, shardIndex) => {
     if (!shard.workers.length) return;
     const prefix = `s${shardIndex}`;
@@ -46,6 +54,7 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
       lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
     });
   });
+  lines.push(`    \u200b :vert, chartEnd, ${formatClock(span)}, 0ms`);
   return lines.concat('```', '').join('\n');
 }
 

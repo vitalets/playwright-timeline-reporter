@@ -19,9 +19,9 @@ test('worker report combines successes and keeps failed retries separate without
   assert.equal((markdown.match(/ :crit,/g) ?? []).length, 3);
   assert.match(
     markdown,
-    /^### Playwright timeline report\n\nTotal test time: \*\*[\d.]+(?:ms|s)\*\*/,
+    /^### Playwright timeline report\n\nTotal test time: \*\*~?[\d.]+(?:ms|s)\*\*/,
   );
-  assert.match(markdown, /#### Test distribution by worker\n/);
+  assert.match(markdown, /    title Test distribution by worker\n/);
   assert.match(markdown, /section \u00a0\u00a0Worker 1/);
   assert.match(markdown, /```\n$/);
   assert.doesNotMatch(markdown, /\|.*\||Each shard starts|Worker.*\//);

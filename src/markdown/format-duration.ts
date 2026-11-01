@@ -1,6 +1,12 @@
 /** Format Markdown durations using hours, minutes, seconds, and milliseconds. */
 export function formatDuration(ms: number) {
-  ms = Math.round(ms);
+  const precision = ms < 1000 ? 1 : ms < 3600000 ? 1000 : 60000;
+  const rounded = Math.round(ms / precision) * precision;
+  const prefix = rounded === ms ? '' : '~';
+  return prefix + formatUnits(rounded);
+}
+
+function formatUnits(ms: number) {
   if (ms < 1000) return `${ms}ms`;
   const hours = Math.floor(ms / 3600000);
   const minutes = Math.floor((ms % 3600000) / 60000);
