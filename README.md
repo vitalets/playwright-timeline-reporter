@@ -129,11 +129,50 @@ To generate only Markdown, use the `/markdown` entry point:
 npx playwright test --reporter=playwright-timeline-reporter/markdown
 ```
 
-For [sharded runs](#sharding), use it when merging the blob reports:
+<details>
+<summary>YAML</summary>
+
+```diff
+ jobs:
+   test:
+     runs-on: ubuntu-24.04
+     steps:
+       # ...
++      - name: Install timeline reporter
++        run: npm install --no-save playwright-timeline-reporter
+
+       - name: Run tests
+-        run: npx playwright test
++        run: npx playwright test --reporter=playwright-timeline-reporter/markdown
+```
+
+</details>
+
+For **sharded runs**, use it when merging the blob reports:
 
 ```sh
 npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./all-blob-reports
 ```
+
+<details>
+<summary>YAML</summary>
+
+```diff
+ jobs:
+   merge-reports:
+     needs: test
+     runs-on: ubuntu-24.04
+     steps:
+       # ...
++      - name: Install timeline reporter
++        run: npm install --no-save playwright-timeline-reporter
+
+       - name: Merge reports
+-        run: npx playwright merge-reports ./all-blob-reports
++        run: npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./all-blob-reports
+```
+
+</details>
 
 See the [example workflow](.github/workflows/example.yml) and
 [sharding example workflow](.github/workflows/example-sharding.yml).
