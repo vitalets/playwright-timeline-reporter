@@ -4,6 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { expect } from '@playwright/test';
@@ -19,6 +20,30 @@ const defaultEnv = {
 
 export function getDir(importMeta) {
   return path.basename(importMeta.dirname);
+}
+
+/** Compare numeric release versions, treating omitted parts as zero and ignoring prerelease suffixes. */
+export function pwVersion(op, version) {
+  const installedVersion = createRequire(import.meta.url)('@playwright/test/package.json').version;
+  const current = installedVersion.split('-')[0].split('.').map(Number);
+  const target = version.split('-')[0].split('.').map(Number);
+  let difference = 0;
+  for (let i = 0; i < Math.max(current.length, target.length); i++) {
+    difference = (current[i] ?? 0) - (target[i] ?? 0);
+    if (difference !== 0) break;
+  }
+  switch (op) {
+    case '>':
+      return difference > 0;
+    case '>=':
+      return difference >= 0;
+    case '<':
+      return difference < 0;
+    case '<=':
+      return difference <= 0;
+    default:
+      throw new Error(`Unsupported version operator: ${op}`);
+  }
 }
 
 export function runPlaywright(t, { flags = '', env: extraEnv = {} } = {}) {

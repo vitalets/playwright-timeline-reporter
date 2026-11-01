@@ -1,6 +1,6 @@
 /**
  * Programmatic entry point for worker-lane tests.
- * Usage: node test/worker-lanes/run.ts [glob]
+ * Usage: node test/worker-lanes/run.js [glob]
  */
 import { run } from 'node:test';
 import { spec } from 'node:test/reporters';
