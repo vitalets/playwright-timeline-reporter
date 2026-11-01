@@ -25,7 +25,7 @@
   <em>Click the screenshot to open the live report ↗</em>
 </p>
 
-> Also check out the [sharded report demo](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
+> Also check out the [sharded report](https://vitalets.github.io/playwright-timeline-reporter/demos/shards.html).
 
 ## Features
 
