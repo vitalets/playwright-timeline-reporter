@@ -19,15 +19,17 @@ const configDir = fileURLToPath(new URL('./', import.meta.url));
 
 before(() => cleanupReports(configDir));
 
-test('multi-OS reports nest workers directly under each OS', (t) => {
+test('multi-OS reports render a separate worker chart per OS', (t) => {
   const report = buildMergeReports(t, 'data-multi-os');
 
   expectGroups(report, [
-    'Ubuntu 24.04',
+    'Test distribution by worker (Ubuntu 24.04)',
+    'TOTAL TIME',
     '  Worker 1',
     '  Worker 2',
     '  Worker 3',
-    'Windows 10.0',
+    'Test distribution by worker (Windows 10.0)',
+    'TOTAL TIME',
     '  Worker 1',
     '  Worker 2',
     '  Worker 3',
@@ -37,28 +39,30 @@ test('multi-OS reports nest workers directly under each OS', (t) => {
   expectOsTimings(report, ['Ubuntu 24.04', 'Windows 10.0']);
 });
 
-test('multi-OS shards nest shards and workers under each OS', (t) => {
+test('multi-OS shards render a separate shard chart per OS', (t) => {
   const report = buildMergeReports(t, 'data-shards-multi-os');
 
   expectGroups(report, [
-    'Ubuntu 24.04',
-    '  SHARD 1',
-    '    Worker 1',
-    '    Worker 2',
-    '    Worker 3',
-    '  SHARD 2',
-    '    Worker 1',
-    '    Worker 2',
-    '    Worker 3',
-    'Windows 10.0',
-    '  SHARD 1',
-    '    Worker 1',
-    '    Worker 2',
-    '    Worker 3',
-    '  SHARD 2',
-    '    Worker 1',
-    '    Worker 2',
-    '    Worker 3',
+    'Test distribution by shard and worker (Ubuntu 24.04)',
+    'TOTAL TIME',
+    'SHARD 1',
+    '  Worker 1',
+    '  Worker 2',
+    '  Worker 3',
+    'SHARD 2',
+    '  Worker 1',
+    '  Worker 2',
+    '  Worker 3',
+    'Test distribution by shard and worker (Windows 10.0)',
+    'TOTAL TIME',
+    'SHARD 1',
+    '  Worker 1',
+    '  Worker 2',
+    '  Worker 3',
+    'SHARD 2',
+    '  Worker 1',
+    '  Worker 2',
+    '  Worker 3',
   ]);
   expectUniqueMermaidIds(report);
   expectReportIdentities(report);
@@ -86,9 +90,8 @@ test('Mermaid formats OS names and sanitizes labels', () => {
         workers: [],
       })),
     });
-    const sections = readSections(markdown);
-    assert.equal(sections.length, 3);
-    assert.ok(sections.includes(expected));
+    assert.equal((markdown.match(/```mermaid/g) ?? []).length, 2);
+    assert.ok(markdown.includes(`title Test distribution by worker (${expected})`));
   }
 });
 
@@ -114,15 +117,9 @@ test('repeated runs and unknown OS metadata retain distinct report groups', () =
     },
   );
   const markdown = renderMarkdown(data.build({ startTime: new Date(1000), duration: 5000 }));
-  assert.deepEqual(readSections(markdown), [
-    'TOTAL TIME',
-    'Ubuntu 24.04',
-    '  Report 1',
-    '  Report 2',
-    'Unknown OS',
-  ]);
-  assert.match(markdown, /5s :os0total, 2000-01-01 00:00:00.000, 5000ms/);
-  assert.match(markdown, /1s :os1total, 2000-01-01 00:00:02.000, 1000ms/);
+  assert.deepEqual(readSections(markdown), ['TOTAL TIME', 'Report 1', 'Report 2', 'TOTAL TIME']);
+  assert.match(markdown, /5s :active, runTotal, 2000-01-01 00:00:00.000, 5000ms/);
+  assert.match(markdown, /1s :active, runTotal, 2000-01-01 00:00:00.000, 1000ms/);
 });
 
 test('shards on the same OS preserve the existing layout', () => {
@@ -336,4 +333,46 @@ test('durations use readable units at second, minute, and hour boundaries', () =
   ]) {
     assert.equal(formatDuration(ms), expected);
   }
+});
+
+test('OS charts remove cross-OS delays while preserving shard and worker offsets', () => {
+  const shards = [
+    { os: 'ubuntu 24.04', start: 0, span: 2000, shardIndex: 1 },
+    { os: 'windows 10.0', start: 90000000, span: 2000, shardIndex: 1 },
+    { os: 'windows 10.0', start: 90001000, span: 3000, shardIndex: 2 },
+  ].map((shard, index) => ({
+    ...shard,
+    id: String(index + 1),
+    grouped: true,
+    workers: [[{ start: 500, duration: 100, status: 'passed' }]],
+  }));
+  const original = structuredClone(shards);
+  const markdown = renderMarkdown({ span: 90004000, shards });
+  const charts = [...markdown.matchAll(/```mermaid\n([\s\S]*?)```/g)];
+  assert.equal(charts.length, 2);
+  assert.doesNotMatch(markdown, /Diagram omitted/);
+  assert.match(charts[0][1], /2s :active, runTotal, 2000-01-01 00:00:00.000, 2000ms/);
+  assert.match(charts[1][1], /4s :active, runTotal, 2000-01-01 00:00:00.000, 4000ms/);
+  assert.match(charts[1][1], /3s :s1total, 2000-01-01 00:00:01.000, 3000ms/);
+  assert.match(charts[1][1], /:done, s1w0t0, 2000-01-01 00:00:01.500, 100ms/);
+  assert.deepEqual(shards, original);
+});
+
+test('the 24-hour limit applies independently to each OS chart', () => {
+  const markdown = renderMarkdown({
+    span: 86400000,
+    shards: [
+      { os: 'ubuntu 24.04', span: 86400000 },
+      { os: 'windows 10.0', span: 2000 },
+    ].map((shard, index) => ({
+      ...shard,
+      id: String(index + 1),
+      grouped: true,
+      start: 0,
+      workers: [],
+    })),
+  });
+  assert.match(markdown, /Diagram omitted \(Ubuntu 24.04\): test window reaches 24 hours/);
+  assert.equal((markdown.match(/```mermaid/g) ?? []).length, 1);
+  assert.match(markdown, /title Test distribution by worker \(Windows 10.0\)/);
 });

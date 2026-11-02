@@ -29,35 +29,39 @@ gantt
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
   const osGroups = groupByOs(shards);
-  const multipleOS = osGroups.length > 1;
-  const title = multipleOS
-    ? `Test distribution by OS${shards.some((shard) => shard.shardIndex !== undefined) ? ', shard' : ''} and worker`
-    : shards.some((shard) => shard.grouped)
-      ? 'Test distribution by shard and worker'
-      : 'Test distribution by worker';
+  if (osGroups.length <= 1) return renderChart(shards, span);
+  return osGroups
+    .map(([os, reports]) => {
+      const start = Math.min(...reports.map((report) => report.start));
+      const end = Math.max(...reports.map((report) => report.start + report.span));
+      const normalized = reports.map((report) => ({
+        ...report,
+        start: report.start - start,
+        grouped: reports.length > 1 || report.shardIndex !== undefined,
+      }));
+      return renderChart(normalized, end - start, os);
+    })
+    .join('\n');
+}
+
+function renderChart(shards: ShardTiming[], span: number, os?: string) {
+  if (span >= 86400000) {
+    return `Diagram omitted${os ? ` (${os})` : ''}: test window reaches 24 hours.\n`;
+  }
+  const title = shards.some((shard) => shard.grouped)
+    ? 'Test distribution by shard and worker'
+    : 'Test distribution by worker';
   const lines = [
     '```mermaid',
     CONFIG,
-    `    title ${title}`,
+    `    title ${title}${os ? ` (${os})` : ''}`,
     `    axisFormat ${getAxisFormat(span)}`,
     '    section TOTAL TIME',
     `    ${formatDuration(span)} :active, runTotal, ${formatClock(0)}, ${span}ms`,
   ];
-  if (multipleOS) {
-    osGroups.forEach(([os, reports], index) => {
-      const start = Math.min(...reports.map((report) => report.start));
-      const end = Math.max(...reports.map((report) => report.start + report.span));
-      lines.push(`    section ${os}`, renderTotal(`os${index}total`, start, end - start));
-      for (const report of reports) {
-        const showReport = reports.length > 1 || report.shardIndex !== undefined;
-        lines.push(...renderShard(report, shards.indexOf(report), { depth: 1, showReport }));
-      }
-    });
-  } else {
-    shards.forEach((shard, index) => {
-      lines.push(...renderShard(shard, index, { depth: 0, showReport: shard.grouped }));
-    });
-  }
+  shards.forEach((shard, index) => {
+    lines.push(...renderShard(shard, index, { depth: 0, showReport: shard.grouped }));
+  });
   return lines.concat('```', '').join('\n');
 }
 

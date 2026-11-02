@@ -29,16 +29,21 @@ export function buildMergeReports(t, fixture) {
 }
 
 export function expectGroups({ markdown }, expectedGroups) {
-  assert.deepEqual(readSections(markdown), ['TOTAL TIME', ...expectedGroups]);
+  const groups = [...markdown.matchAll(/^    (?:title|section) (.+)$/gm)].map((match) =>
+    match[1].replaceAll('\u200b', '').replaceAll('\u00a0', ' '),
+  );
+  assert.deepEqual(groups, expectedGroups);
 }
 
 export function expectUniqueMermaidIds({ markdown }) {
-  const rawSections = [...markdown.matchAll(/section (.+)/g)].map((match) => match[1]);
-  assert.equal(new Set(rawSections).size, rawSections.length);
-  const ids = [...markdown.matchAll(/ :(?:active, |done, |crit, )?(\w+),/g)].map(
-    (match) => match[1],
-  );
-  assert.equal(new Set(ids).size, ids.length);
+  for (const chart of markdown.matchAll(/```mermaid\n([\s\S]*?)```/g)) {
+    const rawSections = [...chart[1].matchAll(/section (.+)/g)].map((match) => match[1]);
+    assert.equal(new Set(rawSections).size, rawSections.length);
+    const ids = [...chart[1].matchAll(/ :(?:active, |done, |crit, )?(\w+),/g)].map(
+      (match) => match[1],
+    );
+    assert.equal(new Set(ids).size, ids.length);
+  }
 }
 
 export function expectReportIdentities({ run, attempts }) {
@@ -51,8 +56,9 @@ export function expectReportIdentities({ run, attempts }) {
 
 export function expectOsTimings({ markdown, run }, expectedOS) {
   const reports = Object.values(run.mergeReports);
-  const start = Math.min(...reports.map((report) => report.startTime));
-  const osTotals = [...markdown.matchAll(/ :(os\d+total), (2000-01-01 [\d:.]+), ([\d.]+)ms/g)];
+  const osTotals = [
+    ...markdown.matchAll(/ :active, (runTotal), (2000-01-01 [\d:.]+), ([\d.]+)ms/g),
+  ];
   assert.equal(osTotals.length, expectedOS.length);
   for (const [index, os] of expectedOS.entries()) {
     const group = reports.filter(
@@ -60,10 +66,12 @@ export function expectOsTimings({ markdown, run }, expectedOS) {
     );
     const groupStart = Math.min(...group.map((report) => report.startTime));
     const groupEnd = Math.max(...group.map((report) => report.startTime + report.duration));
-    assert.equal(
-      osTotals[index][2],
-      `2000-01-01 ${new Date(groupStart - start).toISOString().slice(11, 23)}`,
-    );
+    assert.equal(osTotals[index][2], '2000-01-01 00:00:00.000');
+    const chart = [...markdown.matchAll(/```mermaid\n([\s\S]*?)```/g)][index][1];
+    const title = group.some((report) => report.shardIndex !== undefined)
+      ? 'Test distribution by shard and worker'
+      : 'Test distribution by worker';
+    assert.ok(chart.includes(`title ${title} (${os})`));
     // Epoch-sized timestamps lose sub-millisecond precision during addition.
     assert.ok(Math.abs(Number(osTotals[index][3]) - (groupEnd - groupStart)) < 0.001);
   }
