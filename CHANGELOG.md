@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-02
+
 ### Added
 
 - Added Markdown reports with Mermaid worker timelines and GitHub Actions summaries,
@@ -28,7 +30,8 @@
 
 - Initial release.
 
-[unreleased]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.1...HEAD
+[unreleased]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/vitalets/playwright-timeline-reporter/compare/v1.0.0...v1.0.2
