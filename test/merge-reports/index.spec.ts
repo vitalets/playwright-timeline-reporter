@@ -4,26 +4,28 @@ import { MergeReports } from '../../src/merge-reports.js';
 
 test.describe('MergeSharding', () => {
   test('success commands', () => {
-    expectSuccess('playwright merge-reports ./test/merge-reports/data');
-    expectSuccess('npx playwright merge-reports ./test/merge-reports/data');
-    expectSuccess('npx playwright merge-reports -c playwright.config.ts ./test/merge-reports/data');
+    expectSuccess('playwright merge-reports ./test/merge-reports/data-shards');
+    expectSuccess('npx playwright merge-reports ./test/merge-reports/data-shards');
     expectSuccess(
-      'npx playwright merge-reports --config playwright.config.ts ./test/merge-reports/data',
-    );
-    expectSuccess('npx playwright merge-reports ./test/merge-reports/data --reporter html');
-    expectSuccess('npx playwright merge-reports ./test/merge-reports/data --reporter=html');
-    expectSuccess(
-      'npx playwright merge-reports ./test/merge-reports/data --config=playwright.config.ts',
-    );
-    expectSuccess('npx playwright merge-reports --reporter=html ./test/merge-reports/data');
-    expectSuccess('npx playwright merge-reports --reporter html ./test/merge-reports/data');
-    expectSuccess(
-      'npx playwright merge-reports --config=playwright.config.ts ./test/merge-reports/data',
+      'npx playwright merge-reports -c playwright.config.ts ./test/merge-reports/data-shards',
     );
     expectSuccess(
-      'npx playwright merge-reports --config playwright.config.ts --reporter=html ./test/merge-reports/data',
+      'npx playwright merge-reports --config playwright.config.ts ./test/merge-reports/data-shards',
     );
-    withCwd(path.resolve('test/merge-reports/data'), () => {
+    expectSuccess('npx playwright merge-reports ./test/merge-reports/data-shards --reporter html');
+    expectSuccess('npx playwright merge-reports ./test/merge-reports/data-shards --reporter=html');
+    expectSuccess(
+      'npx playwright merge-reports ./test/merge-reports/data-shards --config=playwright.config.ts',
+    );
+    expectSuccess('npx playwright merge-reports --reporter=html ./test/merge-reports/data-shards');
+    expectSuccess('npx playwright merge-reports --reporter html ./test/merge-reports/data-shards');
+    expectSuccess(
+      'npx playwright merge-reports --config=playwright.config.ts ./test/merge-reports/data-shards',
+    );
+    expectSuccess(
+      'npx playwright merge-reports --config playwright.config.ts --reporter=html ./test/merge-reports/data-shards',
+    );
+    withCwd(path.resolve('test/merge-reports/data-shards'), () => {
       expectSuccess('playwright merge-reports');
       expectSuccess('playwright merge-reports --reporter=html');
       expectSuccess('playwright merge-reports --reporter html');
