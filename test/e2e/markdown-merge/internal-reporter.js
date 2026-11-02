@@ -1,5 +1,6 @@
 import { MarkdownReporter } from '../../../dist/markdown/reporter.js';
 import { MergeReports } from '../../../dist/merge-reports.js';
+import { resolveOptions } from '../../../dist/options.js';
 
 export default class Reporter extends MarkdownReporter {
   constructor() {
@@ -7,7 +8,7 @@ export default class Reporter extends MarkdownReporter {
     mergeReports.reports = {
       1: { reportId: '1', status: 'passed', startTime: 0, duration: 0 },
     };
-    super(mergeReports, { markdown: process.env.MARKDOWN_OUTPUT_FILE });
+    super(mergeReports, resolveOptions());
   }
 
   onBegin(config, suite) {

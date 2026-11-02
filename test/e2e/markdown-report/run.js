@@ -39,7 +39,7 @@ test('worker report combines successes and keeps failed retries separate without
 test('standalone entry point uses markdown for its custom output path', (t) => {
   const reportDir = getReportDir(configDir, t);
   const markdownFile = path.join(reportDir, 'custom.md');
-  runPlaywright(configDir, reportDir, { MARKDOWN_OUTPUT_FILE: markdownFile });
+  runPlaywright(configDir, reportDir, { PLAYWRIGHT_TIMELINE_MARKDOWN: markdownFile });
 
   const markdown = fs.readFileSync(markdownFile, 'utf8');
   assert.match(markdown, /```mermaid/);

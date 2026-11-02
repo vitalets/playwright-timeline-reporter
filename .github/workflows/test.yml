@@ -84,6 +84,7 @@ jobs:
       - run: |
           npm run test:timings
           npm run test:merge
+          npm run test:utils
       # Run these tests only on the latest pw
       - if: matrix.playwright-version == '1.59' || matrix.playwright-version == 'beta'
         run: |

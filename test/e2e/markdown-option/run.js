@@ -27,13 +27,31 @@ test('markdown option writes HTML and Markdown at default paths', (t) => {
   assertHtml(path.join(reportDir, 'index.html'));
 });
 
-test('markdown string sets a custom output path independently of HTML', (t) => {
+for (const value of ['false', '0', 'true', '1']) {
+  test(`Markdown environment value ${value} overrides the config boolean`, (t) => {
+    const reportDir = getReportDir(configDir, t);
+    const enabled = value === 'true' || value === '1';
+    runPlaywright(configDir, reportDir, {
+      MARKDOWN_ENABLED: enabled ? '0' : '1',
+      PLAYWRIGHT_TIMELINE_MARKDOWN: value,
+    });
+
+    assertHtml(path.join(reportDir, 'index.html'));
+    const markdownFile = path.join(reportDir, 'index.md');
+    if (enabled) assertMarkdown(markdownFile);
+    else assert.equal(fs.existsSync(markdownFile), false);
+    assert.equal(fs.existsSync(path.join(configDir, value)), false);
+  });
+}
+
+test('Markdown output environment variable overrides a disabled option independently of HTML', (t) => {
   const reportDir = getReportDir(configDir, t);
   const markdownFile = path.join(reportDir, 'custom.md');
   const htmlFile = path.join(reportDir, 'custom.html');
   runPlaywright(configDir, reportDir, {
-    MARKDOWN_OUTPUT_FILE: markdownFile,
-    HTML_OUTPUT_FILE: htmlFile,
+    MARKDOWN_ENABLED: '0',
+    PLAYWRIGHT_TIMELINE_MARKDOWN: markdownFile,
+    PLAYWRIGHT_TIMELINE_OUTPUT_FILE: htmlFile,
   });
 
   assertMarkdown(markdownFile);
@@ -56,8 +74,8 @@ test('sharing the report and GitHub summary path preserves content and appends o
   fs.writeFileSync(summaryFile, prefix);
   runPlaywright(configDir, reportDir, {
     GITHUB_STEP_SUMMARY: summaryFile,
-    MARKDOWN_OUTPUT_FILE: summaryFile,
-    HTML_OUTPUT_FILE: path.join(reportDir, 'index.html'),
+    PLAYWRIGHT_TIMELINE_MARKDOWN: summaryFile,
+    PLAYWRIGHT_TIMELINE_OUTPUT_FILE: path.join(reportDir, 'index.html'),
   });
 
   const summary = fs.readFileSync(summaryFile, 'utf8');
@@ -96,8 +114,8 @@ function runWithSummary(t, prefix) {
   fs.writeFileSync(summaryFile, prefix);
   runPlaywright(configDir, reportDir, {
     GITHUB_STEP_SUMMARY: summaryFile,
-    MARKDOWN_OUTPUT_FILE: markdownFile,
-    HTML_OUTPUT_FILE: path.join(reportDir, 'index.html'),
+    PLAYWRIGHT_TIMELINE_MARKDOWN: markdownFile,
+    PLAYWRIGHT_TIMELINE_OUTPUT_FILE: path.join(reportDir, 'index.html'),
   });
   return {
     summary: fs.readFileSync(summaryFile, 'utf8'),

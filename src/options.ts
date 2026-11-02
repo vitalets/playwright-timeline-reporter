@@ -48,8 +48,17 @@ function getOptionsFromEnv(): Partial<TimelineReporterOptions> {
   const envOutputFile = process.env.PLAYWRIGHT_TIMELINE_OUTPUT_FILE;
   if (envOutputFile) result.outputFile = envOutputFile;
 
+  const envMarkdown = process.env.PLAYWRIGHT_TIMELINE_MARKDOWN;
+  if (envMarkdown) result.markdown = parseBooleanEnvVar(envMarkdown);
+
   const envDebug = process.env.PLAYWRIGHT_TIMELINE_DEBUG;
   if (envDebug) result.debug = envDebug !== '0' && envDebug !== 'false';
 
   return result;
+}
+
+function parseBooleanEnvVar(value: string): boolean | string {
+  if (value === 'false' || value === '0') return false;
+  if (value === 'true' || value === '1') return true;
+  return value;
 }

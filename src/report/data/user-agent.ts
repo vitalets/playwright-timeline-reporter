@@ -15,18 +15,16 @@
  */
 
 /**
- * Returns the parsed userAgent, with `os` set to the contents of the
- * parenthesised section (e.g. "arm64; macOS 15.2"), or "unknown" when the
- * format is not recognised.
+ * Returns architecture and OS/version separately, with "unknown" for missing
+ * fields or an unrecognised user-agent format.
  */
-// eslint-disable-next-line visual/complexity
-export function parsePlaywrightUserAgent(userAgent: string | undefined): { os: string } {
-  if (!userAgent) return { os: 'unknown' };
-
-  const open = userAgent.indexOf('(');
-  const close = userAgent.indexOf(')');
-  if (open === -1 || close === -1 || close <= open) return { os: 'unknown' };
-
-  const os = userAgent.slice(open + 1, close).trim();
-  return { os: os || 'unknown' };
+export function parsePlaywrightUserAgent(userAgent: string | undefined): {
+  arch: string;
+  os: string;
+} {
+  const match = userAgent?.match(/\(([^;()]*);\s*([^()]*)\)/);
+  return {
+    arch: match?.[1].trim() || 'unknown',
+    os: match?.[2].trim() || 'unknown',
+  };
 }

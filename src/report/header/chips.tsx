@@ -26,7 +26,10 @@ function getOsName(runInfo: RunInfo): string {
   const mergeReports = Object.values(runInfo.mergeReports);
   if (!mergeReports.length) return runInfo.osName;
 
-  const osValues = mergeReports.map((r) => parsePlaywrightUserAgent(r.userAgent).os);
+  const osValues = mergeReports.map((r) => {
+    const { arch, os } = parsePlaywrightUserAgent(r.userAgent);
+    return arch === 'unknown' ? os : `${arch}; ${os}`;
+  });
   const unique = new Set(osValues);
   return unique.size === 1 ? [...unique][0] : 'multiple';
 }

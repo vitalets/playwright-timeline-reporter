@@ -202,9 +202,12 @@ Path for the generated report file, relative to config dir.
 
 - **Type:** `boolean | string`
 - **Default:** `false` (`true` for the `/markdown` entry point)
+- **Env var:** `PLAYWRIGHT_TIMELINE_MARKDOWN`
 
 Enables the Markdown timeline report. Set `true` to write `./timeline-report/index.md`,
 a string to specify a path relative to config dir, or `false` to disable it.
+The environment variable overrides the option: `false` or `0` disables Markdown,
+`true` or `1` enables the default path, and any other nonempty value sets the output path.
 In GitHub Actions, the report is also automatically appended to the workflow run
 summary. See [GitHub Summary report](#github-summary-report).
 

@@ -7,6 +7,7 @@ import type {
   TestResult,
 } from '@playwright/test/reporter';
 import type { MergeReportInfo } from '../run-info.js';
+import { parsePlaywrightUserAgent } from '../report/data/user-agent.js';
 
 type WorkerBlock = {
   projectIndex: number;
@@ -19,6 +20,7 @@ type WorkerBlock = {
 
 type Shard = {
   id: string;
+  os?: string;
   shardIndex?: number;
   startTime?: number;
   duration?: number;
@@ -39,6 +41,7 @@ export type MarkdownData = {
 
 export type ShardTiming = {
   id: string;
+  os?: string;
   shardIndex?: number;
   grouped: boolean;
   start: number;
@@ -60,6 +63,7 @@ export class MarkdownReporterData {
     const shards = mergeReports
       ? Object.values(mergeReports).map((report) => ({
           id: report.reportId,
+          os: parsePlaywrightUserAgent(report.userAgent).os,
           shardIndex: report.shardIndex,
           startTime: report.startTime,
           duration: report.duration,
@@ -102,6 +106,7 @@ export class MarkdownReporterData {
     const timings = [...this.shards.values()].sort(compareShards).map((shard) => ({
       ...getWorkerTimings(shard, result),
       id: shard.id,
+      os: shard.os,
       shardIndex: shard.shardIndex,
       grouped: this.isMerging || shard.shardIndex !== undefined,
     }));

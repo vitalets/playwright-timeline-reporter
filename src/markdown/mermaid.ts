@@ -28,9 +28,13 @@ gantt
     todayMarker off`;
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
-  const title = shards.some((shard) => shard.grouped)
-    ? 'Test distribution by shard and worker'
-    : 'Test distribution by worker';
+  const osGroups = groupByOs(shards);
+  const multipleOS = osGroups.length > 1;
+  const title = multipleOS
+    ? `Test distribution by OS${shards.some((shard) => shard.shardIndex !== undefined) ? ', shard' : ''} and worker`
+    : shards.some((shard) => shard.grouped)
+      ? 'Test distribution by shard and worker'
+      : 'Test distribution by worker';
   const lines = [
     '```mermaid',
     CONFIG,
@@ -39,24 +43,72 @@ export function renderMermaid(shards: ShardTiming[], span: number) {
     '    section TOTAL TIME',
     `    ${formatDuration(span)} :active, runTotal, ${formatClock(0)}, ${span}ms`,
   ];
-  shards.forEach((shard, shardIndex) => {
-    const prefix = `s${shardIndex}`;
+  if (multipleOS) {
+    osGroups.forEach(([os, reports], index) => {
+      const start = Math.min(...reports.map((report) => report.start));
+      const end = Math.max(...reports.map((report) => report.start + report.span));
+      lines.push(`    section ${os}`, renderTotal(`os${index}total`, start, end - start));
+      for (const report of reports) {
+        const showReport = reports.length > 1 || report.shardIndex !== undefined;
+        lines.push(...renderShard(report, shards.indexOf(report), { depth: 1, showReport }));
+      }
+    });
+  } else {
+    shards.forEach((shard, index) => {
+      lines.push(...renderShard(shard, index, { depth: 0, showReport: shard.grouped }));
+    });
+  }
+  return lines.concat('```', '').join('\n');
+}
+
+function groupByOs(shards: ShardTiming[]) {
+  const groups = new Map<string, ShardTiming[]>();
+  for (const shard of shards) {
+    const os = formatOsName(shard.os);
+    const reports = groups.get(os) ?? [];
+    reports.push(shard);
+    groups.set(os, reports);
+  }
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
+
+function formatOsName(os: string | undefined) {
+  if (!os || os === 'unknown') return 'Unknown OS';
+  // Keep metadata from introducing Mermaid statements or HTML into labels.
+  const safe = os
+    .replace(/[^\p{L}\p{N} ._+-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!safe) return 'Unknown OS';
+  return safe.startsWith('macOS') ? safe : safe[0].toUpperCase() + safe.slice(1);
+}
+
+function renderTotal(id: string, start: number, span: number) {
+  return `    ${formatDuration(span)} :${id}, ${formatClock(start)}, ${span}ms`;
+}
+
+function renderShard(
+  shard: ShardTiming,
+  index: number,
+  { depth, showReport }: { depth: number; showReport: boolean },
+) {
+  const lines: string[] = [];
+  const prefix = `s${index}`;
+  // Mermaid groups identical section names, so distinguish reports invisibly.
+  const suffix = '\u200b'.repeat(index);
+  if (showReport) {
     const label =
       shard.shardIndex === undefined ? `Report ${shard.id}` : `SHARD ${shard.shardIndex}`;
-    if (shard.grouped) {
-      lines.push(`    section ${label}`);
-      lines.push(
-        `    ${formatDuration(shard.span)} :${prefix}total, ${formatClock(shard.start)}, ${shard.span}ms`,
-      );
-    }
-    shard.workers.forEach((blocks, workerIndex) => {
-      // Mermaid groups identical section names, so distinguish shards invisibly.
-      const sectionSuffix = '\u200b'.repeat(shardIndex);
-      lines.push(`    section \u00a0\u00a0Worker ${workerIndex + 1}${sectionSuffix}`);
-      lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
-    });
+    lines.push(`    section ${'\u00a0'.repeat(depth * 2)}${label}${suffix}`);
+    lines.push(renderTotal(`${prefix}total`, shard.start, shard.span));
+  }
+  const workerDepth = depth + (showReport ? 1 : 0);
+  shard.workers.forEach((blocks, workerIndex) => {
+    const indent = '\u00a0'.repeat(Math.max(1, workerDepth) * 2);
+    lines.push(`    section ${indent}Worker ${workerIndex + 1}${suffix}`);
+    lines.push(...renderBlocks(blocks, `${prefix}w${workerIndex}`, shard.start));
   });
-  return lines.concat('```', '').join('\n');
+  return lines;
 }
 
 function getAxisFormat(span: number) {
