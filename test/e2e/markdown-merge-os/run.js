@@ -122,7 +122,7 @@ test('repeated runs and unknown OS metadata retain distinct report groups', () =
   assert.match(markdown, /1s :active, runTotal, 2000-01-01 00:00:00.000, 1000ms/);
 });
 
-test('shards on the same OS preserve the existing layout', () => {
+test('shards on the same OS include the OS in the title and preserve sections', () => {
   const data = new MarkdownReporterData(
     {},
     { suites: [] },
@@ -145,7 +145,7 @@ test('shards on the same OS preserve the existing layout', () => {
   );
   const markdown = renderMarkdown(data.build({ startTime: new Date(1000), duration: 3000 }));
   assert.deepEqual(readSections(markdown), ['TOTAL TIME', 'SHARD 1', 'SHARD 2']);
-  assert.doesNotMatch(markdown, /Ubuntu|os0total/);
+  assert.match(markdown, /title Test distribution by shard and worker \(Ubuntu 24.04\)/);
 });
 
 test('worker numbering restarts at one in each shard while preserving totals and alignment', () => {

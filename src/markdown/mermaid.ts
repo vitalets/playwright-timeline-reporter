@@ -29,7 +29,7 @@ gantt
 
 export function renderMermaid(shards: ShardTiming[], span: number) {
   const osGroups = groupByOs(shards);
-  if (osGroups.length <= 1) return renderChart(shards, span);
+  if (osGroups.length <= 1) return renderChart(shards, span, osGroups[0]?.[0]);
   return osGroups
     .map(([os, reports]) => {
       const start = Math.min(...reports.map((report) => report.start));

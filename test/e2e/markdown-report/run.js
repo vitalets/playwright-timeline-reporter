@@ -1,5 +1,6 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
+import getOsName from 'os-name';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +19,7 @@ test('worker report combines successes and keeps failed retries separate without
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 4);
   assert.equal((markdown.match(/ :crit,/g) ?? []).length, 3);
   assert.match(markdown, /^### Playwright timeline report\n\n```mermaid/);
-  assert.match(markdown, /    title Test distribution by worker\n/);
+  assert.ok(markdown.includes(`    title Test distribution by worker (${getOsName()})\n`));
   assert.match(markdown, /section \u00a0\u00a0Worker 1/);
   assert.match(markdown, /```\n$/);
   assert.doesNotMatch(markdown, /\|.*\||Each shard starts|Worker.*\//);

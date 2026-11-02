@@ -1,4 +1,5 @@
 /** Collect worker activity and prepare ordered, normalized timings for Markdown rendering. */
+import getOsName from 'os-name';
 import type {
   FullConfig,
   FullResult,
@@ -71,6 +72,7 @@ export class MarkdownReporterData {
       : [
           {
             id: '1',
+            os: getOsName(),
             shardIndex: config.shard?.current,
           },
         ];
