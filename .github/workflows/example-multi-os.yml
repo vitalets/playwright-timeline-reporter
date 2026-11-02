@@ -1,0 +1,89 @@
+name: example-multi-os
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/example-multi-os.yml'
+      - 'src/**'
+      - 'example/**'
+      - 'package*.json'
+      - 'tsconfig*.json'
+      - '.parcelrc'
+      - '.npmrc'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+        shard: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # The build script uses rm, so use Bash on Windows too.
+      - run: npm run build --script-shell=bash
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run example shard ${{ matrix.shard }}
+        continue-on-error: true
+        working-directory: example
+        env:
+          # Avoid collisions when downloading reports from both operating systems.
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.os }}-${{ matrix.shard }}.zip
+        # Smoke tests are enough to inspect OS, shard, and worker labels.
+        run: npx playwright test --grep '@smoke' --shard=${{ matrix.shard }}/2 --reporter=blob
+
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: blob-report-${{ matrix.os }}-${{ matrix.shard }}
+          path: example/blob-report
+          retention-days: 1
+          if-no-files-found: error
+
+  merge-reports:
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v8
+        with:
+          pattern: blob-report-*
+          path: example/blob-report
+          merge-multiple: true
+
+      - name: Merge example reports
+        working-directory: example
+        # The config resolves different checkout paths across Linux and Windows.
+        run: npx playwright merge-reports -c playwright.config.ts --reporter=../dist/markdown/index.js ./blob-report
+
+      - name: Upload timeline report
+        uses: actions/upload-artifact@v7
+        with:
+          name: timeline-report-multi-os
+          path: example/timeline-report
+          if-no-files-found: error
