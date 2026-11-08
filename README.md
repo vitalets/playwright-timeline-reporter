@@ -127,18 +127,7 @@ Enable Markdown alongside the HTML report with the `markdown` option:
 reporter: [['playwright-timeline-reporter', { markdown: true }]],
 ```
 
-To add only the summary in CI, without changing project dependencies or config:
-
-```sh
-npm install --no-save playwright-timeline-reporter
-npx playwright test --add-reporter=playwright-timeline-reporter/markdown
-```
-
-`--add-reporter` (Playwright 1.63+) preserves your configured reporters. On older
-versions, use `--reporter` and include all reporters you want to keep.
-
-<details>
-<summary>Workflow example</summary>
+To add only the summary in CI, without changing project dependencies and config, use dedicated entrypoint `playwright-timeline-reporter/markdown` with the `--add-reporter` flag (Playwright 1.63+):
 
 ```diff
  jobs:
@@ -151,21 +140,12 @@ versions, use `--reporter` and include all reporters you want to keep.
 
        - name: Run tests
 -        run: npm test
-+        run: npm test -- --add-reporter=playwright-timeline-reporter/markdown
++        run: npx playwright test --add-reporter=playwright-timeline-reporter/markdown
 ```
 
-</details>
-
-See [example changes](https://github.com/vitalets/playwright-bdd-example/compare/main...timeline).
+On older Playwright versions, use `--reporter` and include all reporters you want to keep.
 
 For **sharded runs**, use it when merging the blob reports:
-
-```sh
-npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./all-blob-reports
-```
-
-<details>
-<summary>YAML</summary>
 
 ```diff
  jobs:
@@ -180,8 +160,6 @@ npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./
 -        run: npx playwright merge-reports ./all-blob-reports
 +        run: npx playwright merge-reports --reporter=playwright-timeline-reporter/markdown ./all-blob-reports
 ```
-
-</details>
 
 See the [example workflow](.github/workflows/example.yml) and
 [sharding example workflow](.github/workflows/example-sharding.yml).
