@@ -6,7 +6,8 @@ export default defineConfig({
     [
       '../../../dist/index.js',
       {
-        markdown: process.env.MARKDOWN_ENABLED === '1',
+        markdownFile: process.env.MARKDOWN_ENABLED === '1',
+        markdownCI: process.env.MARKDOWN_CI_ENABLED === '1',
       },
     ],
   ],

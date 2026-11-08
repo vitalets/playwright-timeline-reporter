@@ -29,7 +29,7 @@ export default class TimelineReporter implements Reporter {
   constructor(options?: TimelineReporterOptions) {
     this.options = resolveOptions(options);
     this.dataCollector = new DataCollector(this.mergeReports, this.options);
-    if (this.options.markdown) {
+    if (this.options.markdownFile || this.options.markdownCI) {
       this.markdownReporter = new MarkdownReporter(this.mergeReports, this.options);
     }
   }

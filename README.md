@@ -121,13 +121,13 @@ In GitHub Actions, you can add a compact worker timeline to your workflow run su
   <em>Click the screenshot to view the report in GitHub actions ↗</em>
 </p>
 
-Enable Markdown alongside the HTML report with the `markdown` option:
+Enable the GitHub summary alongside the HTML report with `markdownCI`:
 
 ```ts
-reporter: [['playwright-timeline-reporter', { markdown: true }]],
+reporter: [['playwright-timeline-reporter', { markdownCI: true }]],
 ```
 
-To add only the summary in CI, without changing project dependencies and config, use dedicated entrypoint `playwright-timeline-reporter/markdown` with the `--add-reporter` flag (Playwright 1.63+):
+To add the GitHub summary, without changing project dependencies and config, use dedicated entrypoint `playwright-timeline-reporter/markdown` with the `--add-reporter` flag (Playwright 1.63+):
 
 ```diff
  jobs:
@@ -164,11 +164,11 @@ For **sharded runs**, use it when merging the blob reports:
 See the [example workflow](.github/workflows/example.yml) and
 [sharding example workflow](.github/workflows/example-sharding.yml).
 
-To omit the GitHub summary report while keeping the Markdown file, clear
-`GITHUB_STEP_SUMMARY` for the command:
+To omit the GitHub summary report while keeping the Markdown file, set
+`PLAYWRIGHT_TIMELINE_MARKDOWN_CI` to `false`, `0`, or an empty string:
 
 ```sh
-GITHUB_STEP_SUMMARY='' npx playwright test
+PLAYWRIGHT_TIMELINE_MARKDOWN_CI=false npx playwright test
 ```
 
 ## Options
@@ -181,18 +181,28 @@ GITHUB_STEP_SUMMARY='' npx playwright test
 
 Path for the generated report file, relative to config dir.
 
-#### `markdown`
+#### `markdownFile`
 
 - **Type:** `boolean | string`
 - **Default:** `false` (`true` for the `/markdown` entry point)
-- **Env var:** `PLAYWRIGHT_TIMELINE_MARKDOWN`
+- **Env var:** `PLAYWRIGHT_TIMELINE_MARKDOWN_FILE`
 
-Enables the Markdown timeline report. Set `true` to write `./timeline-report/index.md`,
+Writes the Markdown timeline to a file. Set `true` to write `./timeline-report/index.md`,
 a string to specify a path relative to config dir, or `false` to disable it.
-The environment variable overrides the option: `false` or `0` disables Markdown,
+The environment variable overrides the option: `false` or `0` disables the file,
 `true` or `1` enables the default path, and any other nonempty value sets the output path.
-In GitHub Actions, the report is also automatically appended to the workflow run
-summary. See [GitHub Summary report](#github-summary-report).
+
+#### `markdownCI`
+
+- **Type:** `boolean`
+- **Default:** `false` (`true` for the `/markdown` entry point)
+- **Env var:** `PLAYWRIGHT_TIMELINE_MARKDOWN_CI`
+
+Appends the Markdown timeline to the GitHub Actions workflow run summary, independently
+of `markdownFile`. Outside GitHub Actions, this has no effect.
+The environment variable overrides the option: `false`, `0`, or an empty string
+disables publishing; any other value enables it.
+See [GitHub Summary report](#github-summary-report).
 
 #### `promptTemplateFile`
 

@@ -78,7 +78,7 @@ for (const identity of ['', 'unknown']) {
     const reportDir = getReportDir(configDir, t);
     const markdownFile = path.join(reportDir, 'index.md');
     playwright(['test', '--reporter=./internal-reporter.js'], {
-      PLAYWRIGHT_TIMELINE_MARKDOWN: markdownFile,
+      PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: markdownFile,
       INTERNAL_REPORT_ID: identity,
     });
 
@@ -91,7 +91,7 @@ for (const identity of ['', 'unknown']) {
 function merge(reportDir, env = {}) {
   playwright(['merge-reports', blobs, '--config=playwright.config.ts'], {
     PLAYWRIGHT_TIMELINE_OUTPUT_FILE: path.join(reportDir, 'index.html'),
-    PLAYWRIGHT_TIMELINE_MARKDOWN: path.join(reportDir, 'index.md'),
+    PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: path.join(reportDir, 'index.md'),
     ...env,
   });
 }
@@ -104,7 +104,7 @@ function playwright(args, env = {}) {
       ...process.env,
       GITHUB_STEP_SUMMARY: '',
       PLAYWRIGHT_TIMELINE_OUTPUT_FILE: '',
-      PLAYWRIGHT_TIMELINE_MARKDOWN: '',
+      PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: '',
       CORRUPT_REPORT_ID: '',
       ...env,
     },

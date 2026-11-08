@@ -94,7 +94,7 @@ function merge(reportDir, blobs) {
         ...process.env,
         GITHUB_STEP_SUMMARY: '',
         PLAYWRIGHT_TIMELINE_OUTPUT_FILE: path.join(reportDir, 'index.html'),
-        PLAYWRIGHT_TIMELINE_MARKDOWN: path.join(reportDir, 'index.md'),
+        PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: path.join(reportDir, 'index.md'),
       },
       stdio: 'pipe',
     },

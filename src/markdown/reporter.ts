@@ -38,8 +38,8 @@ export class MarkdownReporter {
 
   onEnd(result: FullResult) {
     const markdown = renderMarkdown(this.data.build(result, this.mergeReports.error));
-    this.saveFile(markdown);
-    appendGitHubSummary(markdown);
+    if (this.options.markdownFile) this.saveFile(markdown);
+    if (this.options.markdownCI) appendGitHubSummary(markdown);
   }
 
   private saveFile(markdown: string) {

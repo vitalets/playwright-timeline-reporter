@@ -6,7 +6,10 @@ export type { MarkdownReporterOptions } from './options.js';
 
 export default class MarkdownReporter extends TimelineReporter {
   constructor(options: MarkdownReporterOptions = {}) {
-    super({ markdown: options.markdown ?? true });
+    super({
+      markdownFile: options.markdownFile ?? true,
+      markdownCI: options.markdownCI ?? true,
+    });
     this.dataCollector = undefined;
   }
 }

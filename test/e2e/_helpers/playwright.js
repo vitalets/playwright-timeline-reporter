@@ -23,7 +23,7 @@ export function runPlaywright(configDir, reportDir, env = {}) {
         GITHUB_STEP_SUMMARY: '',
         PLAYWRIGHT_TIMELINE_OUTPUT_FILE: '',
         MARKDOWN_ENABLED: '1',
-        PLAYWRIGHT_TIMELINE_MARKDOWN: '',
+        PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: '',
         ...env,
       },
       stdio: 'pipe',

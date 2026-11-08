@@ -12,9 +12,11 @@ before(() => cleanupReports(configDir));
 
 test('worker report combines successes and keeps failed retries separate without HTML', (t) => {
   const reportDir = getReportDir(configDir, t);
-  runPlaywright(configDir, reportDir);
+  const summaryFile = path.join(configDir, 'timeline-report', 'summary.md');
+  runPlaywright(configDir, reportDir, { GITHUB_STEP_SUMMARY: summaryFile });
 
   const markdown = fs.readFileSync(path.join(reportDir, 'index.md'), 'utf8');
+  assert.equal(fs.readFileSync(path.join(reportDir, 'summary.md'), 'utf8'), markdown);
   assert.match(markdown, /```mermaid/);
   assert.equal((markdown.match(/ :done,/g) ?? []).length, 4);
   assert.equal((markdown.match(/ :crit,/g) ?? []).length, 3);
@@ -37,10 +39,10 @@ test('worker report combines successes and keeps failed retries separate without
   assert.equal(fs.existsSync(path.join(reportDir, 'index.html')), false);
 });
 
-test('standalone entry point uses markdown for its custom output path', (t) => {
+test('standalone entry point uses markdownFile for its custom output path', (t) => {
   const reportDir = getReportDir(configDir, t);
   const markdownFile = path.join(reportDir, 'custom.md');
-  runPlaywright(configDir, reportDir, { PLAYWRIGHT_TIMELINE_MARKDOWN: markdownFile });
+  runPlaywright(configDir, reportDir, { PLAYWRIGHT_TIMELINE_MARKDOWN_FILE: markdownFile });
 
   const markdown = fs.readFileSync(markdownFile, 'utf8');
   assert.match(markdown, /```mermaid/);

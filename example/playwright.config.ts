@@ -5,7 +5,7 @@ export default defineConfig({
   testDir: '.',
   workers: 3,
   // In a real project use 'playwright-timeline-reporter'.
-  reporter: [['../dist/index.js', { markdown: true }], ['dot'], ['blob']],
+  reporter: [['../dist/index.js', { markdownFile: true, markdownCI: true }], ['dot'], ['blob']],
   use: {
     baseURL: 'https://playwright.dev/',
   },
